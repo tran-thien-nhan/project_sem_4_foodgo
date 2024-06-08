@@ -1,0 +1,14 @@
+.banner {
+    background-image: url('https://cleverads.vn/blog/wp-content/uploads/2023/10/thi-truong-healthy-food-1.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    width: 100%;
+    height: 90vh;
+}
+
+.cover{
+    width: 100%;
+    height: 90vh;
+    background-color: black;
+    opacity: 0.5;
+}
