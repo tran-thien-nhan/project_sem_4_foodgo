@@ -14,7 +14,7 @@ const MultiItemCarousel = () => {
         slidesToScroll: 1,
         autoplay: true,
         autoplaySpeed: 2000,
-        arrows: false,
+        arrows: false
     };
     return (
         <div>

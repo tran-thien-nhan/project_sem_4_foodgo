@@ -9,14 +9,15 @@ export const darkTheme = createTheme({ //createTheme là một hàm tạo theme 
         },
         secondary: {
             main: "#f48fb1", // Pink
+            // main: "#000000", // Black 
         },
         black: {
             main: "#000000", // Black
         },
         background: {
-            main: "#121212", // Dark grey
-            default: "#0D0D0D", // Darker grey
-            paper: "#333", // Darker grey
+            main: "#000000", // Dark grey
+            default: "#121212", // Dark grey
+            paper: "#1e1e1e", // Dark grey
         },
         textColor: {
             main: "#ffffff", // White

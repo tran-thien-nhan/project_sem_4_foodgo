@@ -4,11 +4,11 @@ const CarouselItem = ({ image, title }) => {
     return (
         <div className='flex flex-col justify-center items-center p-4'>
             <img
-                className='w-[20vw] h-[20vw] max-w-[14rem] max-h-[14rem] rounded-full object-cover object-center mb-4'
+                className='w-[15vw] h-[15vw] max-w-[10rem] max-h-[10rem] rounded-full object-cover object-center mb-4'
                 src={image}
                 alt={title}
             />
-            <span className='text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-400'>{title}</span>
+            <span className='text-base sm:text-lg md:text-xl lg:text-xl font-semibold text-gray-400'>{title}</span>
         </div>
     );
 };

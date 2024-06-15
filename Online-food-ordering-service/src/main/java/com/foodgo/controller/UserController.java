@@ -1,5 +1,6 @@
 package com.foodgo.controller;
 
+import com.foodgo.helper.ApiResponse;
 import com.foodgo.model.User;
 import com.foodgo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +18,9 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/profile")
-    public ResponseEntity<User> findUserByJwtToken(@RequestHeader("Authorization") String jwt) throws Exception {
+    public ApiResponse<?> findUserByJwtToken(@RequestHeader("Authorization") String jwt) throws Exception {
         User user = userService.findUserByJwtToken(jwt);
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        //return new ResponseEntity<>(user, HttpStatus.OK);
+        return ApiResponse.success(user,"find user by jwt token successfully");
     }
 }

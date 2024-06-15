@@ -1,9 +1,20 @@
 import { Chip, IconButton } from '@mui/material'
-import React from 'react'
+import React, { useState } from 'react'
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
 const CartItem = () => {
+    const [quantity, setQuantity] = useState(1);
+    const handleRemove = () => {
+        if(quantity > 1) {
+            setQuantity(quantity - 1);
+        }
+    }
+
+    const handleAdd = () => {
+        setQuantity(quantity + 1);
+    }
+    
     return (
         <div className='px-5'>
             <div className='lg:flex items-center lg:space-x-5'>
@@ -28,21 +39,21 @@ const CartItem = () => {
                                 className='flex items-center space-x-1'
                             >
                                 <IconButton>
-                                    <RemoveCircleOutlineIcon />
+                                    <RemoveCircleOutlineIcon onClick={handleRemove} />
                                 </IconButton>
                                 <div
                                     className='w-5 h-5 text-xs flex items-center justify-center'
                                 >
-                                    {5}
+                                    {quantity}
                                 </div>
                                 <IconButton>
-                                    <AddCircleOutlineIcon />
+                                    <AddCircleOutlineIcon onClick={handleAdd}/>
                                 </IconButton>
                             </div>
                         </div>
                     </div>
 
-                    <p>30.000đ</p>
+                    <p>300.000đ</p>
                 </div>
             </div>
             <div
