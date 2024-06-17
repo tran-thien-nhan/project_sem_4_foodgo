@@ -115,6 +115,7 @@ public class RestaurantServiceImp implements RestaurantService{
         dto.setImages(restaurant.getImages()); // set hình ảnh cho đối tượng RestaurantDto
         dto.setTitle(restaurant.getName()); // set tên cho đối tượng RestaurantDto
         dto.setId(restaurant.getId()); // set id cho đối tượng RestaurantDto
+        dto.setOpen(restaurant.isOpen());// set trạng thái mở/closed cho đối tượng RestaurantDto
 
         boolean isFavorite = false; // khởi tạo biến isFavorite với giá trị false
         List<RestaurantDto> favorites = user.getFavorites(); // lấy danh sách nhà hàng yêu thích của người dùng

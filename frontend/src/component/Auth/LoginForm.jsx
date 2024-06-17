@@ -37,6 +37,7 @@ const LoginForm = () => {
                         fullWidth
                         variant='outlined'
                         margin='normal'
+                        type='password'
                     />
                     <Button
                         type='submit'

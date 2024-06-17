@@ -1,8 +1,7 @@
 import { isPresentInFavorite } from "../../Config/logic";
-import { ADD_TO_FAVORITE_FAILURE, ADD_TO_FAVORITE_REQUEST, ADD_TO_FAVORITE_SUCCESS, GET_USER_FAILURE, GET_USER_REQUEST, LOGIN_FAILURE, LOGIN_REQUEST, LOGIN_SUCCESS, REGISTER_FAILURE, REGISTER_REQUEST, REGISTER_SUCCESS } from "./ActionType";
+import { ADD_TO_FAVORITE_FAILURE, ADD_TO_FAVORITE_REQUEST, ADD_TO_FAVORITE_SUCCESS, GET_USER_FAILURE, GET_USER_REQUEST, GET_USER_SUCCESS, LOGIN_FAILURE, LOGIN_REQUEST, LOGIN_SUCCESS, LOGOUT, REGISTER_FAILURE, REGISTER_REQUEST, REGISTER_SUCCESS } from "./ActionType";
 
 const initialState = {
-
     user: null,
     isLoading: false,
     error: null,
@@ -22,16 +21,22 @@ export const authReducer = (state = initialState, action) => {
                 isLoading: true,
                 error: null,
                 success: null
-            }
+            };
         case REGISTER_SUCCESS:
         case LOGIN_SUCCESS:
             return {
                 ...state,
                 jwt: action.payload,
                 isLoading: false,
-                error: null,
-                success: "Login success"
-            }
+                success: "Register success"
+            };
+        case GET_USER_SUCCESS:
+            return {
+                ...state,
+                user: action.payload,
+                isLoading: false,
+                favorites: action.payload.favorites
+            };
         case ADD_TO_FAVORITE_SUCCESS:
             return {
                 ...state,
@@ -41,7 +46,7 @@ export const authReducer = (state = initialState, action) => {
                 isLoading: false,
                 error: null,
                 success: "Add to favorite success"
-            }
+            };
         case REGISTER_FAILURE:
         case LOGIN_FAILURE:
         case GET_USER_FAILURE:
@@ -51,7 +56,9 @@ export const authReducer = (state = initialState, action) => {
                 isLoading: false,
                 error: action.payload,
                 success: null
-            }
+            };
+        case LOGOUT:
+            return initialState;
         default:
             return state;
     }

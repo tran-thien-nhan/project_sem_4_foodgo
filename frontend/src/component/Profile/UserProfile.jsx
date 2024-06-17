@@ -5,7 +5,7 @@ import { Button } from '@mui/material';
 
 const UserProfile = () => {
     const handleLogout = () => {
-        console.log("Logout");
+        console.log('logout');
     }
     return (
         <div

@@ -42,6 +42,11 @@ public class AuthController {
 
     @PostMapping("/signup") //đánh dấu phương thức createUserHandler là phương thức xử lý request POST tới /auth/signup
     public ResponseEntity<AuthResponse> createUserHandler(@RequestBody User user) throws Exception {
+
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
         User isEmailExist = userRepository.findByEmail(user.getEmail()); //kiểm tra xem email đã tồn tại trong database chưa
         if (isEmailExist != null) { //nếu email đã tồn tại
             throw new Exception("Email is already used with another account"); //ném ra lỗi "Email already exist"
@@ -71,7 +76,7 @@ public class AuthController {
     }
 
     @PostMapping("/signin") //đánh dấu phương thức signin là phương thức xử lý request POST tới /auth/signin
-    public ResponseEntity<AuthResponse> signin(@RequestBody LoginRequest req) {
+    public ResponseEntity<User> signin(@RequestBody LoginRequest req) {
 
         String username = req.getEmail();
         String password = req.getPassword();
@@ -86,7 +91,7 @@ public class AuthController {
         authResponse.setMessage("Sign In successfully"); //set message cho AuthResponse
         authResponse.setRole(USER_ROLE.valueOf(role)); //set role cho AuthResponse
 
-        return new ResponseEntity<>(authResponse, HttpStatus.OK); //trả về AuthResponse và status code 200 (OK)
+        return new ResponseEntity(authResponse, HttpStatus.OK); //trả về AuthResponse và status code 200 (OK)
     }
 
     private Authentication authenticate(String username, String password) {

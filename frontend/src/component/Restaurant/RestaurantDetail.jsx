@@ -1,9 +1,12 @@
 import { Divider, FormControl, Grid, Radio, RadioGroup, Typography, FormControlLabel } from '@mui/material'
-import React from 'react'
+import React, { useEffect } from 'react'
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { useState } from 'react';
 import MenuCard from './MenuCard';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { getRestaurantById } from '../State/Restaurant/Action';
 
 const categories = [
     "pizza",
@@ -23,9 +26,22 @@ const menu = [1,1,1,1,1,1]
 
 const RestaurantDetail = () => {
     const [foodType, setFoodType] = React.useState("all");
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const jwt = localStorage.getItem('jwt');
+    const {auth, restaurant} = useSelector(store => store);
+    const {id,city} = useParams();
+
     const handleFilter = (e) => {
         console.log(e.target.value, e.target.name);
-    }
+    }    
+
+    console.log("restaurant", restaurant);
+
+    useEffect(() => {
+        dispatch(getRestaurantById({jwt: jwt, restaurantId: id}));
+    },[])
+
     return (
         <div
             className='px-5 lg:px-20 pb-5'
@@ -39,29 +55,29 @@ const RestaurantDetail = () => {
                         <Grid item xs={12}>
                             <img
                                 className='w-full h-[40vh] object-cover object-center'
-                                src="https://cdn.vox-cdn.com/thumbor/5d_RtADj8ncnVqh-afV3mU-XQv0=/0x0:1600x1067/1200x900/filters:focal(672x406:928x662)/cdn.vox-cdn.com/uploads/chorus_image/image/57698831/51951042270_78ea1e8590_h.7.jpg" alt="" />
+                                src={restaurant.restaurant?.images[0]} alt="" />
                         </Grid>
                         <Grid item xs={12} lg={6}>
                             <img
                                 className='w-full h-[40vh] object-cover object-center'
-                                src="https://cdn.concreteplayground.com/content/uploads/2023/11/the-dry-dock-balmain-supplied.jpg" alt="" />
+                                src={restaurant.restaurant?.images[1]} alt="" />
                         </Grid>
                         <Grid item xs={12} lg={6}>
                             <img
                                 className='w-full h-[40vh] object-cover object-center'
-                                src="https://cdn.britannica.com/02/239402-050-ACC075DB/plates-of-vegan-foods-ready-serve-restaurant-London.jpg" alt="" />
+                                src={restaurant.restaurant?.images[2] || restaurant.restaurant?.images[0]} alt="" />
                         </Grid>
                     </Grid>
                 </div>
                 <div
                     className='pt-3 pb-5'
                 >
-                    <h1 className='text-4xl font-semibold'>Alma Lounge</h1>
+                    <h1 className='text-4xl font-semibold'>{restaurant.restaurant?.name || restaurant.restaurant?.title}</h1>
 
                     <p
                         className='text-gray-500 mt-1'
                     >
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptate nostrum nobis architecto repellendus ad ex hic aperiam, quidem, veniam maxime modi saepe similique mollitia eligendi libero fuga. Et, recusandae dignissimos?
+                        {restaurant.restaurant?.description}
                     </p>
 
                     <div className='space-y-3 mt-3'>
