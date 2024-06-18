@@ -22,6 +22,7 @@ public class IngredientCategory {
     @ManyToOne // Một loại nguyên liệu có nhiều món ăn, một món ăn chỉ thuộc một loại nguyên liệu
     private Restaurant restaurant;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL) // Một loại nguyên liệu có nhiều nguyên liệu, mappedBy trỏ tới category trong IngredientsItem
     private List<IngredientsItem> ingredients = new ArrayList<>();
 }

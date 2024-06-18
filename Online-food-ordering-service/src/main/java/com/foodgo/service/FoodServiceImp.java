@@ -8,6 +8,7 @@ import com.foodgo.request.CreateFoodRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,6 +31,8 @@ public class FoodServiceImp implements FoodService{
         food.setIngredients(req.getIngredients());
         food.setSeasonal(req.isSeasional());
         food.setVegetarian(req.isVegetarian());
+        food.setAvailable(false);
+        food.setCreationDate(new Date());
 
         Food savedFood = foodRepository.save(food);
         restaurant.getFoods().add(savedFood);

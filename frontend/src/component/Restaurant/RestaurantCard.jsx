@@ -1,5 +1,5 @@
-import { Card, IconButton } from '@mui/material'
-import React from 'react'
+import { Card, IconButton } from '@mui/material';
+import React, { useEffect } from 'react';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import Chip from '@mui/material/Chip';
@@ -7,20 +7,27 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToFavorite } from '../State/Authentication/Action';
 import { isPresentInFavorite } from '../Config/logic';
+import { getRestaurantById } from '../State/Restaurant/Action';
 
-const RestaurantCard = ({item}) => {
+const RestaurantCard = ({ item }) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const jwt = localStorage.getItem('jwt');
-    const {auth} = useSelector(store => store);
+    const { auth } = useSelector(store => store);
 
     const handleAddToFavorite = () => {
-        dispatch(addToFavorite({jwt: jwt, restaurantId: item.id}));
+        dispatch(addToFavorite({ jwt: jwt, restaurantId: item.id }));
     }
 
+    console.log("item", item);
+
     const handleNavigateToRestaurant = () => {
-        if(item.open){
-            navigate(`/restaurant/${item.address.city}/${item.name || item.title}/${item.id}`);
+        //let newItem = dispatch(getRestaurantById({ jwt: jwt, restaurantId: item.id }));
+        
+        if (item.open || item.city) {
+            navigate(`/restaurant/${item.address?.city || item.city}/${item.name || item.title}/${item.id}`);
+        } else {
+            console.error('City is undefined', item);
         }
     }
 
@@ -62,7 +69,7 @@ const RestaurantCard = ({item}) => {
                 </div>
                 <div>
                     <IconButton onClick={handleAddToFavorite}>
-                        {isPresentInFavorite(auth.favorites,item) ? <FavoriteIcon className='text-red-500' /> : <FavoriteBorderIcon />}
+                        {isPresentInFavorite(auth.favorites, item) ? <FavoriteIcon className='text-red-500' /> : <FavoriteBorderIcon />}
                     </IconButton>
                 </div>
 
@@ -71,4 +78,4 @@ const RestaurantCard = ({item}) => {
     )
 }
 
-export default RestaurantCard
+export default RestaurantCard;

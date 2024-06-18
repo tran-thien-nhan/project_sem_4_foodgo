@@ -20,4 +20,7 @@ public class RestaurantDto {
     private Long id;
 
     private Boolean open;
+
+    //city
+    private String city;
 }

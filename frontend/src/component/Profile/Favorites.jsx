@@ -1,10 +1,17 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import RestaurantCard from '../Restaurant/RestaurantCard'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { getAllRestaurantsAction } from '../State/Restaurant/Action'
 
 const Favorites = () => {
-  const {auth} = useSelector(store => store)
-  console.log(auth.favorites);
+  const { auth } = useSelector(store => store)
+  const dispatch = useDispatch()
+  const jwt = localStorage.getItem('jwt')
+  console.log("auth.favorites: ", auth.favorites);
+
+  useEffect(() => {
+    dispatch(getAllRestaurantsAction(jwt))
+  }, [])
   return (
     <div>
       <h1 className='py-5 text-xl font-semibold text-center'>My Favorites</h1>

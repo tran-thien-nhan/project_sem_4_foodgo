@@ -29,7 +29,7 @@ public class Food {
     @ElementCollection
     private List<String> images;
 
-    private boolean available;
+    private boolean available = false; //món ăn có sẵn hay không
 
     @ManyToOne
     private Restaurant restaurant; //một food chỉ thuộc một nhà hàng

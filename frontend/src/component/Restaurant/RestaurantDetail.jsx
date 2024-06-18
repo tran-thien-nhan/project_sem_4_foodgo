@@ -1,4 +1,4 @@
-import { Divider, FormControl, Grid, Radio, RadioGroup, Typography, FormControlLabel } from '@mui/material'
+import { Divider, FormControl, Grid, Radio, RadioGroup, Typography, FormControlLabel, getMenuItemUtilityClass } from '@mui/material'
 import React, { useEffect } from 'react'
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
@@ -6,15 +6,16 @@ import { useState } from 'react';
 import MenuCard from './MenuCard';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { getRestaurantById } from '../State/Restaurant/Action';
+import { getRestaurantById, getRestaurantsCategory } from '../State/Restaurant/Action';
+import { getMenuItemsByRestaurantId } from '../State/Menu/Action';
 
-const categories = [
-    "pizza",
-    "burger",
-    "noodles",
-    "rice",
-    "milk tea",
-]
+// const categories = [
+//     "pizza",
+//     "burger",
+//     "noodles",
+//     "rice",
+//     "milk tea",
+// ]
 
 const foodTypes = [
     { label: "All", value: "all" },
@@ -22,25 +23,35 @@ const foodTypes = [
     { label: "Non-Vegetarian", value: "non_vegetarian" },
     { label: "Seasonal", value: "seasonal" },
 ]
-const menu = [1,1,1,1,1,1]
+const menu = [1, 1, 1, 1, 1, 1]
 
 const RestaurantDetail = () => {
     const [foodType, setFoodType] = React.useState("all");
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const jwt = localStorage.getItem('jwt');
-    const {auth, restaurant} = useSelector(store => store);
-    const {id,city} = useParams();
+    const { auth, restaurant } = useSelector(store => store);
+    const { id, city } = useParams();
 
     const handleFilter = (e) => {
         console.log(e.target.value, e.target.name);
-    }    
+    }
 
     console.log("restaurant", restaurant);
 
     useEffect(() => {
-        dispatch(getRestaurantById({jwt: jwt, restaurantId: id}));
-    },[])
+        dispatch(getRestaurantById({ jwt: jwt, restaurantId: id }));
+        dispatch(getRestaurantsCategory({ jwt: jwt, restaurantId: id }));
+        dispatch(getMenuItemsByRestaurantId({ 
+            jwt: jwt, 
+            restaurantId: id , 
+            vegetarian: false, 
+            nonveg: false, 
+            seasonal: false, 
+            foodCategory: "" 
+        }));
+        
+    }, [])
 
     return (
         <div
@@ -140,12 +151,12 @@ const RestaurantDetail = () => {
                             <FormControl className='py-10 space-y-5' component={"fieldset"}>
                                 <RadioGroup name='food_type' value={foodType} onChange={handleFilter}>
                                     {
-                                        categories.map((item) => (
+                                        restaurant.categories.map((item) => (
                                             <FormControlLabel
                                                 key={item}
                                                 value={item}
                                                 control={<Radio />}
-                                                label={item} 
+                                                label={item.name}
                                             />
                                         ))
                                     }

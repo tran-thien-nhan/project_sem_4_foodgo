@@ -1,4 +1,4 @@
-import { api } from '../../../Config/api';
+import { api } from "../../Config/api";
 import {
     CREATE_MENU_ITEM_REQUEST,
     CREATE_MENU_ITEM_SUCCESS,
@@ -14,7 +14,10 @@ import {
     SEARCH_MENU_ITEM_FAILURE,
     UPDATE_MENU_ITEMS_AVAILABILITY_REQUEST,
     UPDATE_MENU_ITEMS_AVAILABILITY_SUCCESS,
-    UPDATE_MENU_ITEMS_AVAILABILITY_FAILURE
+    UPDATE_MENU_ITEMS_AVAILABILITY_FAILURE,
+    GET_INGREDIENTS_OF_MENU_ITEM_REQUEST,
+    GET_INGREDIENTS_OF_MENU_ITEM_SUCCESS,
+    GET_INGREDIENTS_OF_MENU_ITEM_FAILURE
 } from "./ActionType";
 
 export const createMenuItem = ({ menu, jwt }) => {
@@ -80,7 +83,7 @@ export const searchMenuItem = ({keyword, jwt}) => {
 
 export const getAllIngredientsOfMenuItem = (reqData) => {
     return async (dispatch) => {
-        dispatch({ type: GET_INGREDIENTS_OF_MENU_ITEM_REQUEST });
+        dispatch({ type: GET_INGREDIENTS_OF_MENU_ITEM_REQUEST});
         try {
             const { data } = await api.get(`api/food/${reqData.menuItemId}/ingredients`, {
                 headers: {
