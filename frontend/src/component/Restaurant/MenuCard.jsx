@@ -41,7 +41,7 @@ const demo = [
     },
 ]
 
-const MenuCard = () => {
+const MenuCard = ({ item }) => {
     const handleCheckBoxChange = (value) => {
         console.log('value');
     }
@@ -60,7 +60,7 @@ const MenuCard = () => {
                     >
                         <img
                             className='w-[7rem] h-[7rem] object-cover'
-                            src="https://www.foodandwine.com/thmb/DI29Houjc_ccAtFKly0BbVsusHc=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/crispy-comte-cheesburgers-FT-RECIPE0921-6166c6552b7148e8a8561f7765ddf20b.jpg"
+                            src={item.images[0] || item.images[1]}
                             alt=""
                         />
                         <div
@@ -69,13 +69,14 @@ const MenuCard = () => {
                             <p
                                 className='text-xl font-semibold'
                             >
-                                Burger
+                                {item.name}
                             </p>
-                            <p>30.000 VNĐ</p>
+                            <p>{item.price.toLocaleString('vi-VN')} VNĐ</p>
                             <p>
                                 <span
-                                    className='text-gray-400'
-                                >Description:</span> this burger is the best burger in the world
+                                    className='text-gray-400 px-1'
+                                >Description:</span>
+                                {item.description}
                             </p>
 
                         </div>
@@ -98,7 +99,7 @@ const MenuCard = () => {
                                                     label={item}
                                                 />
                                             )
-                                        
+
                                         }
                                     </FormGroup>
                                 </div>

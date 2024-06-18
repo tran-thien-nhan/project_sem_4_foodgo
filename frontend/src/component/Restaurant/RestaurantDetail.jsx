@@ -30,7 +30,7 @@ const RestaurantDetail = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const jwt = localStorage.getItem('jwt');
-    const { auth, restaurant } = useSelector(store => store);
+    const { auth, restaurant, menu } = useSelector(store => store);
     const { id, city } = useParams();
 
     const handleFilter = (e) => {
@@ -42,15 +42,15 @@ const RestaurantDetail = () => {
     useEffect(() => {
         dispatch(getRestaurantById({ jwt: jwt, restaurantId: id }));
         dispatch(getRestaurantsCategory({ jwt: jwt, restaurantId: id }));
-        dispatch(getMenuItemsByRestaurantId({ 
-            jwt: jwt, 
-            restaurantId: id , 
-            vegetarian: false, 
-            nonveg: false, 
-            seasonal: false, 
-            foodCategory: "" 
+        dispatch(getMenuItemsByRestaurantId({
+            jwt: jwt,
+            restaurantId: id,
+            vegetarian: false,
+            nonveg: false,
+            seasonal: false,
+            foodCategory: ""
         }));
-        
+
     }, [])
 
     return (
@@ -168,8 +168,8 @@ const RestaurantDetail = () => {
 
                 <div className='space-y-10 lg:w-[80%] lg:pl-10'>
                     {
-                        menu.map((item, index) => (
-                            <MenuCard key={index} />
+                        menu.menuItems.map((item) => (
+                            <MenuCard item={item} />
                         ))
                     }
                 </div>
