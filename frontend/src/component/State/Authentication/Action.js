@@ -37,9 +37,11 @@ export const loginUser = (reqData) => async (dispatch) => {
 
         if (data.role === "ROLE_RESTAURANT_OWNER") {
             reqData.navigate("/admin/restaurant");
+            window.location.reload();
         }
         else {
             reqData.navigate("/");
+            window.location.reload();
         }
 
         dispatch({ type: LOGIN_SUCCESS, payload: data.jwt });

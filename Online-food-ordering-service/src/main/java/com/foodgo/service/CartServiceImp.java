@@ -1,9 +1,6 @@
 package com.foodgo.service;
 
-import com.foodgo.model.Cart;
-import com.foodgo.model.CartItem;
-import com.foodgo.model.Food;
-import com.foodgo.model.User;
+import com.foodgo.model.*;
 import com.foodgo.repository.CartItemRepository;
 import com.foodgo.repository.CartRepository;
 import com.foodgo.request.AddCartItemRequest;
@@ -27,18 +24,31 @@ public class CartServiceImp implements CartService {
     @Autowired
     private FoodService foodService;
 
+    @Autowired
+    private IngredientService ingredientService;
+
     @Override
     public CartItem addItemToCart(AddCartItemRequest req, String jwt) throws Exception {
         User user = userService.findUserByJwtToken(jwt); // dùng để lấy id của user từ jwt token
         Food food = foodService.findFoodById(req.getFoodId()); // dùng để lấy food từ id của food
         Cart cart = cartRepository.findByCustomerId(user.getId()); // dùng để lấy cart của user
-        for (CartItem cartItem : cart.getCartItems()) { // kiểm tra xem food đã có trong cart chưa
-            if (cartItem.getFood().equals(food)) { // nếu có rồi thì tăng số lượng
-                int newQuantity = cartItem.getQuantity() + req.getQuantity(); // tăng số lượng
-                return updateCartItemQuantity(cartItem.getId(), newQuantity); // cập nhật số lượng
+
+        // Tính giá thêm của các thành phần nguyên liệu
+        //Long additionalPrice = ingredientService.calculateTotalPrice(req.getIngredientsItems());
+
+        // Kiểm tra xem food đã có trong cart chưa, nếu có thì kiểm tra thành phần nguyên liệu
+        for (CartItem cartItem : cart.getCartItems()) {
+            if (cartItem.getFood().equals(food)) {
+                // So sánh thành phần nguyên liệu
+                if (cartItem.getIngredients().equals(req.getIngredients())) {
+                    // Nếu cùng thành phần nguyên liệu, tăng số lượng
+                    int newQuantity = cartItem.getQuantity() + req.getQuantity();
+                    return updateCartItemQuantity(cartItem.getId(), newQuantity);
+                }
             }
         }
 
+        // Nếu cùng food nhưng khác ingredient thì tạo mới
         CartItem newCartItem = new CartItem(); // nếu chưa có thì tạo mới
         newCartItem.setFood(food); // set food
         newCartItem.setQuantity(req.getQuantity()); // set số lượng
@@ -51,6 +61,7 @@ public class CartServiceImp implements CartService {
 
         return savedCartItem; // trả về cart item
     }
+
 
     @Override
     public CartItem updateCartItemQuantity(Long cartItemId, int quantity) throws Exception {

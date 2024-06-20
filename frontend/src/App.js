@@ -11,6 +11,9 @@ import Profile from './component/Profile/Profile';
 import CustomerRouter from './Routers/CustomerRouter';
 import { useDispatch, useSelector } from 'react-redux';
 import { getUser } from './component/State/Authentication/Action';
+import { findCart } from './component/State/Cart/Action';
+import { Bounce, ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const dispatch = useDispatch();
@@ -19,12 +22,14 @@ function App() {
 
   useEffect(() => {
     dispatch(getUser(auth.jwt || jwt)); //nếu auth.jwt không có thì lấy jwt
+    dispatch(findCart(jwt)) //tìm giỏ hàng của user
   }, [auth.jwt]); //nếu jwt thay đổi thì chạy lại useEffect
 
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <CustomerRouter />
+      <ToastContainer />
     </ThemeProvider>
   );
 }

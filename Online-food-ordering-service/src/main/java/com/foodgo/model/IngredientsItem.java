@@ -17,6 +17,10 @@ public class IngredientsItem {
 
     private String name;
 
+    private Long price;
+
+    private int quantity;
+
     @ManyToOne
     private IngredientCategory category;
 

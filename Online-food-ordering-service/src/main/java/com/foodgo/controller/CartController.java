@@ -21,7 +21,7 @@ public class CartController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/cart/add")
+    @PutMapping("/cart/add")
     public ResponseEntity<CartItem> addItemToCart(@RequestBody AddCartItemRequest req,
                                                   @RequestHeader("Authorization") String jwt) throws Exception {
         CartItem cartItem = cartService.addItemToCart(req, jwt);
@@ -40,7 +40,7 @@ public class CartController {
         Cart cart = cartService.removeItemFromCart(id, jwt);
         return new ResponseEntity<>(cart, HttpStatus.OK);
     }
-    @DeleteMapping("/cart/clear")
+    @PutMapping("/cart/clear")
     public ResponseEntity<Cart> clearCart(@RequestHeader("Authorization") String jwt) throws Exception {
         User user = userService.findUserByJwtToken(jwt);
         Cart cart = cartService.clearCart(user.getId());

@@ -13,4 +13,7 @@ public interface IngredientService {
     public List<IngredientsItem> findRestaurantIngredients(Long restaurantId) throws Exception;
 
     public IngredientsItem updateStock(Long id) throws Exception;
+
+    // Tính tổng giá của các nguyên liệu
+    public long calculateTotalPrice(List<IngredientsItem> ingredients);
 }

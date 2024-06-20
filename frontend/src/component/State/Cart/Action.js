@@ -1,4 +1,4 @@
-import { api } from '../../../Config/api';
+import { api } from '../../Config/api';
 import {
     FIND_CART_REQUEST,
     FIND_CART_SUCCESS,
@@ -31,10 +31,34 @@ export const findCart = (token) => {
             });
             dispatch({ type: FIND_CART_SUCCESS, payload: response.data });
             console.log("FIND CART SUCCESS: ", response.data);
-        }
-        catch (error) {
+        } catch (error) {
             dispatch({ type: FIND_CART_FAILURE, payload: error });
             console.log("FIND CART FAILURE: ", error);
+        }
+    }
+}
+
+export const addItemToCart = (reqData) => {
+    return async (dispatch) => {
+        dispatch({ type: ADD_ITEM_TO_CART_REQUEST });
+        try {
+            const { data } = await api.put(`/api/cart/add`, reqData.cartItem, {
+                headers: {
+                    Authorization: `Bearer ${reqData.token}`,
+                },
+            });
+            dispatch({ type: ADD_ITEM_TO_CART_SUCCESS, payload: data });
+            let cartid = dispatch(findCart(reqData.token));
+            if (data.id) {
+                console.log("Cart ID after adding item:", data.id);
+            } else {
+                console.error("ADD ITEM TO CART SUCCESS but cartId is undefined: ", data);
+            }
+
+            console.log("ADD ITEM TO CART SUCCESS: ", data);
+        } catch (error) {
+            dispatch({ type: ADD_ITEM_TO_CART_FAILURE, payload: error });
+            console.log("ADD ITEM TO CART FAILURE: ", error);
         }
     }
 }
@@ -43,17 +67,14 @@ export const getAllCartItems = (reqData) => {
     return async (dispatch) => {
         dispatch({ type: GET_ALL_CART_ITEMS_REQUEST });
         try {
-            const response = await api.get(`/api/cart/${reqData.cartId}/items`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${reqData.token}`,
-                    },
-                }
-            );
+            const response = await api.get(`/api/cart/${reqData.cartId}/items`, {
+                headers: {
+                    Authorization: `Bearer ${reqData.token}`,
+                },
+            });
             dispatch({ type: GET_ALL_CART_ITEMS_SUCCESS, payload: response.data });
             console.log("GET ALL CART ITEMS SUCCESS: ", response.data);
-        }
-        catch (error) {
+        } catch (error) {
             dispatch({ type: GET_ALL_CART_ITEMS_FAILURE, payload: error });
             console.log("GET ALL CART ITEMS FAILURE: ", error);
         }
@@ -64,17 +85,17 @@ export const updateCartItem = (reqData) => {
     return async (dispatch) => {
         dispatch({ type: UPDATE_CART_ITEM_REQUEST });
         try {
-            const { data } = await api.put(`/api/cart-item/update`, reqData.data,
-                {
-                    headers: {
-                        Authorization: `Bearer ${reqData.jwt}`,
-                    },
-                }
-            );
+            const { data } = await api.put(`/api/cart-item/update`, {
+                cartItemId: reqData.cartItemId,
+                quantity: reqData.quantity
+            }, {
+                headers: {
+                    Authorization: `Bearer ${reqData.jwt}`,
+                },
+            });
             dispatch({ type: UPDATE_CART_ITEM_SUCCESS, payload: data });
             console.log("UPDATE CART ITEM SUCCESS: ", data);
-        }
-        catch (error) {
+        } catch (error) {
             dispatch({ type: UPDATE_CART_ITEM_FAILURE, payload: error.message });
             console.log("UPDATE CART ITEM FAILURE: ", error);
         }
@@ -85,17 +106,14 @@ export const removeCartItem = ({ cartItemId, jwt }) => {
     return async (dispatch) => {
         dispatch({ type: REMOVE_CART_ITEM_REQUEST });
         try {
-            const { data } = await api.delete(`/api/cart-item/${cartItemId}/remove`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${jwt}`,
-                    },
-                }
-            );
+            const { data } = await api.delete(`/api/cart-item/${cartItemId}/remove`, {
+                headers: {
+                    Authorization: `Bearer ${jwt}`,
+                },
+            });
             dispatch({ type: REMOVE_CART_ITEM_SUCCESS, payload: cartItemId });
             console.log("REMOVE CART ITEM SUCCESS: ", data);
-        }
-        catch (error) {
+        } catch (error) {
             dispatch({ type: REMOVE_CART_ITEM_FAILURE, payload: error.message });
             console.log("REMOVE CART ITEM FAILURE: ", error);
         }
@@ -106,17 +124,14 @@ export const clearCartAction = (token) => {
     return async (dispatch) => {
         dispatch({ type: CLEAR_CART_REQUEST });
         try {
-            const { data } = await api.put(`/api/cart/clear`, {},
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+            const { data } = await api.put(`/api/cart/clear`, {}, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             dispatch({ type: CLEAR_CART_SUCCESS, payload: data });
             console.log("CLEAR CART SUCCESS: ", data);
-        }
-        catch (error) {
+        } catch (error) {
             dispatch({ type: CLEAR_CART_FAILURE, payload: error.message });
             console.log("CLEAR CART FAILURE: ", error);
         }

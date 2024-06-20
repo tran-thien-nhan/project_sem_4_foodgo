@@ -1,25 +1,40 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import IconButton from '@mui/material/IconButton';
 import SearchIcon from '@mui/icons-material/Search';
 import { Avatar, Badge, Box } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { Link, useNavigate } from 'react-router-dom';
 import { Person } from '@mui/icons-material';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { pink } from '@mui/material/colors';
+import { getAllCartItems } from '../State/Cart/Action';
 
 export const Navbar = () => {
-    const { auth } = useSelector(store => store);
+    const { auth, cart } = useSelector(store => store);
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const token = localStorage.getItem('jwt');
+    const cartCount = cart.cart?.cartItems?.length || 0;
 
-    const handleAvartaClick = () => {
+    useEffect(() => {
+        if (token && cart.id) {
+            dispatch(getAllCartItems({ cartId: cart.id, token }));
+        }
+    }, [dispatch, token, cart.id]);
+
+    useEffect(() => {
+        if (cart.cart?.cartItems?.length !== undefined) {
+            console.log("Cart updated:", cart.cart.cartItems.length);
+        }
+    }, [cart.cart?.cartItems?.length]);
+
+    const handleAvatarClick = () => {
         if (auth.user?.role === 'ROLE_CUSTOMER') {
             navigate('/my-profile');
-        }
-        else {
+        } else {
             navigate('/admin/restaurant');
         }
-    }
+    };
 
     return (
         <Box className='px-5 sticky top-0 z-50 py-[.8rem] bg-[#e91e63] lg:px-20 flex justify-between' sx={{ zIndex: 100 }}>
@@ -32,37 +47,31 @@ export const Navbar = () => {
                     </ul>
                 </div>
             </div>
-
             <div className="flex items-center space-x-2 lg:space-x-10">
                 <div className=''>
                     <IconButton>
                         <SearchIcon sx={{ fontSize: "1.5rem" }} />
                     </IconButton>
                 </div>
-
                 <div className=''>
                     {auth.user ? (
-                        <Avatar sx={{ bgcolor: "white", color: pink.A400 }} onClick={handleAvartaClick} className='cursor-pointer'>
+                        <Avatar sx={{ bgcolor: "white", color: pink.A400 }} onClick={handleAvatarClick} className='cursor-pointer'>
                             {auth.user?.fullName[0].toUpperCase()}
                         </Avatar>
                     ) : (
-                        <IconButton
-                            onClick={() => navigate('/account/login')}
-                        >
+                        <IconButton onClick={() => navigate('/account/login')}>
                             <Person />
                         </IconButton>
                     )}
                 </div>
-
                 <div className=''>
-                    <IconButton>
-                        <Badge badgeContent={4} color="secondary">
+                    <IconButton onClick={() => navigate("/cart")}>
+                        <Badge badgeContent={cartCount} color="secondary">
                             <ShoppingCartIcon sx={{ fontSize: "1.5rem" }} />
                         </Badge>
                     </IconButton>
                 </div>
-
             </div>
         </Box>
-    )
-}
+    );
+};

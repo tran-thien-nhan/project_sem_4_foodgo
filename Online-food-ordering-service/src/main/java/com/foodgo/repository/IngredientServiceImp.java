@@ -75,4 +75,9 @@ public class IngredientServiceImp implements IngredientService {
         ingredientsItem.setInStoke(!ingredientsItem.isInStoke()); // cập nhật trạng thái ingredient item
         return ingredientItemRepository.save(ingredientsItem); // lưu ingredient item vào database
     }
+
+    @Override
+    public long calculateTotalPrice(List<IngredientsItem> ingredients) {
+        return ingredients.stream().mapToLong(IngredientsItem::getPrice).sum(); // tính tổng giá của các ingredient item
+    }
 }

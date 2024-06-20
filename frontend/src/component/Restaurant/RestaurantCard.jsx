@@ -24,11 +24,7 @@ const RestaurantCard = ({ item }) => {
     const handleNavigateToRestaurant = () => {
         //let newItem = dispatch(getRestaurantById({ jwt: jwt, restaurantId: item.id }));
         
-        if (item.open || item.city) {
-            navigate(`/restaurant/${item.address?.city || item.city}/${item.name || item.title}/${item.id}`);
-        } else {
-            console.error('City is undefined', item);
-        }
+        navigate(`/restaurant/${item.address?.city || item.city}/${item.name || item.title}/${item.id}`);
     }
 
     return (

@@ -24,7 +24,7 @@ const cartReducer = (state = initialState, action) => {
             return {
                 ...state,
                 cart: action.payload,
-                cartItems: action.payload.items,
+                cartItems: action.payload.items || [],
                 loading: false
             };
         case actionTypes.ADD_ITEM_TO_CART_SUCCESS:
@@ -48,18 +48,19 @@ const cartReducer = (state = initialState, action) => {
         case actionTypes.FIND_CART_FAILURE:
         case actionTypes.UPDATE_CART_ITEM_FAILURE:
         case actionTypes.REMOVE_CART_ITEM_FAILURE:
-            return{
+        case actionTypes.ADD_ITEM_TO_CART_FAILURE:
+            return {
                 ...state,
                 loading: false,
                 error: action.payload
-            }
+            };
         case LOGOUT:
             localStorage.removeItem('jwt');
             return {
                 ...state,
                 cart: null,
                 cartItems: []
-            }
+            };
         default:
             return state;
     }
