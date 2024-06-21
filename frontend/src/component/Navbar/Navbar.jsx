@@ -30,6 +30,14 @@ export const Navbar = () => {
         }
     };
 
+    const handleNavigateToCart = () => {
+        if (cartCount === 0) {
+            navigate('/');
+        } else {
+            navigate('/cart');
+        }
+    };
+
     return (
         <Box className='px-5 sticky top-0 z-50 py-[.8rem] bg-[#e91e63] lg:px-20 flex justify-between' sx={{ zIndex: 100 }}>
             <div className="flex items-center space-x-4">
@@ -59,7 +67,7 @@ export const Navbar = () => {
                     )}
                 </div>
                 <div className=''>
-                    <IconButton onClick={() => navigate("/cart")}>
+                    <IconButton onClick={handleNavigateToCart}>
                         <Badge badgeContent={cartCount} color="secondary">
                             <ShoppingCartIcon sx={{ fontSize: "1.5rem" }} />
                         </Badge>

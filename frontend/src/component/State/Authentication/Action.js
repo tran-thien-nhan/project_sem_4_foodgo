@@ -15,6 +15,17 @@ export const registerUser = (reqData) => async (dispatch) => {
             reqData.navigate("/admin/restaurant");
         }
         else {
+            toast.success('register successfully!', {
+                position: "top-center",
+                autoClose: 500,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+            });
             reqData.navigate("/");
         }
 
@@ -34,6 +45,7 @@ export const loginUser = (reqData) => async (dispatch) => {
         const { data } = await axios.post(`${API_URL}/auth/signin`, reqData.userData); // nghĩa là gửi request POST tới đường dẫn http://localhost:5454/auth/signup với dữ liệu reqData
         if (data.jwt) { // nếu có jwt thì lưu vào localStorage
             localStorage.setItem("jwt", data.jwt);
+
             toast.success('Login successfully!', {
                 position: "top-center",
                 autoClose: 500,
@@ -48,12 +60,10 @@ export const loginUser = (reqData) => async (dispatch) => {
         }
 
         if (data.role === "ROLE_RESTAURANT_OWNER") {
-            reqData.navigate("/admin/restaurant");
-            //window.location.reload();
+            reqData.navigate("/admin/restaurant");            
         }
         else {
-            reqData.navigate("/");
-            //window.location.reload();
+            reqData.navigate("/");            
         }
 
         dispatch({ type: LOGIN_SUCCESS, payload: data.jwt });

@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, Button, Checkbox, FormControlLabel, FormGroup, Chip } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Button, Checkbox, FormControlLabel, FormGroup, Chip, Tooltip } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import React, { useState, useEffect } from 'react';
 import { categorizeIngredient } from '../util/categorizeIngredient';
@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addItemToCart, getAllCartItems } from '../State/Cart/Action';
 import { Bounce, ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from 'react-router-dom';
 
 const MenuCard = ({ item }) => {
     const [selectedIngredients, setSelectedIngredients] = useState([]);
@@ -14,11 +15,29 @@ const MenuCard = ({ item }) => {
     const token = localStorage.getItem('jwt');
     const [totalPrice, setTotalPrice] = useState(item.price);
     const [cartTotal, setCartTotal] = useState(0);
+    const navigate = useNavigate();
 
     //console.log("MENU: ", menu);
 
     const handleAddItemToCart = (e) => {
         e.preventDefault();
+
+        if (!localStorage.getItem('jwt')) {
+            toast.warn('please login to add item to cart !', {
+                position: "top-center",
+                autoClose: 2000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "dark",
+                transition: Bounce,
+            });
+            navigate('/account/login');
+            return;
+        }
+
         const reqData = {
             token: localStorage.getItem('jwt'),
             cartItem: {
@@ -51,6 +70,22 @@ const MenuCard = ({ item }) => {
     }, [cartId, dispatch, token]);
 
     const handleCheckBoxChange = (itemName) => {
+        if (!localStorage.getItem('jwt')) {
+            // Nếu chưa đăng nhập thì hiển thị thông báo và không thể chọn topping được (là không tick vô được checkbox)
+            toast.warn('please login to add item to cart !', {
+                position: "top-center",
+                autoClose: 2000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "dark",
+                transition: Bounce,
+            });
+            navigate('/account/login');
+
+        }
         if (selectedIngredients.includes(itemName)) {
             setSelectedIngredients(selectedIngredients.filter(ingredient => ingredient !== itemName));
             setTotalPrice(totalPrice - item.ingredients.find(ingredient => ingredient.name === itemName).price);
@@ -74,7 +109,7 @@ const MenuCard = ({ item }) => {
                                 {item.description}
                             </p>
                             <p>
-                                {selectedIngredients.length > 0 && <span className='text-gray-400 px-1'>Ingredients:</span>}
+                                {selectedIngredients.length > 0 && <span className='text-gray-400 px-1'>Toppings:</span>}
                                 {
                                     selectedIngredients.map((ingredient) => {
                                         if (selectedIngredients.length === 1) {
@@ -100,12 +135,16 @@ const MenuCard = ({ item }) => {
                                 <FormGroup>
                                     {
                                         categorizeIngredient(item.ingredients)[category].map((ingredient) => (
-                                            <FormControlLabel
-                                                key={ingredient.ID}
-                                                control={<Checkbox onChange={() => handleCheckBoxChange(ingredient.name)} />}
-                                                label={ingredient.name + ' (+' + ingredient.price.toLocaleString('vi-VN') + 'đ)'}
-                                                disabled={!ingredient.inStoke || !restaurant.restaurant.open || !token}
-                                            />
+                                            <Tooltip title={!restaurant.restaurant.open ? "this restaurant is closing" : ""} placement="bottom" arrow>
+                                                <Tooltip title={!ingredient.inStoke ? "this topping is temporarily out of stoke" : ""} placement="bottom" arrow>
+                                                    <FormControlLabel
+                                                        key={ingredient.ID}
+                                                        control={<Checkbox onChange={() => handleCheckBoxChange(ingredient.name)} />}
+                                                        label={ingredient.name + ' (+' + ingredient.price.toLocaleString('vi-VN') + 'đ)'}
+                                                        disabled={!ingredient.inStoke || !restaurant.restaurant.open}
+                                                    />
+                                                </Tooltip>
+                                            </Tooltip>
                                         ))
                                     }
                                 </FormGroup>
@@ -113,7 +152,7 @@ const MenuCard = ({ item }) => {
                         ))}
                     </div>
                     <div className='pt-5'>
-                        {(restaurant.restaurant.open && token) ?
+                        {(restaurant.restaurant.open) ?
                             (item.available) ?
                                 <Button type='submit' variant='contained' color='primary'>
                                     Add to Cart
@@ -123,9 +162,11 @@ const MenuCard = ({ item }) => {
                                     Out of Stock
                                 </Button>
                             :
-                            <Button variant='contained' color='primary' disabled>
-                                Add to Cart
-                            </Button>
+                            <Tooltip title={!restaurant.restaurant.open ? "this restaurant is closing " : ""} placement="bottom" arrow>
+                                <Button variant='contained' color='primary' disabled>
+                                    Add to Cart
+                                </Button>
+                            </Tooltip>
                         }
                     </div>
                 </form>

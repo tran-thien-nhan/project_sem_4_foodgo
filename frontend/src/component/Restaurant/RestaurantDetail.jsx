@@ -26,6 +26,8 @@ const RestaurantDetail = () => {
     const { id, city } = useParams();
     const [selectedCategory, setSelectedCategory] = useState("");
 
+    console.log("MENU: ", menu);
+
     const handleFilter = (e) => {
         setFoodType(e.target.value);
     };
@@ -68,7 +70,8 @@ const RestaurantDetail = () => {
         <div className='px-5 lg:px-20 pb-5'>
             <section>
                 <h3 className='text-gray-500 py-2 mt-10'>
-                    Home/vietnam/vietnamese food/3
+                    {/* Home/vietnam/vietnamese food/3 */}
+                    Home/{restaurant.restaurant?.address.city}/{restaurant.restaurant?.cuisineType}/{restaurant.restaurant?.name || restaurant.restaurant?.title}
                 </h3>
                 <div>
                     <Grid container spacing={2}>
@@ -111,16 +114,19 @@ const RestaurantDetail = () => {
                                 Food Type
                             </Typography>
                             <FormControl className='py-10 space-y-5' component={"fieldset"}>
-                                <RadioGroup name='food_type' value={foodType} onChange={handleFilter}>
-                                    {foodTypes.map((item) => (
-                                        <FormControlLabel
-                                            key={item.value}
-                                            value={item.value}
-                                            control={<Radio />}
-                                            label={item.label}
-                                        />
-                                    ))}
-                                </RadioGroup>
+                                    <RadioGroup name='food_type' value={foodType} onChange={handleFilter}>
+                                        {
+                                            foodTypes.map((item) => (
+                                                <FormControlLabel
+                                                    key={item.value}
+                                                    value={item.value}
+                                                    control={<Radio />}
+                                                    label={item.label}
+                                                />
+                                            ))
+                                        }
+                                    </RadioGroup>
+                                
                             </FormControl>
                         </div>
                         <Divider />
@@ -130,21 +136,22 @@ const RestaurantDetail = () => {
                             </Typography>
                             <FormControl className='py-10 space-y-5' component={"fieldset"}>
                                 <RadioGroup name='food_category' value={selectedCategory} onChange={handleFilterCategory}>
-                                    {restaurant.categories.map((item) => (
-                                        <FormControlLabel
-                                            key={item}
-                                            value={item.name}
-                                            control={<Radio />}
-                                            label={item.name}
-                                        />
-                                    ))}
+                                    {
+                                        restaurant.categories.map((item) => (
+                                            <FormControlLabel
+                                                key={item}
+                                                value={item.name}
+                                                control={<Radio />}
+                                                label={item.name}
+                                            />
+                                        ))
+                                    }
                                 </RadioGroup>
                             </FormControl>
                         </div>
                     </div>
                 </div>
                 <div className='space-y-10 lg:w-[80%] lg:pl-10'>
-                    {/* Kiểm tra nếu không có menu items thì hiển thị NotFound */}
                     {hasMenuItems ? (
                         menu.menuItems.map((item) => (
                             <MenuCard key={item.id} item={item} />
