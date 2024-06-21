@@ -15,5 +15,5 @@ public interface IngredientService {
     public IngredientsItem updateStock(Long id) throws Exception;
 
     // Tính tổng giá của các nguyên liệu
-    public long calculateTotalPrice(List<IngredientsItem> ingredients);
+    public long calculateTotalPrice(List<String> ingredients);
 }

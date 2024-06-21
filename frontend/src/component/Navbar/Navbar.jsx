@@ -22,12 +22,6 @@ export const Navbar = () => {
         }
     }, [dispatch, token, cart.id]);
 
-    useEffect(() => {
-        if (cart.cart?.cartItems?.length !== undefined) {
-            console.log("Cart updated:", cart.cart.cartItems.length);
-        }
-    }, [cart.cart?.cartItems?.length]);
-
     const handleAvatarClick = () => {
         if (auth.user?.role === 'ROLE_CUSTOMER') {
             navigate('/my-profile');

@@ -15,6 +15,7 @@ const menuItemReducer = (state = initialState, action) => {
         case actionTypes.DELETE_MENU_ITEM_REQUEST:
         case actionTypes.SEARCH_MENU_ITEM_REQUEST:
         case actionTypes.UPDATE_MENU_ITEMS_AVAILABILITY_REQUEST:
+        case actionTypes.GET_MENU_ITEMS_BY_RESTAURANT_ID_PUBLIC_REQUEST:
             return {
                 ...state,
                 loading: true,
@@ -29,6 +30,7 @@ const menuItemReducer = (state = initialState, action) => {
                 message: "Food Created Successfully",
             };  
         case actionTypes.GET_MENU_ITEMS_BY_RESTAURANT_ID_SUCCESS:
+        case actionTypes.GET_MENU_ITEMS_BY_RESTAURANT_ID_PUBLIC_SUCCESS:
             return {
                 ...state,
                 loading: false,
@@ -59,6 +61,7 @@ const menuItemReducer = (state = initialState, action) => {
         case actionTypes.DELETE_MENU_ITEM_FAILURE:
         case actionTypes.SEARCH_MENU_ITEM_FAILURE:
         case actionTypes.UPDATE_MENU_ITEMS_AVAILABILITY_FAILURE:
+        case actionTypes.GET_MENU_ITEMS_BY_RESTAURANT_ID_PUBLIC_FAILURE:
             return {
                 ...state,
                 loading: false,

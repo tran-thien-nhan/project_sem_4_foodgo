@@ -1,6 +1,7 @@
 import { ADD_TO_FAVORITE_FAILURE, ADD_TO_FAVORITE_REQUEST, ADD_TO_FAVORITE_SUCCESS, GET_USER_FAILURE, GET_USER_REQUEST, GET_USER_SUCCESS, LOGIN_FAILURE, LOGIN_REQUEST, LOGIN_SUCCESS, LOGOUT, REGISTER_FAILURE, REGISTER_REQUEST, REGISTER_SUCCESS } from "./ActionType";
 import { API_URL, api } from "../../Config/api";
 import axios from "axios";
+import { Bounce, toast } from "react-toastify";
 
 export const registerUser = (reqData) => async (dispatch) => {
     dispatch({ type: REGISTER_REQUEST });
@@ -33,15 +34,26 @@ export const loginUser = (reqData) => async (dispatch) => {
         const { data } = await axios.post(`${API_URL}/auth/signin`, reqData.userData); // nghĩa là gửi request POST tới đường dẫn http://localhost:5454/auth/signup với dữ liệu reqData
         if (data.jwt) { // nếu có jwt thì lưu vào localStorage
             localStorage.setItem("jwt", data.jwt);
+            toast.success('Login successfully!', {
+                position: "top-center",
+                autoClose: 500,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+            });
         }
 
         if (data.role === "ROLE_RESTAURANT_OWNER") {
             reqData.navigate("/admin/restaurant");
-            window.location.reload();
+            //window.location.reload();
         }
         else {
             reqData.navigate("/");
-            window.location.reload();
+            //window.location.reload();
         }
 
         dispatch({ type: LOGIN_SUCCESS, payload: data.jwt });
@@ -98,6 +110,17 @@ export const logOut = () => async (dispatch) => {
         localStorage.clear();
         dispatch({ type: LOGOUT });
         //console.log("LOGOUT: ", data);
+        toast.success('Logout successfully!', {
+            position: "top-center",
+            autoClose: 500,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+            transition: Bounce,
+        });
 
     } catch (error) {
         console.log("ERROR: ", error);

@@ -30,10 +30,12 @@ export const findCart = (token) => {
                 },
             });
             dispatch({ type: FIND_CART_SUCCESS, payload: response.data });
-            console.log("FIND CART SUCCESS: ", response.data);
+            //dispatch(getAllCartItems({ cartId: response.data.id, token }));
+            //console.log("CART ID: ", response.data.id);
+            //console.log("FIND CART SUCCESS: ", response.data);
         } catch (error) {
             dispatch({ type: FIND_CART_FAILURE, payload: error });
-            console.log("FIND CART FAILURE: ", error);
+            //console.log("FIND CART FAILURE: ", error);
         }
     }
 }
@@ -48,22 +50,24 @@ export const addItemToCart = (reqData) => {
                 },
             });
             dispatch({ type: ADD_ITEM_TO_CART_SUCCESS, payload: data });
-            let cartid = dispatch(findCart(reqData.token));
-            if (data.id) {
-                console.log("Cart ID after adding item:", data.id);
-            } else {
-                console.error("ADD ITEM TO CART SUCCESS but cartId is undefined: ", data);
-            }
+            dispatch(findCart(reqData.token)); // Dispatch findCart to update cart id
+            // let cartid = dispatch(findCart(reqData.token));
+            // if (data.id) {
+            //     console.log("Cart ID after adding item:", data.id);
+            // } else {
+            //     console.error("ADD ITEM TO CART SUCCESS but cartId is undefined: ", data);
+            // }
 
-            console.log("ADD ITEM TO CART SUCCESS: ", data);
+            //console.log("ADD ITEM TO CART SUCCESS: ", data);
         } catch (error) {
             dispatch({ type: ADD_ITEM_TO_CART_FAILURE, payload: error });
-            console.log("ADD ITEM TO CART FAILURE: ", error);
+            //console.log("ADD ITEM TO CART FAILURE: ", error);
         }
     }
 }
 
-export const getAllCartItems = (reqData) => {
+export const getAllCartItems = ({reqData}) => {
+    console.log("reqdata of get all cart items: ", reqData);
     return async (dispatch) => {
         dispatch({ type: GET_ALL_CART_ITEMS_REQUEST });
         try {
@@ -73,31 +77,30 @@ export const getAllCartItems = (reqData) => {
                 },
             });
             dispatch({ type: GET_ALL_CART_ITEMS_SUCCESS, payload: response.data });
-            console.log("GET ALL CART ITEMS SUCCESS: ", response.data);
+            //console.log("GET ALL CART ITEMS SUCCESS: ", response.data);
         } catch (error) {
             dispatch({ type: GET_ALL_CART_ITEMS_FAILURE, payload: error });
-            console.log("GET ALL CART ITEMS FAILURE: ", error);
+            //console.log("GET ALL CART ITEMS FAILURE: ", error);
         }
     }
 }
 
-export const updateCartItem = (reqData) => {
+export const updateCartItem = (reqData,token) => {
     return async (dispatch) => {
         dispatch({ type: UPDATE_CART_ITEM_REQUEST });
         try {
-            const { data } = await api.put(`/api/cart-item/update`, {
-                cartItemId: reqData.cartItemId,
-                quantity: reqData.quantity
-            }, {
+            const { data } = await api.put(`/api/cart-item/update`, reqData, {
                 headers: {
-                    Authorization: `Bearer ${reqData.jwt}`,
+                    Authorization: `Bearer ${token}`,
                 },
             });
+            
             dispatch({ type: UPDATE_CART_ITEM_SUCCESS, payload: data });
-            console.log("UPDATE CART ITEM SUCCESS: ", data);
+            dispatch(findCart(token)); // Dispatch findCart to update cart id
+            //console.log("UPDATE CART ITEM SUCCESS: ", data);
         } catch (error) {
-            dispatch({ type: UPDATE_CART_ITEM_FAILURE, payload: error.message });
-            console.log("UPDATE CART ITEM FAILURE: ", error);
+            dispatch({ type: UPDATE_CART_ITEM_FAILURE, payload: error });
+            //console.log("UPDATE CART ITEM FAILURE: ", error);
         }
     }
 }
@@ -112,10 +115,11 @@ export const removeCartItem = ({ cartItemId, jwt }) => {
                 },
             });
             dispatch({ type: REMOVE_CART_ITEM_SUCCESS, payload: cartItemId });
-            console.log("REMOVE CART ITEM SUCCESS: ", data);
+            dispatch(findCart(jwt)); // Dispatch findCart to update cart id
+            //console.log("REMOVE CART ITEM SUCCESS: ", data);
         } catch (error) {
             dispatch({ type: REMOVE_CART_ITEM_FAILURE, payload: error.message });
-            console.log("REMOVE CART ITEM FAILURE: ", error);
+            //console.log("REMOVE CART ITEM FAILURE: ", error);
         }
     }
 }
@@ -130,10 +134,17 @@ export const clearCartAction = (token) => {
                 },
             });
             dispatch({ type: CLEAR_CART_SUCCESS, payload: data });
-            console.log("CLEAR CART SUCCESS: ", data);
+            //console.log("CLEAR CART SUCCESS: ", data);
         } catch (error) {
             dispatch({ type: CLEAR_CART_FAILURE, payload: error.message });
-            console.log("CLEAR CART FAILURE: ", error);
+            //console.log("CLEAR CART FAILURE: ", error);
         }
     }
 }
+
+export const calculateCartTotal = (cartItems) => {
+    // Tính tổng tiền của giỏ hàng từ cartItems
+    const total = cartItems.reduce((acc, item) => acc + item.totalPrice, 0);
+    return total;
+};
+

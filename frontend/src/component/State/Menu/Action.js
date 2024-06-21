@@ -6,6 +6,9 @@ import {
     GET_MENU_ITEMS_BY_RESTAURANT_ID_REQUEST,
     GET_MENU_ITEMS_BY_RESTAURANT_ID_SUCCESS,
     GET_MENU_ITEMS_BY_RESTAURANT_ID_FAILURE,
+    GET_MENU_ITEMS_BY_RESTAURANT_ID_PUBLIC_REQUEST,
+    GET_MENU_ITEMS_BY_RESTAURANT_ID_PUBLIC_SUCCESS,
+    GET_MENU_ITEMS_BY_RESTAURANT_ID_PUBLIC_FAILURE,
     DELETE_MENU_ITEM_REQUEST,
     DELETE_MENU_ITEM_SUCCESS,
     DELETE_MENU_ITEM_FAILURE,
@@ -57,6 +60,26 @@ export const getMenuItemsByRestaurantId = (reqData) => {
         }
         catch (error) {
             dispatch({ type: GET_MENU_ITEMS_BY_RESTAURANT_ID_FAILURE, payload: error });
+            console.log("ERROR: ", error);
+        }
+    }
+}
+
+export const getMenuItemsByRestaurantIdPublic = (reqData) => {
+    return async (dispatch) => {
+        dispatch({ type: GET_MENU_ITEMS_BY_RESTAURANT_ID_PUBLIC_REQUEST });
+        try {
+            const { data } = await api.get(`api/public/food/restaurant/${reqData.restaurantId}
+                ?vegetarian=${reqData.vegetarian}
+                &nonveg=${reqData.nonveg}
+                &seasonal=${reqData.seasonal}
+                &food_category=${reqData.foodCategory}`
+            );
+            dispatch({ type: GET_MENU_ITEMS_BY_RESTAURANT_ID_PUBLIC_SUCCESS, payload: data });
+            console.log("MENU ITEMS: ", data);
+        }
+        catch (error) {
+            dispatch({ type: GET_MENU_ITEMS_BY_RESTAURANT_ID_PUBLIC_FAILURE, payload: error });
             console.log("ERROR: ", error);
         }
     }

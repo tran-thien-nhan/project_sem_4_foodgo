@@ -20,6 +20,13 @@ const cartReducer = (state = initialState, action) => {
                 error: null
             };
         case actionTypes.FIND_CART_SUCCESS:
+        case actionTypes.GET_ALL_CART_ITEMS_SUCCESS:
+            return {
+                ...state,
+                cart: action.payload,
+                cartItems: action.payload.items || [],
+                loading: false
+            };
         case actionTypes.CLEAR_CART_SUCCESS:
             return {
                 ...state,

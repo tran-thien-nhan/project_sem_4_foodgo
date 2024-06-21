@@ -7,7 +7,7 @@ import AddressCard from './AddressCard';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
-import { getAllCartItems, clearCartAction } from '../State/Cart/Action';
+import { getAllCartItems, clearCartAction, findCart } from '../State/Cart/Action';
 import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
 
 export const style = {
@@ -49,31 +49,14 @@ const Cart = () => {
     const [cartItems, setCartItems] = useState([]);
     const [totalPrice, setTotalPrice] = useState(0);
 
-    console.log('CART 1: ', cart);
+    //console.log("TOTAL PRICE: ", totalPrice);
+    // console.log("CART 1: ", cart);
+    // console.log("CART 1 ID: ", cart.cart?.id);
 
     useEffect(() => {
-        dispatch(getAllCartItems({ token }));
+        //dispatch(getAllCartItems({ token }));
+        dispatch(findCart(token));
     }, [dispatch, token]);
-
-    useEffect(() => {
-        if (cart.cart) {
-            setCartItems(cart.cart.cartItems);
-            calculateTotalPrice(cart.cart.cartItems);
-        }
-    }, [cart]);
-
-    const calculateTotalPrice = (cartItems) => {
-        let total = 0;
-        cartItems.forEach(item => {
-            const foodPrice = item.food.price * item.quantity;
-            const ingredientsTotalPrice = item.ingredients.reduce((total, ingredientName) => {
-                const ingredient = item.food.ingredients.find(ing => ing.name === ingredientName);
-                return total + (ingredient ? ingredient.price : 0);
-            }, 0);
-            total += foodPrice + ingredientsTotalPrice;
-        });
-        setTotalPrice(total);
-    };
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -95,19 +78,12 @@ const Cart = () => {
         navigate("/")
     };
 
-    const handleItemRemoved = (id) => {
-        const updatedCartItems = cartItems.filter((item) => item.id !== id);
-        setCartItems(updatedCartItems);
-        calculateTotalPrice(updatedCartItems);
-        //dispatch(getAllCartItems({ token }));
-    };
-
     return (
         <>
             <main className='lg:flex justify-between'>
                 <section className='lg:w-[30%] space-y-6 lg:min-h-screen pt-10'>
-                    {cartItems.map((item) => (
-                        <CartItem key={item.id} item={item} />
+                    {cart.cart?.cartItems.map((item) => (
+                        <CartItem key={item.id} item={item}/>
                     ))}
                     <div className="flex justify-end w-full px-3">
                         <Button
@@ -125,7 +101,8 @@ const Cart = () => {
                         <div className='space-y-3'>
                             <div className='flex justify-between text-gray-400'>
                                 <p>Item Total</p>
-                                <p>{totalPrice.toLocaleString('vi-VN')}đ</p>
+                                <p>{cart.cart?.total.toLocaleString('vi-VN')}đ</p>
+                                {/* {totalPrice.toLocaleString('vi-VN')}đ */}
                             </div>
                             <div className='flex justify-between text-gray-400'>
                                 <p>Delivery Fee</p>
@@ -143,7 +120,7 @@ const Cart = () => {
                         </div>
                         <div className='flex justify-between text-gray-400 mb-8'>
                             <p>Total Pay</p>
-                            <p>{(totalPrice + 10000 + 1000 + 7100).toLocaleString('vi-VN')}đ</p>
+                            <p>{(cart.cart?.total + 10000 + 1000 + 7100).toLocaleString('vi-VN')}đ</p>
                         </div>
                     </div>
                 </section>

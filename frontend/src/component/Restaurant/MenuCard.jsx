@@ -13,8 +13,9 @@ const MenuCard = ({ item }) => {
     const { restaurant, cart, loading, cartId, menu } = useSelector(store => store); // Lấy giá trị cart và cartId từ store
     const token = localStorage.getItem('jwt');
     const [totalPrice, setTotalPrice] = useState(item.price);
+    const [cartTotal, setCartTotal] = useState(0);
 
-    console.log("MENU: ", menu);
+    //console.log("MENU: ", menu);
 
     const handleAddItemToCart = (e) => {
         e.preventDefault();
@@ -24,6 +25,8 @@ const MenuCard = ({ item }) => {
                 foodId: item.id,
                 quantity: 1,
                 ingredients: selectedIngredients,
+                totalPrice: totalPrice,
+                ingredientsTotalPrice: totalPrice - item.price
             }
         };
         console.log("Adding item to cart with reqData:", reqData);
@@ -71,18 +74,18 @@ const MenuCard = ({ item }) => {
                                 {item.description}
                             </p>
                             <p>
-                                <span className='text-gray-400 px-1'>Ingredients:</span>
+                                {selectedIngredients.length > 0 && <span className='text-gray-400 px-1'>Ingredients:</span>}
                                 {
                                     selectedIngredients.map((ingredient) => {
                                         if (selectedIngredients.length === 1) {
-                                            return <Chip key={ingredient} label={ingredient} />;                                            
+                                            return <Chip key={ingredient} label={ingredient} />;
                                         }
                                         return <Chip key={ingredient} label={ingredient} className='mx-1' />;
                                     })
                                 }
                             </p>
                             <p>
-                                total: {totalPrice.toLocaleString('vi-VN')} VNĐ
+                                <span className='text-gray-400 px-1'>total:</span> {totalPrice.toLocaleString('vi-VN')} VNĐ
                             </p>
                         </div>
                     </div>
@@ -100,8 +103,8 @@ const MenuCard = ({ item }) => {
                                             <FormControlLabel
                                                 key={ingredient.ID}
                                                 control={<Checkbox onChange={() => handleCheckBoxChange(ingredient.name)} />}
-                                                label={ingredient.name + ' (' + ingredient.price.toLocaleString('vi-VN') + 'đ)'}
-                                                disabled={!ingredient.inStoke || !restaurant.restaurant.open}
+                                                label={ingredient.name + ' (+' + ingredient.price.toLocaleString('vi-VN') + 'đ)'}
+                                                disabled={!ingredient.inStoke || !restaurant.restaurant.open || !token}
                                             />
                                         ))
                                     }
@@ -110,7 +113,7 @@ const MenuCard = ({ item }) => {
                         ))}
                     </div>
                     <div className='pt-5'>
-                        {(restaurant.restaurant.open) ?
+                        {(restaurant.restaurant.open && token) ?
                             (item.available) ?
                                 <Button type='submit' variant='contained' color='primary'>
                                     Add to Cart

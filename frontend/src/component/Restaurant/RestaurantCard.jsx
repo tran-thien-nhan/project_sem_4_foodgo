@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addToFavorite } from '../State/Authentication/Action';
 import { isPresentInFavorite } from '../Config/logic';
 import { getRestaurantById } from '../State/Restaurant/Action';
+import { Bounce, toast } from 'react-toastify';
 
 const RestaurantCard = ({ item }) => {
     const navigate = useNavigate();
@@ -16,7 +17,23 @@ const RestaurantCard = ({ item }) => {
     const { auth } = useSelector(store => store);
 
     const handleAddToFavorite = () => {
-        dispatch(addToFavorite({ jwt: jwt, restaurantId: item.id }));
+        if(jwt){
+            dispatch(addToFavorite({ jwt: jwt, restaurantId: item.id }));
+        }
+        else{
+            toast.warn('Please login to add to favorites !', {
+                position: "top-center",
+                autoClose: 2000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "dark",
+                transition: Bounce,
+                });
+            navigate('/account/login');
+        }
     }
 
     console.log("item", item);
@@ -32,6 +49,7 @@ const RestaurantCard = ({ item }) => {
             <div className={`${true ? 'cursor-pointer' : 'cursor-not-allowed'} relative`}>
 
                 <img
+                    onClick={handleNavigateToRestaurant}
                     className='w-full h-[10rem] object-cover object-center rounded-t-md'
                     src={item.images[0]} alt="" />
                 <Chip

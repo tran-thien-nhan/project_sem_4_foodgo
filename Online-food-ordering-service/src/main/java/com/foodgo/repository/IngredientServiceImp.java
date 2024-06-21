@@ -77,7 +77,11 @@ public class IngredientServiceImp implements IngredientService {
     }
 
     @Override
-    public long calculateTotalPrice(List<IngredientsItem> ingredients) {
-        return ingredients.stream().mapToLong(IngredientsItem::getPrice).sum(); // tính tổng giá của các ingredient item
+    public long calculateTotalPrice(List<String> ingredients) {
+        long total = 0; // khởi tạo total
+        for (String ingredient : ingredients) { // duyệt qua từng ingredient
+            total += Long.parseLong(ingredient); // cộng vào total
+        }
+        return total; // trả về total
     }
 }

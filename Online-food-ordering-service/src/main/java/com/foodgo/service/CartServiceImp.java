@@ -7,6 +7,7 @@ import com.foodgo.request.AddCartItemRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -43,7 +44,8 @@ public class CartServiceImp implements CartService {
                 if (cartItem.getIngredients().equals(req.getIngredients())) {
                     // Nếu cùng thành phần nguyên liệu, tăng số lượng
                     int newQuantity = cartItem.getQuantity() + req.getQuantity();
-                    return updateCartItemQuantity(cartItem.getId(), newQuantity);
+                    //return updateCartItemQuantity(cartItem.getId(), newQuantity, req.getTotalPrice());
+                    return updateCartItemQuantity(cartItem.getId(), newQuantity, req.getIngredientsTotalPrice());
                 }
             }
         }
@@ -54,7 +56,8 @@ public class CartServiceImp implements CartService {
         newCartItem.setQuantity(req.getQuantity()); // set số lượng
         newCartItem.setCart(cart); // set cart
         newCartItem.setIngredients(req.getIngredients()); // set ingredients
-        newCartItem.setTotalPrice(food.getPrice() * req.getQuantity()); // set total price
+        //newCartItem.setTotalPrice(food.getPrice() * req.getQuantity()); // set total price
+        newCartItem.setTotalPrice(req.getTotalPrice() * req.getQuantity()); // set total price
 
         CartItem savedCartItem = cartItemRepository.save(newCartItem); // lưu cart item
         cart.getCartItems().add(savedCartItem); // thêm cart item vào cart
@@ -64,7 +67,7 @@ public class CartServiceImp implements CartService {
 
 
     @Override
-    public CartItem updateCartItemQuantity(Long cartItemId, int quantity) throws Exception {
+    public CartItem updateCartItemQuantity(Long cartItemId, int quantity, Long ingredientsTotalPrice) throws Exception {
         Optional<CartItem> cartItemOptional = cartItemRepository.findById(cartItemId); // tìm cart item theo id
         if (cartItemOptional.isEmpty()) { // nếu không tìm thấy thì báo lỗi
             throw new Exception("Cart item not found"); // báo lỗi
@@ -72,7 +75,9 @@ public class CartServiceImp implements CartService {
 
         CartItem cartItem = cartItemOptional.get(); // lấy ra cart item
         cartItem.setQuantity(quantity); // cập nhật số lượng
-        cartItem.setTotalPrice(cartItem.getFood().getPrice() * quantity); // cập nhật total price
+
+
+        cartItem.setTotalPrice((cartItem.getFood().getPrice() + ingredientsTotalPrice) * quantity); // cập nhật total price
         return cartItemRepository.save(cartItem); // lưu cart item
     }
 

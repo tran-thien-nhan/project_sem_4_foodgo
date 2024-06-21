@@ -15,11 +15,14 @@ const restaurantReducer = (state = initialState, action) => {
     switch (action.type) {
         case actionTypes.CREATE_RESTAURANT_REQUEST:        
         case actionTypes.GET_ALL_RESTAURANTS_REQUEST:
+        case actionTypes.GET_ALL_RESTAURANTS_PUBLIC_REQUEST:
         case actionTypes.DELETE_RESTAURANT_REQUEST:
         case actionTypes.UPDATE_RESTAURANT_REQUEST:
         case actionTypes.GET_RESTAURANT_BY_ID_REQUEST:
+        case actionTypes.GET_RESTAURANT_PUBLIC_BY_ID_REQUEST:
         case actionTypes.CREATE_CATEGORY_REQUEST:
         case actionTypes.GET_RESTAURANTS_CATEGORY_REQUEST:
+        case actionTypes.GET_RESTAURANTS_CATEGORY_PUBLIC_REQUEST:
             return {
                 ...state,
                 loading: true,
@@ -32,12 +35,14 @@ const restaurantReducer = (state = initialState, action) => {
                 usersRestaurant: action.payload,
             };
         case actionTypes.GET_ALL_RESTAURANTS_SUCCESS:
+        case actionTypes.GET_ALL_RESTAURANTS_PUBLIC_SUCCESS:
             return {
                 ...state,
                 loading: false,
                 restaurants: action.payload,
             };
         case actionTypes.GET_RESTAURANT_BY_ID_SUCCESS:
+        case actionTypes.GET_RESTAURANT_PUBLIC_BY_ID_SUCCESS:
             return {
                 ...state,
                 loading: false,
@@ -86,6 +91,7 @@ const restaurantReducer = (state = initialState, action) => {
                 categories: [...state.categories, action.payload],
             };
         case actionTypes.GET_RESTAURANTS_CATEGORY_SUCCESS:
+        case actionTypes.GET_RESTAURANTS_CATEGORY_PUBLIC_SUCCESS:
             return {
                 ...state,
                 loading: false,
@@ -99,6 +105,9 @@ const restaurantReducer = (state = initialState, action) => {
         case actionTypes.CREATE_EVENTS_FAILURE:
         case actionTypes.CREATE_CATEGORY_FAILURE:
         case actionTypes.GET_RESTAURANTS_CATEGORY_FAILURE:
+        case actionTypes.GET_ALL_RESTAURANTS_PUBLIC_FAILURE:
+        case actionTypes.GET_RESTAURANT_PUBLIC_BY_ID_FAILURE:
+        case actionTypes.GET_RESTAURANTS_CATEGORY_PUBLIC_FAILURE:
             return {
                 ...state,
                 loading: false,

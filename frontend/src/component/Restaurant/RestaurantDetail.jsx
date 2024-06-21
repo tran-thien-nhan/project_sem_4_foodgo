@@ -1,12 +1,13 @@
-import { Divider, FormControl, Grid, Radio, RadioGroup, Typography, FormControlLabel } from '@mui/material';
 import React, { useEffect, useState } from 'react';
+import { Divider, FormControl, Grid, Radio, RadioGroup, Typography, FormControlLabel } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import MenuCard from './MenuCard';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { getRestaurantById, getRestaurantsCategory } from '../State/Restaurant/Action';
-import { getMenuItemsByRestaurantId } from '../State/Menu/Action';
+import { getRestaurantById, getRestaurantPublicById, getRestaurantsCategory, getRestaurantsCategoryPublic } from '../State/Restaurant/Action';
+import { getMenuItemsByRestaurantId, getMenuItemsByRestaurantIdPublic } from '../State/Menu/Action';
+import NotFound from '../pages/NotFound';
 
 const foodTypes = [
     { label: "All", value: "all" },
@@ -17,6 +18,7 @@ const foodTypes = [
 
 const RestaurantDetail = () => {
     const [foodType, setFoodType] = useState("all");
+    const [hasMenuItems, setHasMenuItems] = useState(true); // State để kiểm tra có menu items hay không
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const jwt = localStorage.getItem('jwt');
@@ -32,11 +34,11 @@ const RestaurantDetail = () => {
         setSelectedCategory(e.target.value);
     };
 
-    console.log("restaurant", restaurant);
-
     useEffect(() => {
         dispatch(getRestaurantById({ jwt, restaurantId: id }));
+        dispatch(getRestaurantPublicById({ restaurantId: id }));
         dispatch(getRestaurantsCategory({ jwt, restaurantId: id }));
+        dispatch(getRestaurantsCategoryPublic({ restaurantId: id }));
     }, [dispatch, id, jwt]);
 
     useEffect(() => {
@@ -48,7 +50,19 @@ const RestaurantDetail = () => {
             seasonal: foodType === "seasonal",
             foodCategory: selectedCategory,
         }));
+        dispatch(getMenuItemsByRestaurantIdPublic({
+            restaurantId: id,
+            vegetarian: foodType === "vegetarian",
+            nonveg: foodType === "non_vegetarian",
+            seasonal: foodType === "seasonal",
+            foodCategory: selectedCategory,
+        }));
     }, [selectedCategory, foodType, dispatch, jwt, id]);
+
+    useEffect(() => {
+        // Kiểm tra nếu menu.menuItems không có phần tử nào thì set hasMenuItems thành false
+        setHasMenuItems(menu.menuItems.length > 0);
+    }, [menu.menuItems]);
 
     return (
         <div className='px-5 lg:px-20 pb-5'>
@@ -130,9 +144,14 @@ const RestaurantDetail = () => {
                     </div>
                 </div>
                 <div className='space-y-10 lg:w-[80%] lg:pl-10'>
-                    {menu.menuItems.map((item) => (
-                        <MenuCard key={item.id} item={item} />
-                    ))}
+                    {/* Kiểm tra nếu không có menu items thì hiển thị NotFound */}
+                    {hasMenuItems ? (
+                        menu.menuItems.map((item) => (
+                            <MenuCard key={item.id} item={item} />
+                        ))
+                    ) : (
+                        <NotFound />
+                    )}
                 </div>
             </section>
         </div>

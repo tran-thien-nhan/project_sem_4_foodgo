@@ -4,49 +4,106 @@ import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { useDispatch, useSelector } from 'react-redux';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { removeCartItem, updateCartItem } from '../State/Cart/Action';
+import { getAllCartItems, removeCartItem, updateCartItem } from '../State/Cart/Action';
 import { useNavigate } from 'react-router-dom';
+import { categorizeIngredient, returnPriceOfIngredient } from '../util/categorizeIngredient';
 
 const CartItem = ({ item }) => {
     const [quantity, setQuantity] = useState(item.quantity);
     const dispatch = useDispatch();
-    const { cart } = useSelector(store => store);
+    const { auth, cart } = useSelector((store) => store);
     const navigate = useNavigate();
     const [totalPrice, setTotalPrice] = useState(item.totalPrice);
+    const jwt = localStorage.getItem('jwt');
+    const [ingredientsTotalPrice, setIngredientsTotalPrice] = useState(0);
 
-    console.log("ITEM: ", item);
+    // console.log("CART 0: ", cart);
+    // console.log("CART 0 ID: ", cart.cart?.id);
 
     useEffect(() => {
         const selectedIngredients = item.ingredients;
-        const ingredientsTotalPrice = selectedIngredients.reduce((total, ingredientName) => {
+        const ingredientsTotalPriceAll = selectedIngredients.reduce((total, ingredientName) => {
             const ingredient = item.food.ingredients.find(ing => ing.name === ingredientName);
             return total + (ingredient ? ingredient.price : 0);
         }, 0);
-
-        const newTotalPrice = (item.food.price + ingredientsTotalPrice) * quantity;
-        setTotalPrice(newTotalPrice);
+        setIngredientsTotalPrice(ingredientsTotalPriceAll);
+        setTotalPrice((item.food.price + ingredientsTotalPriceAll) * quantity);
     }, [quantity, item]);
+
+    const handleUpdateCartItem = (value) => {
+        if (value === -1 && quantity === 1) {
+            handleRemoveCartItem();
+        }
+        else {
+            const newQuantity = quantity + value;
+            setQuantity(newQuantity);
+            const selectedIngredients = item.ingredients;
+            const ingredientsTotalPrice = selectedIngredients.reduce((total, ingredientName) => {
+                const ingredient = item.food.ingredients.find(ing => ing.name === ingredientName);
+                return total + (ingredient ? ingredient.price : 0);
+            }, 0);
+            const data = {
+                cartItemId: item.id,
+                quantity: item.quantity + value,
+                ingredientsTotalPrice: ingredientsTotalPrice
+            }
+            dispatch(updateCartItem(data, (auth.jwt || jwt)));
+        }
+    }
+
+    const handleRemoveCartItem = () => {
+        dispatch(removeCartItem({
+            cartItemId: item.id,
+            jwt: auth.jwt || jwt
+        })).then(() => {
+            setQuantity(0);  // Cập nhật state để loại bỏ item khỏi giao diện
+            dispatch(getAllCartItems({ cartId: cart.id, token: auth.jwt || jwt }));
+        });
+    }
+
+    if (quantity === 0) {
+        // không hiển thị item đã xóa khỏi giỏ hàng
+        return null;
+    }
+
+    // nếu giỏ hàng rỗng thì chuyển hướng về trang chủ
+    // if (cart.cartItems.length === 0) {
+    //     navigate('/');
+    // }
+
 
     const handleRemove = () => {
         if (quantity > 1) {
             const newQuantity = quantity - 1;
             setQuantity(newQuantity);
+            const selectedIngredients = item.ingredients;
+            const ingredientsTotalPrice = selectedIngredients.reduce((total, ingredientName) => {
+                const ingredient = item.food.ingredients.find(ing => ing.name === ingredientName);
+                return total + (ingredient ? ingredient.price : 0);
+            }, 0);
             dispatch(updateCartItem({
                 cartItemId: item.id,
                 quantity: newQuantity,
-                jwt: localStorage.getItem('jwt')
-            }));
+                ingredientsTotalPrice: ingredientsTotalPrice,
+                // jwt: auth.jwt || jwt
+            },(auth.jwt || jwt)));
         }
     };
 
     const handleAdd = () => {
         const newQuantity = quantity + 1;
         setQuantity(newQuantity);
+        const selectedIngredients = item.ingredients;
+        const ingredientsTotalPrice = selectedIngredients.reduce((total, ingredientName) => {
+            const ingredient = item.food.ingredients.find(ing => ing.name === ingredientName);
+            return total + (ingredient ? ingredient.price : 0);
+        }, 0);
         dispatch(updateCartItem({
             cartItemId: item.id,
             quantity: newQuantity,
-            jwt: localStorage.getItem('jwt')
-        }));
+            ingredientsTotalPrice: ingredientsTotalPrice,
+            // jwt: auth.jwt || jwt            
+        },(auth.jwt || jwt)));
     };
 
     const handleRemoveItemFromCart = () => {
@@ -54,15 +111,8 @@ const CartItem = ({ item }) => {
             cartItemId: item.id,
             jwt: localStorage.getItem('jwt')
         })).then(() => {
-            // Kiểm tra giỏ hàng sau khi xóa item
-            if (cart.cart?.cartItems?.length === 1) {
-                // Nếu giỏ hàng rỗng, chuyển hướng về trang chủ
-                navigate('/');
-                window.location.reload();
-            } else {
-                // Nếu giỏ hàng không rỗng, reload trang
-                window.location.reload();
-            }
+            setQuantity(0);  // Cập nhật state để loại bỏ item khỏi giao diện
+            dispatch(getAllCartItems({ cartId: cart.id, token: auth.jwt || jwt }));
         });
     }
 
@@ -81,25 +131,36 @@ const CartItem = ({ item }) => {
                         <p>{item.food.name}</p>
                         <div className='flex justify-between items-center'>
                             <div className='flex items-center space-x-1'>
-                                <IconButton onClick={handleRemove}>
+                                <p
+                                    className='text-gray-500 text-sx'
+                                >
+                                    {item.food.price.toLocaleString('vi-VN')} x
+                                </p>
+                                <IconButton onClick={()=>handleUpdateCartItem(-1)}>
                                     <RemoveCircleOutlineIcon />
                                 </IconButton>
                                 <div className='w-5 h-5 text-xs flex items-center justify-center'>
+
                                     {quantity}
+
                                 </div>
-                                <IconButton onClick={handleAdd}>
+                                <IconButton onClick={()=>handleUpdateCartItem(1)}>
                                     <AddCircleOutlineIcon />
                                 </IconButton>
                             </div>
                         </div>
                     </div>
-                    <p>{totalPrice.toLocaleString('vi-VN')}đ</p>
+                    <p
+                        className='mt-9 lg:mt-9'
+                    >{totalPrice.toLocaleString('vi-VN')}đ</p>
                 </div>
             </div>
             <div className='pt-3 space-x-2'>
-                {item.ingredients.map((i) => (
-                    <Chip key={i} label={i} className='my-1' />
-                ))}
+                {
+                    item.ingredients.map((i) => (
+                        <Chip key={i} label={i} className='my-1' />
+                    ))
+                }
             </div>
             <IconButton onClick={handleRemoveItemFromCart}>
                 <DeleteIcon />

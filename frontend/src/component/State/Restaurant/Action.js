@@ -6,6 +6,9 @@ import {
     GET_ALL_RESTAURANTS_REQUEST,
     GET_ALL_RESTAURANTS_SUCCESS,
     GET_ALL_RESTAURANTS_FAILURE,
+    GET_ALL_RESTAURANTS_PUBLIC_REQUEST,
+    GET_ALL_RESTAURANTS_PUBLIC_SUCCESS,
+    GET_ALL_RESTAURANTS_PUBLIC_FAILURE,
     DELETE_RESTAURANT_REQUEST,
     DELETE_RESTAURANT_SUCCESS,
     DELETE_RESTAURANT_FAILURE,
@@ -15,6 +18,9 @@ import {
     GET_RESTAURANT_BY_ID_REQUEST,
     GET_RESTAURANT_BY_ID_SUCCESS,
     GET_RESTAURANT_BY_ID_FAILURE,
+    GET_RESTAURANT_PUBLIC_BY_ID_REQUEST,
+    GET_RESTAURANT_PUBLIC_BY_ID_SUCCESS,
+    GET_RESTAURANT_PUBLIC_BY_ID_FAILURE,
     GET_RESTAURANT_BY_USER_ID_REQUEST,
     GET_RESTAURANT_BY_USER_ID_SUCCESS,
     GET_RESTAURANT_BY_USER_ID_FAILURE,
@@ -39,6 +45,9 @@ import {
     GET_RESTAURANTS_CATEGORY_REQUEST,
     GET_RESTAURANTS_CATEGORY_SUCCESS,
     GET_RESTAURANTS_CATEGORY_FAILURE,
+    GET_RESTAURANTS_CATEGORY_PUBLIC_REQUEST,
+    GET_RESTAURANTS_CATEGORY_PUBLIC_SUCCESS,
+    GET_RESTAURANTS_CATEGORY_PUBLIC_FAILURE,
 } from "./ActionType";
 
 export const getAllRestaurantsAction = (token) => {
@@ -62,6 +71,20 @@ export const getAllRestaurantsAction = (token) => {
     }
 }
 
+export const getAllRestaurantsPublicAction = () => {
+    return async (dispatch) => {
+        dispatch({ type: GET_ALL_RESTAURANTS_PUBLIC_REQUEST });
+        try {
+            const { data } = await api.get('/api/public/restaurants');
+            dispatch({ type: GET_ALL_RESTAURANTS_PUBLIC_SUCCESS, payload: data });
+            console.log("GET ALL RESTAURANTS PUBLIC: ", data);
+        } catch (error) {
+            dispatch({ type: GET_ALL_RESTAURANTS_PUBLIC_FAILURE, payload: error });
+            console.log("ERROR: ", error);
+        }
+    }
+}
+
 export const getRestaurantById = (reqData) => {
     return async (dispatch) => {
         dispatch({ type: GET_RESTAURANT_BY_ID_REQUEST });
@@ -75,6 +98,20 @@ export const getRestaurantById = (reqData) => {
             console.log("GET RESTAURANT BY ID: ", response.data);
         } catch (error) {
             dispatch({ type: GET_RESTAURANT_BY_ID_FAILURE, payload: error });
+            console.log("ERROR: ", error);
+        }
+    }
+}
+
+export const getRestaurantPublicById = (reqData) => {
+    return async (dispatch) => {
+        dispatch({ type: GET_RESTAURANT_PUBLIC_BY_ID_REQUEST });
+        try {
+            const response = await api.get(`/api/public/restaurants/${reqData.restaurantId}`);
+            dispatch({ type: GET_RESTAURANT_PUBLIC_BY_ID_SUCCESS, payload: response.data });
+            console.log("GET RESTAURANT PUBLIC BY ID: ", response.data);
+        } catch (error) {
+            dispatch({ type: GET_RESTAURANT_PUBLIC_BY_ID_FAILURE, payload: error });
             console.log("ERROR: ", error);
         }
     }
@@ -274,6 +311,20 @@ export const getRestaurantsCategory = ({ jwt, restaurantId }) => {
             console.log("GET RESTAURANTS CATEGORY: ", res.data);
         } catch (error) {
             dispatch({ type: GET_RESTAURANTS_CATEGORY_FAILURE, payload: error });
+            console.log("ERROR: ", error);
+        }
+    }
+}
+
+export const getRestaurantsCategoryPublic = ({ jwt, restaurantId }) => {
+    return async (dispatch) => {
+        dispatch({ type: GET_RESTAURANTS_CATEGORY_PUBLIC_REQUEST });
+        try {
+            const res = await api.get(`/api/public/category/restaurant/${restaurantId}`);
+            dispatch({ type: GET_RESTAURANTS_CATEGORY_PUBLIC_SUCCESS, payload: res.data });
+            console.log("GET RESTAURANTS CATEGORY PUBLIC: ", res.data);
+        } catch (error) {
+            dispatch({ type: GET_RESTAURANTS_CATEGORY_PUBLIC_FAILURE, payload: error });
             console.log("ERROR: ", error);
         }
     }

@@ -10,5 +10,6 @@ public class AddCartItemRequest {
     private Long foodId;
     private int quantity;
     private List<String> ingredients;
-    //private List<IngredientsItem> ingredientsItems;
+    private Long totalPrice;
+    private Long ingredientsTotalPrice;
 }
