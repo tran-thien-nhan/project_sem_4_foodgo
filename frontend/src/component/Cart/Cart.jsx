@@ -9,6 +9,7 @@ import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
 import { getAllCartItems, clearCartAction, findCart } from '../State/Cart/Action';
 import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
+import { createOrder } from '../State/Order/Action';
 
 export const style = {
     position: 'absolute',
@@ -29,34 +30,51 @@ const initialValues = {
     city: '',
 };
 
-const validationSchema = Yup.object().shape({
-    streetAddress: Yup.string().required('Street Address Is Required'),
-    state: Yup.string().required('State Is Required'),
-    pinCode: Yup.string().required('Pin Code Is Required'),
-    city: Yup.string().required('City Is Required'),
-});
-
-const HandleSubmit = (values) => {
-    console.log('Address Added ', values);
-};
-
 const Cart = () => {
     const [open, setOpen] = useState(false);
-    const { cart } = useSelector(store => store);
+    const { auth, cart } = useSelector(store => store);
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const token = localStorage.getItem('jwt');
     const [cartItems, setCartItems] = useState([]);
     const [totalPrice, setTotalPrice] = useState(0);
 
-    //console.log("TOTAL PRICE: ", totalPrice);
-    // console.log("CART 1: ", cart);
-    // console.log("CART 1 ID: ", cart.cart?.id);
+    console.log('CART: ', cart);
+    console.log('AUTH: ', auth);
 
     useEffect(() => {
         //dispatch(getAllCartItems({ token }));
         dispatch(findCart(token));
     }, [dispatch, token]);
+
+    const validationSchema = Yup.object().shape({
+        streetAddress: Yup.string().required('Street Address Is Required'),
+        state: Yup.string().required('State Is Required'),
+        pinCode: Yup.string().required('Pin Code Is Required'),
+        city: Yup.string().required('City Is Required'),
+    });
+
+    const HandleSubmit = (values) => {
+        const data = {
+            jwt: localStorage.getItem('jwt'),
+            order: {
+                restaurantId: cart.cart?.cartItems[0].food?.restaurant?.id,
+                deliveryAddress: {
+                    fullName: auth.user?.fullName,
+                    streetAddress: values.streetAddress,
+                    city: values.city,
+                    states: values.state,
+                    postalCode: values.pinCode,
+                    country: "vietnam"
+                }
+            }
+        }
+        console.log('Data: ', data);
+        dispatch(createOrder(data));
+        console.log('Address Added ', values);
+        // tạm thời reload trang để cập nhật lại giỏ hàng
+        window.location.reload();
+    };
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -82,7 +100,7 @@ const Cart = () => {
         <>
             <main className='lg:flex justify-between'>
                 <section className='lg:w-[30%] space-y-6 lg:min-h-screen pt-10'>
-                    {cart.cart?.cartItems.map((item) => (
+                    {cart.cart?.cartItems?.map((item) => (
                         <CartItem key={item.id} item={item}/>
                     ))}
                     <div className="flex justify-end w-full px-3">
@@ -102,7 +120,6 @@ const Cart = () => {
                             <div className='flex justify-between text-gray-400'>
                                 <p>Item Total</p>
                                 <p>{cart.cart?.total.toLocaleString('vi-VN')}đ</p>
-                                {/* {totalPrice.toLocaleString('vi-VN')}đ */}
                             </div>
                             <div className='flex justify-between text-gray-400'>
                                 <p>Delivery Fee</p>
@@ -221,7 +238,7 @@ const Cart = () => {
                                 </Grid>
                                 <Grid item xs={12}>
                                     <Button variant='contained' fullWidth type='submit' color='primary'>
-                                        Save
+                                        Delivery Here
                                     </Button>
                                 </Grid>
                             </Grid>

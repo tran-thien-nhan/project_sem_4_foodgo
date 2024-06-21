@@ -1,4 +1,5 @@
-import { api } from '../../../Config/api';
+
+import { api } from '../../Config/api';
 import {
     CREATE_ORDER_REQUEST,
     CREATE_ORDER_SUCCESS,
@@ -38,7 +39,7 @@ export const getUsersOrders = (jwt) => {
     return async (dispatch) => {
         dispatch({ type: GET_USERS_ORDERS_REQUEST });
         try {
-            const {data} = await api.get('/api/order', {
+            const {data} = await api.get('/api/order/user', {
                 headers: {
                     Authorization: `Bearer ${jwt}`
                 }

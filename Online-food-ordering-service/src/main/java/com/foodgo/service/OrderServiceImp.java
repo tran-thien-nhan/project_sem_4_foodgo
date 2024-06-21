@@ -59,22 +59,34 @@ public class OrderServiceImp implements OrderService{
 
         Cart cart = cartService.findCartByUserId(user.getId());
         List<OrderItem> orderItems = new ArrayList<>();
+        int count = 0;
         for (CartItem cartItem : cart.getCartItems()) {
             OrderItem orderItem = new OrderItem();
+
             orderItem.setFood(cartItem.getFood());
             orderItem.setIngredients(cartItem.getIngredients());
             orderItem.setQuantity(cartItem.getQuantity());
+            count += cartItem.getQuantity();
+
             orderItem.setTotalPrice(cartItem.getTotalPrice());
 
             OrderItem savedOrderItem = orderItemRepository.save(orderItem);
             orderItems.add(savedOrderItem);
+
         }
+
+        createdOrder.setTotalItem(Long.valueOf(count));
+        createdOrder.setTotalAmount(cart.getTotal());
+
         Long totalPrice = cartService.calculateCartTotals(cart);
 
         createdOrder.setItems(orderItems);
         createdOrder.setTotalPrice(totalPrice);
 
         Order savedOrder = orderRepository.save(createdOrder);
+        //clear cart
+        cartService.clearCart(cart.getId());
+
         restaurant.getOrders().add(savedOrder);
 
         return savedOrder;

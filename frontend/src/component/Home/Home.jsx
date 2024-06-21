@@ -43,7 +43,7 @@ const Home = () => {
                     className='flex flex-wrap items-center justify-around gap-5'
                 >
                     {
-                        restaurant.restaurants.map((item, index) => <RestaurantCard item={item} />)
+                        restaurant.restaurants?.map((item, index) => <RestaurantCard item={item} />)
                     }
                 </div>
             </section>

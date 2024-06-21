@@ -1,7 +1,8 @@
-import { Button, Card } from '@mui/material'
+import { Button, Card, Chip } from '@mui/material'
 import React from 'react'
+import { format } from 'date-fns';
 
-const OrderCard = () => {
+const OrderCard = ({item,order}) => {
     return (
         <Card
             className='flex justify-between items-center p-5'
@@ -11,11 +12,21 @@ const OrderCard = () => {
             >
                 <img
                     className='h-16 w-16'
-                    src="https://img.dominos.vn/cach-lam-pizza-chay-0.jpg" alt=""
+                    src={item.food?.images[0]} alt=""
                 />
                 <div>
-                    <p>Pizza Mushroom</p>
-                    <p>300.000đ</p>
+                    <p>{item.food?.name}</p>
+                    <p>{item.totalPrice?.toLocaleString('vi-VN')}đ</p>
+                    <div>
+                        {
+                            item.ingredients.map((i) => <Chip label={i} className='my-1 mx-1' />)
+                        }
+                    </div>
+                    <p
+                        className='text-gray-500'
+                    >
+                        {format(new Date(order.createdAt), "dd/MM/yy hh:mm a")}
+                    </p>
                 </div>
             </div>
             <div>
@@ -23,7 +34,7 @@ const OrderCard = () => {
                     // disabled
                     className='cursor-not-allowed'
                 >
-                    completed
+                    {order.orderStatus}
                 </Button>
             </div>
         </Card>

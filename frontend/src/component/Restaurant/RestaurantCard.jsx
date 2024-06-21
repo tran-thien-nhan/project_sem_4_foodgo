@@ -51,7 +51,7 @@ const RestaurantCard = ({ item }) => {
                 <img
                     onClick={handleNavigateToRestaurant}
                     className='w-full h-[10rem] object-cover object-center rounded-t-md'
-                    src={item.images[0]} alt="" />
+                    src={item?.images[0] || ""} alt="" />
                 <Chip
                     size='small'
                     className='absolute top-2 right-2'

@@ -63,7 +63,7 @@ export const getAllRestaurantsAction = (token) => {
                 }
             );
             dispatch({ type: GET_ALL_RESTAURANTS_SUCCESS, payload: data });
-            console.log("GET ALL RESTAURANTS: ", data);
+            //console.log("GET ALL RESTAURANTS: ", data);
         } catch (error) {
             dispatch({ type: GET_ALL_RESTAURANTS_FAILURE, payload: error });
             console.log("ERROR: ", error);
@@ -77,7 +77,7 @@ export const getAllRestaurantsPublicAction = () => {
         try {
             const { data } = await api.get('/api/public/restaurants');
             dispatch({ type: GET_ALL_RESTAURANTS_PUBLIC_SUCCESS, payload: data });
-            console.log("GET ALL RESTAURANTS PUBLIC: ", data);
+            //console.log("GET ALL RESTAURANTS PUBLIC: ", data);
         } catch (error) {
             dispatch({ type: GET_ALL_RESTAURANTS_PUBLIC_FAILURE, payload: error });
             console.log("ERROR: ", error);
