@@ -1,5 +1,6 @@
 package com.foodgo.service;
 
+import com.foodgo.model.Cart;
 import com.foodgo.model.Order;
 import com.foodgo.model.User;
 import com.foodgo.request.OrderRequest;
@@ -14,4 +15,6 @@ public interface OrderService {
     public List<Order> getRestaurantsOrder(Long restaurantId, String orderStatus) throws Exception;
 
     public Order findOrderById(Long orderId) throws Exception;
+
+    public Long getTotalPrice(User user) throws Exception;
 }

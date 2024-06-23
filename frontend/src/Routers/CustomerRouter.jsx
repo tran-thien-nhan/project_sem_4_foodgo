@@ -6,6 +6,7 @@ import RestaurantDetail from '../component/Restaurant/RestaurantDetail'
 import Cart from '../component/Cart/Cart'
 import Profile from '../component/Profile/Profile'
 import Auth from '../component/Auth/Auth'
+import PaymentSuccess from '../component/pages/PaymentSuccess'
 
 const CustomerRouter = () => {
     return (
@@ -17,6 +18,7 @@ const CustomerRouter = () => {
                 <Route path='/restaurant/:city/:title/:id' element={<RestaurantDetail />} />
                 <Route path='/cart' element={<Cart />} />
                 <Route path='/my-profile/*' element={<Profile />} />
+                <Route path='/payment/success' element={<PaymentSuccess />} />
             </Routes>
             <Auth />
         </div>
@@ -24,3 +26,4 @@ const CustomerRouter = () => {
 }
 
 export default CustomerRouter
+

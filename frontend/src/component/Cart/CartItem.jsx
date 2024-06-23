@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getAllCartItems, removeCartItem, updateCartItem } from '../State/Cart/Action';
 import { useNavigate } from 'react-router-dom';
-import { categorizeIngredient, returnPriceOfIngredient } from '../util/categorizeIngredient';
 
 const CartItem = ({ item }) => {
     const [quantity, setQuantity] = useState(item.quantity);
@@ -16,9 +15,8 @@ const CartItem = ({ item }) => {
     const [totalPrice, setTotalPrice] = useState(item.totalPrice);
     const jwt = localStorage.getItem('jwt');
     const [ingredientsTotalPrice, setIngredientsTotalPrice] = useState(0);
-
-    // console.log("CART 0: ", cart);
-    // console.log("CART 0 ID: ", cart.cart?.id);
+    const [showAll, setShowAll] = useState(false);
+    const maxToppingsToShow = 3;
 
     useEffect(() => {
         const selectedIngredients = item.ingredients;
@@ -66,46 +64,6 @@ const CartItem = ({ item }) => {
         return null;
     }
 
-    // nếu giỏ hàng rỗng thì chuyển hướng về trang chủ
-    // if (cart.cartItems.length === 0) {
-    //     navigate('/');
-    // }
-
-
-    const handleRemove = () => {
-        if (quantity > 1) {
-            const newQuantity = quantity - 1;
-            setQuantity(newQuantity);
-            const selectedIngredients = item.ingredients;
-            const ingredientsTotalPrice = selectedIngredients.reduce((total, ingredientName) => {
-                const ingredient = item.food.ingredients.find(ing => ing.name === ingredientName);
-                return total + (ingredient ? ingredient.price : 0);
-            }, 0);
-            dispatch(updateCartItem({
-                cartItemId: item.id,
-                quantity: newQuantity,
-                ingredientsTotalPrice: ingredientsTotalPrice,
-                // jwt: auth.jwt || jwt
-            },(auth.jwt || jwt)));
-        }
-    };
-
-    const handleAdd = () => {
-        const newQuantity = quantity + 1;
-        setQuantity(newQuantity);
-        const selectedIngredients = item.ingredients;
-        const ingredientsTotalPrice = selectedIngredients.reduce((total, ingredientName) => {
-            const ingredient = item.food.ingredients.find(ing => ing.name === ingredientName);
-            return total + (ingredient ? ingredient.price : 0);
-        }, 0);
-        dispatch(updateCartItem({
-            cartItemId: item.id,
-            quantity: newQuantity,
-            ingredientsTotalPrice: ingredientsTotalPrice,
-            // jwt: auth.jwt || jwt            
-        },(auth.jwt || jwt)));
-    };
-
     const handleRemoveItemFromCart = () => {
         dispatch(removeCartItem({
             cartItemId: item.id,
@@ -115,6 +73,12 @@ const CartItem = ({ item }) => {
             dispatch(getAllCartItems({ cartId: cart.id, token: auth.jwt || jwt }));
         });
     }
+
+    const toppingsToShow = showAll ? item.ingredients : item.ingredients.slice(0, maxToppingsToShow);
+
+    const handleToggle = () => {
+        setShowAll(!showAll);
+    };
 
     return (
         <div className='px-5'>
@@ -131,35 +95,40 @@ const CartItem = ({ item }) => {
                         <p>{item.food.name}</p>
                         <div className='flex justify-between items-center'>
                             <div className='flex items-center space-x-1'>
-                                <p
-                                    className='text-gray-500 text-sx'
-                                >
-                                    {item.food.price.toLocaleString('vi-VN')} x
-                                </p>
-                                <IconButton onClick={()=>handleUpdateCartItem(-1)}>
+                                <p className='text-gray-500 text-sx'>{item.food.price.toLocaleString('vi-VN')} x</p>
+                                <IconButton onClick={() => handleUpdateCartItem(-1)}>
                                     <RemoveCircleOutlineIcon />
                                 </IconButton>
                                 <div className='w-5 h-5 text-xs flex items-center justify-center'>
-
                                     {quantity}
-
                                 </div>
-                                <IconButton onClick={()=>handleUpdateCartItem(1)}>
+                                <IconButton onClick={() => handleUpdateCartItem(1)}>
                                     <AddCircleOutlineIcon />
                                 </IconButton>
                             </div>
                         </div>
                     </div>
                     <p
-                        className='mt-9 lg:mt-9'
-                    >{totalPrice.toLocaleString('vi-VN')}đ</p>
+                        className='text-sx font-semibold float-right mt-9 items-center justify-center'
+                    >
+                        {totalPrice.toLocaleString('vi-VN')}đ
+                    </p>
                 </div>
             </div>
             <div className='pt-3 space-x-2'>
                 {
-                    item.ingredients.map((i) => (
-                        <Chip key={i} label={i} className='my-1' />
+                    toppingsToShow.map((i, index) => (
+                        <Chip key={index} label={i} className='my-1' />
                     ))
+                }
+                {
+                    item.ingredients.length > maxToppingsToShow && (
+                        <Chip
+                            label={showAll ? 'Ẩn bớt' : '...'}
+                            onClick={handleToggle}
+                            className='my-1 cursor-pointer'
+                        />
+                    )
                 }
             </div>
             <IconButton onClick={handleRemoveItemFromCart}>

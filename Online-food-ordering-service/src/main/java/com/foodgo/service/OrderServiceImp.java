@@ -34,18 +34,45 @@ public class OrderServiceImp implements OrderService{
     private AddressRepository addressRepository;
 
     @Autowired
+    private AddressService addressService;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private CartService cartService;
 
+    @Autowired
+    private PaymentService paymentService;
+
     @Override
     public Order createOrder(OrderRequest order, User user) throws Exception {
-        Address shipAddress = order.getDeliveryAddress();
-        Address savedAddress = addressRepository.save(shipAddress);
+        Address shipAddress = order.getDeliveryAddress(); // lay dia chi giao hang tu request
+        //Address savedAddress = addressRepository.save(shipAddress); // luu dia chi giao hang
 
-        if (!user.getAddresses().contains(savedAddress)) {
+        // kiểm tra xem địa chỉ giao hàng đã có trong danh sách địa chỉ của user chưa
+        Address savedAddress = addressService.findByStreetAddressAndCityAndStateAndPinCode(
+                shipAddress.getStreetAddress(),
+                shipAddress.getCity(),
+                shipAddress.getState(),
+                shipAddress.getPinCode(),
+                user.getId()
+        );
+
+        // kiem tra xem dia chi giao hang da co trong danh sach dia chi cua user chua
+//        if (!user.getAddresses().contains(savedAddress)) {
+//            // neu chua co thi them vao danh sach dia chi cua user
+//            user.getAddresses().add(savedAddress);
+//            // luu lai user
+//            userRepository.save(user);
+//        }
+
+        // nếu địa chỉ không tồn tại thì lưu địa chỉ mới
+        if (savedAddress == null) {
+            savedAddress = addressRepository.save(shipAddress);
+            // thêm vào danh sách địa chỉ của user
             user.getAddresses().add(savedAddress);
+            // lưu lại user
             userRepository.save(user);
         }
 
@@ -81,7 +108,8 @@ public class OrderServiceImp implements OrderService{
         Long totalPrice = cartService.calculateCartTotals(cart);
 
         createdOrder.setItems(orderItems);
-        createdOrder.setTotalPrice(totalPrice);
+        createdOrder.setTotalPrice(totalPrice != null ? totalPrice : 0L);
+        createdOrder.setPaymentMethod("BY_CREDIT_CARD");
 
         Order savedOrder = orderRepository.save(createdOrder);
         //clear cart
@@ -92,6 +120,11 @@ public class OrderServiceImp implements OrderService{
         return savedOrder;
     }
 
+    @Override
+    public Long getTotalPrice(User user) throws Exception {
+        Cart cart = cartService.findCartByUserId(user.getId());
+        return cartService.calculateCartTotals(cart);
+    }
     @Override
     public Order updateOrder(Long orderId, String orderStatus) throws Exception {
         Order order = findOrderById(orderId);
@@ -138,4 +171,5 @@ public class OrderServiceImp implements OrderService{
         }
         return optionalOrder.get();
     }
+
 }

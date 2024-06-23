@@ -9,7 +9,7 @@ import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
 import { getAllCartItems, clearCartAction, findCart } from '../State/Cart/Action';
 import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
-import { createOrder } from '../State/Order/Action';
+import { createOrder, createPaymentLink } from '../State/Order/Action';
 
 export const style = {
     position: 'absolute',
@@ -39,8 +39,8 @@ const Cart = () => {
     const [cartItems, setCartItems] = useState([]);
     const [totalPrice, setTotalPrice] = useState(0);
 
-    console.log('CART: ', cart);
-    console.log('AUTH: ', auth);
+    // console.log('CART: ', cart);
+    // console.log('AUTH: ', auth);
 
     useEffect(() => {
         //dispatch(getAllCartItems({ token }));
@@ -63,17 +63,13 @@ const Cart = () => {
                     fullName: auth.user?.fullName,
                     streetAddress: values.streetAddress,
                     city: values.city,
-                    states: values.state,
-                    postalCode: values.pinCode,
+                    state: values.state,
+                    pinCode: values.pinCode,
                     country: "vietnam"
                 }
             }
         }
-        console.log('Data: ', data);
         dispatch(createOrder(data));
-        console.log('Address Added ', values);
-        // tạm thời reload trang để cập nhật lại giỏ hàng
-        window.location.reload();
     };
 
     const handleOpen = () => setOpen(true);

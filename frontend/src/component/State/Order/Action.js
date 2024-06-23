@@ -1,9 +1,13 @@
 
 import { api } from '../../Config/api';
+import { findCart } from '../Cart/Action';
 import {
     CREATE_ORDER_REQUEST,
     CREATE_ORDER_SUCCESS,
     CREATE_ORDER_FAILURE,
+    CREATE_ORDER__REQUEST,
+    CREATE_ORDER__SUCCESS,
+    CREATE_ORDER__FAILURE,
     GET_USERS_ORDERS_REQUEST,
     GET_USERS_ORDERS_SUCCESS,
     GET_USERS_ORDERS_FAILURE,
@@ -22,9 +26,11 @@ export const createOrder = (reqData) => {
                 }
             });
 
-            // if(data.payment_url){ 
-            //     window.location.href = data.payment_url;
-            // }
+            console.log("ORDER DATA: ", data);
+
+            if(data.payment_url){ 
+                window.location.href = data.payment_url;                
+            }                 
 
             dispatch({ type: CREATE_ORDER_SUCCESS, payload: data });
             console.log("CREATE ORDER SUCCESS: ", data);

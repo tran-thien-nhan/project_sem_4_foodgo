@@ -14,7 +14,13 @@ public class Address {
     @GeneratedValue(strategy = GenerationType.AUTO) //tự động tăng giá trị id
     private Long id;
 
-    //city
     private String city;
 
+    private String streetAddress;
+
+    private String state;
+
+    private String pinCode;
+
+    private String country;
 }
