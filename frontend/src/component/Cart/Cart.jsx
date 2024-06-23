@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Divider, Card, Modal, Box, Grid, TextField, IconButton } from '@mui/material';
+import { Button, Divider, Card, Modal, Box, Grid, TextField, IconButton, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useDispatch, useSelector } from 'react-redux';
 import CartItem from './CartItem';
@@ -28,6 +28,7 @@ const initialValues = {
     state: '',
     pinCode: '',
     city: '',
+    paymentMethod: 'BY_CASH', // giá trị mặc định cho hình thức thanh toán
 };
 
 const Cart = () => {
@@ -39,11 +40,7 @@ const Cart = () => {
     const [cartItems, setCartItems] = useState([]);
     const [totalPrice, setTotalPrice] = useState(0);
 
-    // console.log('CART: ', cart);
-    // console.log('AUTH: ', auth);
-
     useEffect(() => {
-        //dispatch(getAllCartItems({ token }));
         dispatch(findCart(token));
     }, [dispatch, token]);
 
@@ -52,6 +49,7 @@ const Cart = () => {
         state: Yup.string().required('State Is Required'),
         pinCode: Yup.string().required('Pin Code Is Required'),
         city: Yup.string().required('City Is Required'),
+        paymentMethod: Yup.string().required('Payment Method Is Required'),
     });
 
     const HandleSubmit = (values) => {
@@ -66,10 +64,14 @@ const Cart = () => {
                     state: values.state,
                     pinCode: values.pinCode,
                     country: "vietnam"
-                }
+                },
+                paymentMethod: values.paymentMethod, // thêm hình thức thanh toán vào đơn hàng
             }
         }
         dispatch(createOrder(data));
+        if (values.paymentMethod === 'BY_CASH') {
+            window.location.href = '/';
+        }
     };
 
     const handleOpen = () => setOpen(true);
@@ -231,6 +233,15 @@ const Cart = () => {
                                             </ErrorMessage>
                                         }
                                     />
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <FormControl component="fieldset">
+                                        <FormLabel component="legend">Payment Method</FormLabel>
+                                        <Field as={RadioGroup} name="paymentMethod">
+                                            <FormControlLabel value="BY_CASH" control={<Radio />} label="Cash" />
+                                            <FormControlLabel value="BY_CREDIT_CARD" control={<Radio />} label="Credit Card" />
+                                        </Field>
+                                    </FormControl>
                                 </Grid>
                                 <Grid item xs={12}>
                                     <Button variant='contained' fullWidth type='submit' color='primary'>

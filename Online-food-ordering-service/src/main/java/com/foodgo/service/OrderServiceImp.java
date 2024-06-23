@@ -109,7 +109,7 @@ public class OrderServiceImp implements OrderService{
 
         createdOrder.setItems(orderItems);
         createdOrder.setTotalPrice(totalPrice != null ? totalPrice : 0L);
-        createdOrder.setPaymentMethod("BY_CREDIT_CARD");
+        createdOrder.setPaymentMethod(order.getPaymentMethod());
 
         Order savedOrder = orderRepository.save(createdOrder);
         //clear cart
