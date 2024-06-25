@@ -59,14 +59,6 @@ public class OrderServiceImp implements OrderService{
                 user.getId()
         );
 
-        // kiem tra xem dia chi giao hang da co trong danh sach dia chi cua user chua
-//        if (!user.getAddresses().contains(savedAddress)) {
-//            // neu chua co thi them vao danh sach dia chi cua user
-//            user.getAddresses().add(savedAddress);
-//            // luu lai user
-//            userRepository.save(user);
-//        }
-
         // nếu địa chỉ không tồn tại thì lưu địa chỉ mới
         if (savedAddress == null) {
             savedAddress = addressRepository.save(shipAddress);
@@ -111,15 +103,17 @@ public class OrderServiceImp implements OrderService{
         createdOrder.setItems(orderItems);
         createdOrder.setTotalPrice(totalPrice != null ? totalPrice : 0L);
         createdOrder.setPaymentMethod(order.getPaymentMethod());
+
         if (order.getPaymentMethod().contains("BY_CASH")) {
             createdOrder.setIsPaid(true);
         }
 
         Order savedOrder = orderRepository.save(createdOrder);
         //clear cart
-        cartService.clearCart(cart.getId());
-
-        restaurant.getOrders().add(savedOrder);
+        if(createdOrder.getIsPaid()){
+            cartService.clearCart(cart.getId());
+            restaurant.getOrders().add(savedOrder); // thêm order vào danh sách order của restaurant
+        }
 
         return savedOrder;
     }
@@ -133,6 +127,17 @@ public class OrderServiceImp implements OrderService{
     public Order toggleOrderPaymentStatus(Long orderId) throws Exception {
         Order order = findOrderById(orderId);
         order.setIsPaid(true);
+        // tìm cart
+        Cart cart = cartService.findCartByUserId(order.getCustomer().getId());
+        // neu cart khong rong
+        if (cart != null) {
+            // xóa cart
+            cartService.clearCart(cart.getId());
+            // thêm order vào danh sách order của restaurant
+            Restaurant restaurant = restaurantService.findRestaurantById(order.getRestaurant().getId());
+            restaurant.getOrders().add(order);
+        }
+
         return orderRepository.save(order);
     }
 
