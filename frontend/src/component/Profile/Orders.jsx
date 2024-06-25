@@ -44,12 +44,15 @@ const Orders = () => {
       <div className='space-y-5 w-full lg:w-1/2'>
         {
           currentOrders.map((order) => (
-            <div key={order.id} className='order-container'>
+            <div key={order.id} className='order-container' style={{ display: !order.isPaid ? "none" : "block" }}>
               <h2 className='text-lg font-semibold'>
                 Order placed on: {format(new Date(order.createdAt), "dd/MM/yy hh:mm a")}
               </h2>
               <p className='text-md font-semibold text-gray-500'>
                 Total Price: {order.totalPrice.toLocaleString('vi-VN')}đ
+              </p>
+              <p className='text-md font-semibold text-gray-500'>
+                Payment Method: {(order.paymentMethod === 'BY_CASH') ? 'Cash on delivery' : 'Online payment'}
               </p>
               {
                 order.items.map((item) => (
@@ -67,18 +70,6 @@ const Orders = () => {
         >
           Previous
         </Button>
-        {/* {
-          Array.from({ length: totalPages }, (_, index) => index + 1).map(pageNumber => (
-            <Button
-              key={pageNumber}
-              onClick={() => handlePageChange(pageNumber)}
-              variant={pageNumber === currentPage ? 'contained' : 'outlined'}
-              style={{ margin: '0 5px 0 5px' }}
-            >
-              {pageNumber}
-            </Button>
-          ))
-        } */}
         <Button
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}

@@ -18,7 +18,7 @@ const CustomerRouter = () => {
                 <Route path='/restaurant/:city/:title/:id' element={<RestaurantDetail />} />
                 <Route path='/cart' element={<Cart />} />
                 <Route path='/my-profile/*' element={<Profile />} />
-                <Route path='/payment/success' element={<PaymentSuccess />} />
+                <Route path='/payment/success/:orderId' element={<PaymentSuccess />} />
             </Routes>
             <Auth />
         </div>

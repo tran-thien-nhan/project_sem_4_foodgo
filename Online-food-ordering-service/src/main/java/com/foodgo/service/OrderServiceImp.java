@@ -106,10 +106,14 @@ public class OrderServiceImp implements OrderService{
         createdOrder.setTotalAmount(cart.getTotal());
 
         Long totalPrice = cartService.calculateCartTotals(cart);
+        totalPrice += 18000; // delivery charge
 
         createdOrder.setItems(orderItems);
         createdOrder.setTotalPrice(totalPrice != null ? totalPrice : 0L);
         createdOrder.setPaymentMethod(order.getPaymentMethod());
+        if (order.getPaymentMethod().contains("BY_CASH")) {
+            createdOrder.setIsPaid(true);
+        }
 
         Order savedOrder = orderRepository.save(createdOrder);
         //clear cart
@@ -119,12 +123,19 @@ public class OrderServiceImp implements OrderService{
 
         return savedOrder;
     }
-
     @Override
     public Long getTotalPrice(User user) throws Exception {
         Cart cart = cartService.findCartByUserId(user.getId());
         return cartService.calculateCartTotals(cart);
     }
+
+    @Override
+    public Order toggleOrderPaymentStatus(Long orderId) throws Exception {
+        Order order = findOrderById(orderId);
+        order.setIsPaid(true);
+        return orderRepository.save(order);
+    }
+
     @Override
     public Order updateOrder(Long orderId, String orderStatus) throws Exception {
         Order order = findOrderById(orderId);

@@ -1,5 +1,6 @@
 package com.foodgo.controller;
 
+import com.foodgo.helper.OrderTemp;
 import com.foodgo.model.Cart;
 import com.foodgo.model.CartItem;
 import com.foodgo.model.Order;
@@ -46,8 +47,22 @@ public class OrderController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/order/success")
-    public ResponseEntity<Order> createOrderSuccess(@RequestBody OrderRequest req, @RequestHeader("Authorization") String jwt) throws Exception {
+    @PutMapping("/order/toggle-payment-status/{orderId}")
+    public ResponseEntity<Order> toggleOrderPaymentStatus(@PathVariable Long orderId, @RequestHeader("Authorization") String jwt) throws Exception {
+        Order updatedOrder = orderService.toggleOrderPaymentStatus(orderId);
+        return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
+    }
+
+    // find order by id
+    @GetMapping("/order/{id}")
+    public ResponseEntity<Order> findOrderById(@PathVariable Long id) throws Exception {
+        Order order = orderService.findOrderById(id);
+        return new ResponseEntity<>(order, HttpStatus.OK);
+    }
+
+
+    @PostMapping("/order/confirm")
+    public ResponseEntity<Order> confirmOrder(@RequestBody OrderRequest req, @RequestHeader("Authorization") String jwt) throws Exception {
         User user = userService.findUserByJwtToken(jwt);
         Order order = orderService.createOrder(req, user);
         return new ResponseEntity<>(order, HttpStatus.OK);

@@ -17,4 +17,8 @@ public interface OrderService {
     public Order findOrderById(Long orderId) throws Exception;
 
     public Long getTotalPrice(User user) throws Exception;
+
+    //update trường isPaid của order từ true sang false và ngược lại
+
+    public Order toggleOrderPaymentStatus(Long orderId) throws Exception;
 }

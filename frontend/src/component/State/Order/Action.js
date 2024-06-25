@@ -1,4 +1,5 @@
 
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../Config/api';
 import { findCart } from '../Cart/Action';
 import {
@@ -8,19 +9,25 @@ import {
     CREATE_ORDER__REQUEST,
     CREATE_ORDER__SUCCESS,
     CREATE_ORDER__FAILURE,
+    CONFIRM_ORDER_REQUEST,
+    CONFIRM_ORDER_SUCCESS,
+    CONFIRM_ORDER_FAILURE,
     GET_USERS_ORDERS_REQUEST,
     GET_USERS_ORDERS_SUCCESS,
     GET_USERS_ORDERS_FAILURE,
     GET_USERS_NOTIFICATION_REQUEST,
     GET_USERS_NOTIFICATION_SUCCESS,
     GET_USERS_NOTIFICATION_FAILURE,
+    UPDATE_ORDER_ISPAY_REQUEST,
+    UPDATE_ORDER_ISPAY_SUCCESS,
+    UPDATE_ORDER_ISPAY_FAILURE
 } from './ActionType';
 
 export const createOrder = (reqData) => {
     return async (dispatch) => {
         dispatch({ type: CREATE_ORDER_REQUEST });
         try {
-            const {data} = await api.post('/api/order', reqData.order,{
+            const { data } = await api.post('/api/order', reqData.order, {
                 headers: {
                     Authorization: `Bearer ${reqData.jwt}`
                 }
@@ -28,9 +35,9 @@ export const createOrder = (reqData) => {
 
             console.log("ORDER DATA: ", data);
 
-            if(data.payment_url){ 
-                window.location.href = data.payment_url;                
-            }                 
+            if (data.payment_url) {
+                window.location.href = data.payment_url;
+            }
 
             dispatch({ type: CREATE_ORDER_SUCCESS, payload: data });
             console.log("CREATE ORDER SUCCESS: ", data);
@@ -41,11 +48,58 @@ export const createOrder = (reqData) => {
     }
 }
 
+export const updateOrderIsPay = (reqData) => {
+    return async (dispatch) => {
+        let success = false;
+        dispatch({ type: UPDATE_ORDER_ISPAY_REQUEST });
+        try {
+            const { data } = await api.put(`/api/order/toggle-payment-status/${reqData.orderId}`, null, {
+                headers: {
+                    Authorization: `Bearer ${reqData.jwt}`
+                }
+            });
+            if (data) {
+                success = true;
+                
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 5000);
+            }
+
+            dispatch({ type: UPDATE_ORDER_ISPAY_SUCCESS, payload: data });
+            console.log("UPDATE ORDER IS PAY SUCCESS: ", data);
+        } catch (error) {
+            dispatch({ type: UPDATE_ORDER_ISPAY_FAILURE, payload: error });
+            console.log("UPDATE ORDER IS PAY FAILURE: ", error.response ? error.response.data : error.message);
+        }
+    }
+}
+
+export const confirmOrder = (reqData) => {
+    return async (dispatch) => {
+        dispatch({ type: CONFIRM_ORDER_REQUEST });
+        try {
+            const { data } = await api.post('/api/order/confirm', reqData.order, {
+                headers: {
+                    Authorization: `Bearer ${reqData.jwt}`
+                }
+            });
+
+            dispatch({ type: CONFIRM_ORDER_SUCCESS, payload: data });
+            dispatch(findCart(reqData.jwt));
+            console.log("CONFIRM ORDER SUCCESS: ", data);
+        } catch (error) {
+            dispatch({ type: CONFIRM_ORDER_FAILURE, payload: error });
+            console.log("CONFIRM ORDER FAILURE: ", error);
+        }
+    }
+}
+
 export const getUsersOrders = (jwt) => {
     return async (dispatch) => {
         dispatch({ type: GET_USERS_ORDERS_REQUEST });
         try {
-            const {data} = await api.get('/api/order/user', {
+            const { data } = await api.get('/api/order/user', {
                 headers: {
                     Authorization: `Bearer ${jwt}`
                 }
@@ -64,7 +118,7 @@ export const getUsersNotificationAction = () => {
     return async (dispatch) => {
         dispatch({ type: GET_USERS_NOTIFICATION_REQUEST });
         try {
-            const {data} = await api.get('/api/notifications');
+            const { data } = await api.get('/api/notifications');
 
             dispatch({ type: GET_USERS_NOTIFICATION_SUCCESS, payload: data });
             console.log("GET USERS NOTIFICATION SUCCESS: ", data);

@@ -43,4 +43,6 @@ public class Order {
     private Long totalPrice;
 
     private String PaymentMethod;
+
+    private Boolean isPaid = false;
 }

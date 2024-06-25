@@ -65,10 +65,11 @@ const Cart = () => {
                     pinCode: values.pinCode,
                     country: "vietnam"
                 },
-                paymentMethod: values.paymentMethod, // thêm hình thức thanh toán vào đơn hàng
+                paymentMethod: values.paymentMethod, 
             }
         }
         dispatch(createOrder(data));
+        
         if (values.paymentMethod === 'BY_CASH') {
             window.location.href = '/';
         }
