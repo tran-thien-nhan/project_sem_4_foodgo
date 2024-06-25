@@ -20,8 +20,12 @@ import {
     GET_USERS_NOTIFICATION_FAILURE,
     UPDATE_ORDER_ISPAY_REQUEST,
     UPDATE_ORDER_ISPAY_SUCCESS,
-    UPDATE_ORDER_ISPAY_FAILURE
+    UPDATE_ORDER_ISPAY_FAILURE,
+    REFUND_ORDER_REQUEST,
+    REFUND_ORDER_SUCCESS,
+    REFUND_ORDER_FAILURE
 } from './ActionType';
+import { Bounce, toast } from "react-toastify";
 
 export const createOrder = (reqData) => {
     return async (dispatch) => {
@@ -33,10 +37,19 @@ export const createOrder = (reqData) => {
                 }
             });
 
-            console.log("ORDER DATA: ", data);
-
             if (data.payment_url) {
                 window.location.href = data.payment_url;
+                toast.success('create order successfully!', {
+                    position: "top-center",
+                    autoClose: 1000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "colored",
+                    transition: Bounce,
+                });
             }
 
             dispatch({ type: CREATE_ORDER_SUCCESS, payload: data });
@@ -63,7 +76,7 @@ export const updateOrderIsPay = (reqData) => {
                 
                 setTimeout(() => {
                     window.location.href = '/';
-                }, 5000);
+                }, 3000);
             }
 
             dispatch({ type: UPDATE_ORDER_ISPAY_SUCCESS, payload: data });
@@ -125,6 +138,37 @@ export const getUsersNotificationAction = () => {
         } catch (error) {
             dispatch({ type: GET_USERS_NOTIFICATION_FAILURE, payload: error });
             console.log("GET USERS NOTIFICATION FAILURE: ", error);
+        }
+    }
+}
+
+export const refundOrder = (reqData) => {
+    return async (dispatch) => {
+        dispatch({ type: REFUND_ORDER_REQUEST });
+        try {
+            const { data } = await api.post(`/api/order/refund/${reqData.orderId}`, null, {
+                headers: {
+                    Authorization: `Bearer ${reqData.jwt}`
+                }
+            });
+
+            dispatch({ type: REFUND_ORDER_SUCCESS, payload: data });
+            dispatch(getUsersOrders(reqData.jwt)); // Cập nhật lại danh sách đơn hàng sau khi hoàn tiền
+            toast.success('refund order successfully!', {
+                position: "top-center",
+                autoClose: 1000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+            });
+            console.log("REFUND ORDER SUCCESS: ", data);
+        } catch (error) {
+            dispatch({ type: REFUND_ORDER_FAILURE, payload: error });
+            console.log("REFUND ORDER FAILURE: ", error);
         }
     }
 }

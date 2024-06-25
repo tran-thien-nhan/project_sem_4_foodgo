@@ -127,6 +127,7 @@ public class OrderServiceImp implements OrderService{
     public Order toggleOrderPaymentStatus(Long orderId) throws Exception {
         Order order = findOrderById(orderId);
         order.setIsPaid(true);
+        order.setOrderStatus("PAID");
         // tìm cart
         Cart cart = cartService.findCartByUserId(order.getCustomer().getId());
         // neu cart khong rong
@@ -188,4 +189,39 @@ public class OrderServiceImp implements OrderService{
         return optionalOrder.get();
     }
 
+    // xóa hết tat ca order có isPaid = false
+    @Override
+    public void clearUnpaidOrders(Long userId) {
+        List<Order> userOrders = orderRepository.findByCustomerId(userId);
+        for (Order order : userOrders) {
+            if (!order.getIsPaid()) {
+                // Xóa tất cả OrderItem trong đơn hàng chưa thanh toán
+                for (OrderItem item : order.getItems()) {
+                    orderItemRepository.delete(item);
+                }
+                // Sau khi xóa các OrderItem, xóa luôn đơn hàng
+                orderRepository.delete(order);
+            }
+        }
+    }
+
+    @Override
+    public String refundOrder(Long orderId) throws Exception {
+        Order order = findOrderById(orderId);
+
+        if (order.getIsPaid() && order.getPaymentMethod().contains("BY_CREDIT_CARD")) {
+            String paymentIntentId = order.getPaymentIntentId();
+            String refundStatus = paymentService.refundPayment(paymentIntentId);
+
+            if ("succeeded".equals(refundStatus)) {
+                order.setIsPaid(false);
+                order.setOrderStatus("REFUNDED");
+                orderRepository.save(order);
+            }
+
+            return refundStatus;
+        }
+
+        throw new Exception("Order is either not paid or not eligible for refund");
+    }
 }

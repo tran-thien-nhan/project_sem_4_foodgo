@@ -45,4 +45,6 @@ public class Order {
     private String PaymentMethod;
 
     private Boolean isPaid = false;
+
+    private String paymentIntentId;
 }

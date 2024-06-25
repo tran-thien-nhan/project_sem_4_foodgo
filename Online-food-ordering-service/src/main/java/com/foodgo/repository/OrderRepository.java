@@ -11,4 +11,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     public List<Order> findByRestaurantId(Long restaurantId);
 
 
+    List<Order> findByIsPaid(boolean b);
 }

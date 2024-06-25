@@ -7,4 +7,6 @@ import com.stripe.exception.StripeException;
 
 public interface PaymentService{
     public PaymentResponse createPaymentLink(Order order) throws StripeException;
+
+    public String refundPayment(String paymentIntentId) throws StripeException;
 }

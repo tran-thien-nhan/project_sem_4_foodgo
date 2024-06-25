@@ -21,4 +21,7 @@ public interface OrderService {
     //update trường isPaid của order từ true sang false và ngược lại
 
     public Order toggleOrderPaymentStatus(Long orderId) throws Exception;
+    public void clearUnpaidOrders(Long userId) throws Exception;
+
+    public String refundOrder(Long orderId) throws Exception;
 }

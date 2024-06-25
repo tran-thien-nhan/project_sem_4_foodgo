@@ -5,14 +5,17 @@ import com.foodgo.model.Cart;
 import com.foodgo.model.CartItem;
 import com.foodgo.model.Order;
 import com.foodgo.model.User;
+import com.foodgo.repository.OrderRepository;
 import com.foodgo.response.PaymentResponse;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
+import com.stripe.model.Refund;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import com.stripe.param.RefundCreateParams;
 
 @Service
 public class PaymentServiceImp implements PaymentService{
@@ -25,6 +28,9 @@ public class PaymentServiceImp implements PaymentService{
 
     @Autowired
     private CartService cartService;
+
+    @Autowired
+    private OrderRepository orderRepository;
 
     @Override
     public PaymentResponse createPaymentLink(Order order) throws StripeException {
@@ -60,10 +66,28 @@ public class PaymentServiceImp implements PaymentService{
 
         Session session = Session.create(params); // Tạo session mới
 
+        // Lưu paymentIntentId vào Order
+        order.setPaymentIntentId(session.getPaymentIntent());
+        orderRepository.save(order); // Lưu order sau khi cập nhật paymentIntentId
+
         PaymentResponse res = new PaymentResponse(); // Tạo một payment response mới
         res.setPayment_url(session.getUrl()); // Set url cho payment response
 
         return res; // Trả về payment response
+    }
+
+    @Override
+    public String refundPayment(String paymentIntentId) throws StripeException { // Hàm refund một payment, paymentIntentId la id cua paymentIntent, paymentIntent la mot doi tuong dai dien cho mot thanh toan
+        Stripe.apiKey = stripeSecretKey; // Set api key cho Stripe
+
+        RefundCreateParams params = RefundCreateParams // Tạo một refund mới
+                .builder() // Sử dụng builder pattern
+                .setPaymentIntent(paymentIntentId) // Set payment intent id
+                .build(); // Build refund
+
+        Refund refund = Refund.create(params); // Tạo refund mới
+
+        return refund.getStatus();  // Trả về trạng thái của refund
     }
 
 }

@@ -74,4 +74,20 @@ public class OrderController {
         List<Order> order = orderService.getUserOrders(user.getId());
         return new ResponseEntity<>(order, HttpStatus.OK);
     }
+
+
+    // Xóa tất cả order chưa thanh toán của user và các order item liên quan
+    @DeleteMapping("/order/clear-unpaid")
+    public ResponseEntity<Void> clearUnpaidOrders(@RequestHeader("Authorization") String jwt) throws Exception {
+        User user = userService.findUserByJwtToken(jwt);
+        orderService.clearUnpaidOrders(user.getId());
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/order/refund/{orderId}")
+    public ResponseEntity<String> refundOrder(@PathVariable Long orderId, @RequestHeader("Authorization") String jwt) throws Exception {
+        User user = userService.findUserByJwtToken(jwt);
+        String refundStatus = orderService.refundOrder(orderId);
+        return new ResponseEntity<>(refundStatus, HttpStatus.OK);
+    }
 }
