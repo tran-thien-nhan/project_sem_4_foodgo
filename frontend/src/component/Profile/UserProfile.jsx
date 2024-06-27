@@ -19,7 +19,6 @@ const UserProfile = () => {
         if (itemName === "Logout") {
             dispatch(logOut());
             navigate("/");
-            // window.location.reload();
         } else {
             navigate(`/my-profile/${itemName.toLowerCase()}`);
         }

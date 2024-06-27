@@ -27,7 +27,7 @@ public class Order {
 
     private Long totalAmount;
 
-    private String orderStatus;
+    private String orderStatus = ORDER_STATUS.PENDING.name();
 
     private Date createdAt;
 

@@ -17,7 +17,7 @@ export const darkTheme = createTheme({ //createTheme là một hàm tạo theme 
         background: {
             main: "#000000", // Dark grey
             default: "#121212", // Dark grey
-            paper: "#1e1e1e", // Dark grey
+            paper: "#121212", // Dark grey
         },
         textColor: {
             main: "#ffffff", // White
