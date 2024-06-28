@@ -19,10 +19,16 @@ public class FoodServiceImp implements FoodService{
     @Autowired
     private FoodRepository foodRepository;
 
+    @Autowired
+    private CategoryService categoryService;
+
     @Override
-    public Food createFood(CreateFoodRequest req, Category category, Restaurant restaurant) {
+    public Food createFood(CreateFoodRequest req,  Category category, Restaurant restaurant) throws Exception {
         Food food = new Food();
+        //Category findCategory = categoryService.findCategoryById(category.getId());
+
         food.setFoodCategory(category);
+        //food.setFoodCategory(findCategory);
         food.setRestaurant(restaurant);
         food.setDescription(req.getDescription());
         food.setImages(req.getImages());

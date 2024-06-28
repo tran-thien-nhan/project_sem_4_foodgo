@@ -181,6 +181,11 @@ public class OrderServiceImp implements OrderService{
     }
 
     @Override
+    public List<Order> getRestaurantsAllOrder(Long restaurantId) throws Exception {
+        return orderRepository.findByRestaurantId(restaurantId);
+    }
+
+    @Override
     public Order findOrderById(Long orderId) throws Exception {
         Optional<Order> optionalOrder = orderRepository.findById(orderId);
         if (optionalOrder.isEmpty()) {

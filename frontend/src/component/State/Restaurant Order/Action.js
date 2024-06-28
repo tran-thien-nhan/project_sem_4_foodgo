@@ -1,8 +1,11 @@
-import { api } from '../../../Config/api';
+import { api } from '../../Config/api';
 import {
     GET_RESTAURANTS_ORDER_REQUEST,
     GET_RESTAURANTS_ORDER_SUCCESS,
     GET_RESTAURANTS_ORDER_FAILURE,
+    GET_RESTAURANTS_ALL_ORDER_REQUEST,
+    GET_RESTAURANTS_ALL_ORDER_SUCCESS,
+    GET_RESTAURANTS_ALL_ORDER_FAILURE,
     UPDATE_ORDER_STATUS_REQUEST,
     UPDATE_ORDER_STATUS_SUCCESS,
     UPDATE_ORDER_STATUS_FAILURE
@@ -44,6 +47,25 @@ export const fetchRestaurantsOrder = ({ restaurantId, orderStatus, jwt }) => {
         } catch (error) {
             dispatch({ type: GET_RESTAURANTS_ORDER_FAILURE, payload: error });
             console.log("GET RESTAURANTS ORDER FAILURE", error);
+        }
+    }
+}
+
+export const fetchRestaurantsAllOrder = ({ restaurantId, jwt }) => {
+    return async (dispatch) => {
+        dispatch({ type: GET_RESTAURANTS_ALL_ORDER_REQUEST });
+        try {
+            const { data } = await api.get(`/api/admin/all/order/restaurant/${restaurantId}`, {
+                headers: {
+                    Authorization: `Bearer ${jwt}`
+                }
+
+            });
+            dispatch({ type: GET_RESTAURANTS_ALL_ORDER_SUCCESS, payload: data });
+            console.log("GET RESTAURANTS ALL ORDER SUCCESS", data);
+        } catch (error) {
+            dispatch({ type: GET_RESTAURANTS_ALL_ORDER_FAILURE, payload: error });
+            console.log("GET RESTAURANTS ALL ORDER FAILURE", error);
         }
     }
 }

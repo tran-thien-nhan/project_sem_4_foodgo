@@ -1,4 +1,4 @@
-import { API_URL, api } from '../../../Config/api';
+import { api } from '../../Config/api';
 import {
     GET_INGREDIENTS,
     UPDATE_STOCK,
@@ -91,8 +91,8 @@ export const updateStockOfIngredient = ({ id, jwt }) => {
                     Authorization: `Bearer ${jwt}`
                 }
             });
-            dispatch({ type: UPDATE_STOCK, payload: response.data });
-            console.log("UPDATE STOCK SUCCESS", response.data);
+            dispatch({ type: UPDATE_STOCK, payload: data });
+            console.log("UPDATE STOCK SUCCESS", data);
         } catch (error) {
             console.log("UPDATE STOCK FAILURE", error);
         }

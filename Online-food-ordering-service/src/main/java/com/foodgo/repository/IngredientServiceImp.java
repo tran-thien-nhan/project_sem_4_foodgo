@@ -46,7 +46,7 @@ public class IngredientServiceImp implements IngredientService {
     }
 
     @Override
-    public IngredientsItem createdIngredientItem(Long restaurantId, String ingredientName, Long categoryId) throws Exception {
+    public IngredientsItem createdIngredientItem(Long restaurantId, String ingredientName, Long categoryId, Long price, int quantity) throws Exception {
         Restaurant restaurant = restaurantService.findRestaurantById(restaurantId); // tìm nhà hàng theo id người dùng
         IngredientCategory category = findIngredientCategoryById(categoryId); // tìm category theo id
 
@@ -54,6 +54,8 @@ public class IngredientServiceImp implements IngredientService {
         item.setName(ingredientName); // set tên cho ingredient item
         item.setCategory(category); // set category cho ingredient item
         item.setRestaurant(restaurant); // set nhà hàng cho ingredient item
+        item.setPrice(price); // set giá cho ingredient item
+        item.setQuantity(quantity); // set số lượng cho ingredient item
 
         IngredientsItem ingredient = ingredientItemRepository.save(item); // lưu ingredient item vào database
         category.getIngredients().add(ingredient); // thêm ingredient item vào danh sách ingredient của category

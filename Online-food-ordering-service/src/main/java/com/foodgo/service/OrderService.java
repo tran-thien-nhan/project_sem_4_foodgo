@@ -14,6 +14,9 @@ public interface OrderService {
     public List<Order> getUserOrders(Long userId) throws Exception;
     public List<Order> getRestaurantsOrder(Long restaurantId, String orderStatus) throws Exception;
 
+    public List<Order> getRestaurantsAllOrder(Long restaurantId) throws Exception;
+
+
     public Order findOrderById(Long orderId) throws Exception;
 
     public Long getTotalPrice(User user) throws Exception;

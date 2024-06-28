@@ -1,18 +1,38 @@
 import { Button, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { createIngredient, createIngredientCategory } from '../../component/State/Ingredients/Action';
 
-const CreateIngredientForm = () => {
-    const [formData, setFormData] = useState({ name: "", ingredientCategoryId: "" });
+const CreateIngredientForm = ({handleClose}) => {
+    const { restaurant, ingredients } = useSelector(store => store);
+    const [formData, setFormData] = useState({
+        name: "",
+        categoryId: "",
+        price: "",
+        quantity: "",
+    });
+    const dispatch = useDispatch();
+    const jwt = localStorage.getItem('jwt');
+
+    console.log("restaurant: ", restaurant);
 
     const handleSubmit = (e) => {
         e.preventDefault();
         const data = {
-            name: formData.name,
-            ingredientCategoryId: {
-                id: 1
-            }
+            ...formData,
+            restaurantId: restaurant.usersRestaurant?.id,
         };
-        console.log(data);
+        console.log("result: ", data);
+
+        dispatch(createIngredient({ data, jwt }));
+        //clear form
+        setFormData({
+            name: "",
+            categoryId: "",
+            price: "",
+            quantity: "",
+        })
+        handleClose();
     };
 
     const handleInputChange = (e) => {
@@ -27,7 +47,7 @@ const CreateIngredientForm = () => {
                 <form onSubmit={handleSubmit} className='space-y-5'>
                     <TextField
                         fullWidth
-                        id='categoryName'
+                        id='name'
                         name='name'
                         label='Ingredient Name'
                         variant='outlined'
@@ -35,18 +55,38 @@ const CreateIngredientForm = () => {
                         value={formData.name}
                     />
 
+                    <TextField
+                        fullWidth
+                        id='price'
+                        name='price'
+                        label='Price'
+                        variant='outlined'
+                        onChange={handleInputChange}
+                        value={formData.price}
+                    />
+
+                    <TextField
+                        fullWidth
+                        id='quantity'
+                        name='quantity'
+                        label='quantity'
+                        variant='outlined'
+                        onChange={handleInputChange}
+                        value={formData.quantity}
+                    />
+
                     <FormControl fullWidth>
                         <InputLabel id="demo-simple-select-label">Category</InputLabel>
                         <Select
                             labelId="demo-simple-select-label"
                             id="demo-simple-select"
-                            value={formData.ingredientCategoryId}
+                            value={formData.categoryId}
                             label="Category"
                             onChange={handleInputChange}
-                            name='ingredientCategoryId'
+                            name='categoryId'
                         >
-                            {["noodle", "rice", "burger"].map((ingredientCategoryId, index) => (
-                                <MenuItem key={index} value={ingredientCategoryId}>{ingredientCategoryId}</MenuItem>
+                            {ingredients.category.map((item) => (
+                                <MenuItem key={item.id} value={item.id}>{item.name}</MenuItem>
                             ))}
                         </Select>
                     </FormControl>
@@ -56,7 +96,7 @@ const CreateIngredientForm = () => {
                         type='submit'
                         fullWidth={true}
                     >
-                        Create a new category
+                        Create a new ingredient
                     </Button>
                 </form>
             </div>

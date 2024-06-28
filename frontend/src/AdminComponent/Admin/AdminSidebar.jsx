@@ -1,5 +1,5 @@
 import { Dashboard, ShoppingBag } from '@mui/icons-material'
-import React from 'react'
+import React, { useState } from 'react'
 import ShopTwoIcon from '@mui/icons-material/ShopTwo';
 import CategoryIcon from '@mui/icons-material/Category';
 import FastfoodIcon from '@mui/icons-material/Fastfood';
@@ -32,7 +32,6 @@ const AdminSidebar = ({ handleClose }) => {
         if (item.title === 'Log out') {
             navigate('/');
             dispatch(logOut());
-            handleClose();
         }
     }
 

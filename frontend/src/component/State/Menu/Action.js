@@ -50,7 +50,8 @@ export const getMenuItemsByRestaurantId = (reqData) => {
                 ?vegetarian=${reqData.vegetarian}
                 &nonveg=${reqData.nonveg}
                 &seasonal=${reqData.seasonal}
-                &food_category=${reqData.foodCategory}`, {
+                &food_category=${reqData.foodCategory}
+                `, {
                 headers: {
                     Authorization: `Bearer ${reqData.jwt}`
                 },

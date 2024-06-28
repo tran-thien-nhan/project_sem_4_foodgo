@@ -12,7 +12,7 @@ export const registerUser = (reqData) => async (dispatch) => {
         }
 
         if (data.role === "ROLE_RESTAURANT_OWNER") {
-            reqData.navigate("/admin/restaurant");
+            reqData.navigate("/admin/restaurants");
         }
         else {
             toast.success('register successfully!', {
@@ -114,22 +114,10 @@ export const addToFavorite = ({ jwt, restaurantId }) => async (dispatch) => {
 }
 
 export const logOut = () => async (dispatch) => {
-    //dispatch({ type: LOGOUT });
     try {
         localStorage.clear();
         dispatch({ type: LOGOUT });
-        //console.log("LOGOUT: ", data);
-        toast.success('Logout successfully!', {
-            position: "top-center",
-            autoClose: 500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            transition: Bounce,
-        });
+        //window.location.href = "/";
 
     } catch (error) {
         console.log("ERROR: ", error);

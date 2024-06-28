@@ -4,6 +4,10 @@ import React, { useState } from 'react'
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import CloseIcon from '@mui/icons-material/Close';
 import { uploadImageToCloudinary } from '../util/UploadToCloudinary';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { logOut } from '../../component/State/Authentication/Action';
+import { createRestaurant } from '../../component/State/Restaurant/Action';
 
 const initialValues = {
   name: '',
@@ -12,7 +16,7 @@ const initialValues = {
   streetAddress: '',
   city: '',
   state: '',
-  postalCode: '',
+  pinCode: '',
   country: '',
   email: '',
   mobile: '',
@@ -27,6 +31,13 @@ const initialValues = {
 
 const CreateRestaurantForm = () => {
   const [uploadImage, setUploadImage] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const jwt = localStorage.getItem('jwt');
+
+  const handlebackHome = () => {
+    dispatch(logOut());
+  }
 
   const formik = useFormik({
     initialValues,
@@ -37,7 +48,7 @@ const CreateRestaurantForm = () => {
       }
       if (!values.description) {
         errors.description = 'Description is required'
-      }      
+      }
       return errors
     },
     onSubmit: (values) => {
@@ -49,7 +60,7 @@ const CreateRestaurantForm = () => {
           streetAddress: values.streetAddress,
           city: values.city,
           state: values.state,
-          postalCode: values.postalCode,
+          pinCode: values.pinCode,
           country: values.country,
         },
         contactInformation: {
@@ -64,6 +75,8 @@ const CreateRestaurantForm = () => {
         images: values.images,
       }
       console.log("data:  ", data)
+
+      dispatch(createRestaurant({ data, token: jwt }));
     }
   });
 
@@ -274,7 +287,7 @@ const CreateRestaurantForm = () => {
               </TextField>
             </Grid>
 
-            {/* postalCode */}
+            {/* pinCode */}
             <Grid
               item
               xs={12}
@@ -282,12 +295,12 @@ const CreateRestaurantForm = () => {
             >
               <TextField
                 fullWidth
-                id='postalCode'
-                name='postalCode'
-                label='Postal Code/ Zip Code'
+                id='pinCode'
+                name='pinCode'
+                label='Pin Code/ Zip Code'
                 variant='outlined'
                 onChange={formik.handleChange}
-                value={formik.values.postalCode}
+                value={formik.values.pinCode}
               >
 
               </TextField>
@@ -434,6 +447,14 @@ const CreateRestaurantForm = () => {
             fullWidth
           >
             Create Restaurant
+          </Button>
+          <Button
+            variant='contained'
+            color='secondary'
+            fullWidth
+            onClick={handlebackHome}
+          >
+            Back
           </Button>
         </form>
       </div>

@@ -78,11 +78,11 @@ public class AuthController {
     @PostMapping("/signin") //đánh dấu phương thức signin là phương thức xử lý request POST tới /auth/signin
     public ResponseEntity<User> signin(@RequestBody LoginRequest req) {
 
-        String username = req.getEmail();
-        String password = req.getPassword();
+        String username = req.getEmail(); //lấy email từ request
+        String password = req.getPassword(); //lấy password từ request
 
-        Authentication authentication = authenticate(username, password);
-        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        Authentication authentication = authenticate(username, password); //xác thực user
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities(); //lấy danh sách các quyền của user
         String role = authorities.isEmpty() ? null : authorities.iterator().next().getAuthority();
         String jwt = jwtProvider.generateToken(authentication); //tạo ra token từ thông tin user
 

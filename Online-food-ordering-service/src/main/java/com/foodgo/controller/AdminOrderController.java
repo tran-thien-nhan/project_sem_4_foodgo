@@ -34,6 +34,18 @@ public class AdminOrderController {
         }
     }
 
+    @GetMapping("/all/order/restaurant/{id}")
+    public ApiResponse<?> getAllOrderHistory(@PathVariable Long id,
+                                          @RequestHeader("Authorization") String jwt) throws Exception {
+        try {
+            User user = userService.findUserByJwtToken(jwt);
+            List<Order> order = orderService.getRestaurantsAllOrder(id);
+            return ApiResponse.success(order, "get ALL order history success");
+        } catch (Exception e) {
+            return ApiResponse.errorServer(null, "error", null);
+        }
+    }
+
     @PutMapping("/order/{id}/{orderStatus}")
     public ResponseEntity<Order> updateOrderStatus(@PathVariable Long id,
                                                    @PathVariable String orderStatus,

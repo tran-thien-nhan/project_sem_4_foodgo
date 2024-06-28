@@ -40,7 +40,7 @@ const Home = () => {
             <section className='px-5 lg:px-20'>
                 <h1 className='text-2xl font-semibold text-gray-400 py-3 pb-5'>Our Restaurants</h1>
                 <div
-                    className='flex flex-wrap items-center justify-around gap-5'
+                    className='flex flex-wrap justify-around gap-5'
                 >
                     {
                         restaurant.restaurants?.map((item, index) => <RestaurantCard item={item} />)
