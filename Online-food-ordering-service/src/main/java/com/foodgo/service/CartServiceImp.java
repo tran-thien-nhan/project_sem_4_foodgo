@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CartServiceImp implements CartService {
@@ -36,6 +37,7 @@ public class CartServiceImp implements CartService {
 
         // Tính giá thêm của các thành phần nguyên liệu
         //Long additionalPrice = ingredientService.calculateTotalPrice(req.getIngredientsItems());
+        // Lấy các ingredients được chọn
 
         // Kiểm tra xem food đã có trong cart chưa, nếu có thì kiểm tra thành phần nguyên liệu
         for (CartItem cartItem : cart.getCartItems()) {

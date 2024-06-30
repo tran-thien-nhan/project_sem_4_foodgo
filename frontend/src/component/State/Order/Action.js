@@ -37,8 +37,15 @@ export const createOrder = (reqData) => {
                 }
             });
 
-            if (data.payment_url) {
-                window.location.href = data.payment_url;
+            if (data) {
+                //window.location.href = data.payment_url;
+
+                //do là mảng chứa các payment_url nên sẽ dùng vòng lặp để mở 2 link này sang tab mới
+                // Mở mỗi payment_url trong tab mới
+                data.forEach(paymentResponse => {
+                    window.open(paymentResponse.payment_url, '_blank');
+                });
+
                 toast.success('create order successfully!', {
                     position: "top-center",
                     autoClose: 1000,
@@ -50,6 +57,7 @@ export const createOrder = (reqData) => {
                     theme: "colored",
                     transition: Bounce,
                 });
+
             }
 
             dispatch({ type: CREATE_ORDER_SUCCESS, payload: data });
@@ -73,7 +81,7 @@ export const updateOrderIsPay = (reqData) => {
             });
             if (data) {
                 success = true;
-                
+
                 setTimeout(() => {
                     window.location.href = '/';
                 }, 3000);

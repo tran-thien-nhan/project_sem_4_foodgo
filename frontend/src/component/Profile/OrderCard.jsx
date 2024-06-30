@@ -50,7 +50,7 @@ const OrderCard = ({ item, order, jwt }) => {
         <Button className='cursor-not-allowed'>
           {order.orderStatus}
         </Button>
-        {(order.orderStatus === 'PAID' && order.paymentMethod == "BY_CREDIT_CARD") && (
+        {/* {(order.orderStatus === 'CANCELLED' && order.paymentMethod == "BY_CREDIT_CARD") && (
           <Button
             variant="contained"
             color="secondary"
@@ -58,7 +58,7 @@ const OrderCard = ({ item, order, jwt }) => {
           >
             Refund
           </Button>
-        )}
+        )} */}
       </div>
     </Card>
   );

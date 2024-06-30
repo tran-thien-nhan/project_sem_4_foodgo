@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -34,14 +35,35 @@ public class OrderController {
     @Autowired
     private CartService cartService;
 
-    @PostMapping("/order")
-    public ResponseEntity<PaymentResponse> createOrder(@RequestBody OrderRequest req, @RequestHeader("Authorization") String jwt) throws Exception {
-        User user = userService.findUserByJwtToken(jwt);
-        Order order = orderService.createOrder(req, user);
+//    @PostMapping("/order")
+//    public ResponseEntity<PaymentResponse> createOrder(@RequestBody OrderRequest req, @RequestHeader("Authorization") String jwt) throws Exception {
+//        User user = userService.findUserByJwtToken(jwt);
+//        Order order = orderService.createOrder(req, user);
+//
+//        if(req.getPaymentMethod().contains("BY_CREDIT_CARD")){ // Nếu phương thức thanh toán là thẻ
+//            PaymentResponse res = paymentService.createPaymentLink(order);
+//            return new ResponseEntity<>(res, HttpStatus.OK);
+//        }
+//
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
 
-        if(req.getPaymentMethod().contains("BY_CREDIT_CARD")){ // Nếu phương thức thanh toán là thẻ
-            PaymentResponse res = paymentService.createPaymentLink(order);
-            return new ResponseEntity<>(res, HttpStatus.OK);
+    @PostMapping("/order")
+    public ResponseEntity<List<PaymentResponse>> createOrder(@RequestBody OrderRequest req, @RequestHeader("Authorization") String jwt) throws Exception {
+        User user = userService.findUserByJwtToken(jwt);
+        List<Order> orders = orderService.createOrder(req, user);
+
+        if(req.getPaymentMethod().contains("BY_CREDIT_CARD")){
+            List<PaymentResponse> paymentResponses = orders.stream()
+                    .map(order -> {
+                        try {
+                            return paymentService.createPaymentLink(order);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .collect(Collectors.toList());
+            return new ResponseEntity<>(paymentResponses, HttpStatus.OK);
         }
 
         return new ResponseEntity<>(HttpStatus.OK);
@@ -62,9 +84,9 @@ public class OrderController {
 
 
     @PostMapping("/order/confirm")
-    public ResponseEntity<Order> confirmOrder(@RequestBody OrderRequest req, @RequestHeader("Authorization") String jwt) throws Exception {
+    public ResponseEntity<List<Order>> confirmOrder(@RequestBody OrderRequest req, @RequestHeader("Authorization") String jwt) throws Exception {
         User user = userService.findUserByJwtToken(jwt);
-        Order order = orderService.createOrder(req, user);
+        List<Order> order = orderService.createOrder(req, user);
         return new ResponseEntity<>(order, HttpStatus.OK);
     }
 

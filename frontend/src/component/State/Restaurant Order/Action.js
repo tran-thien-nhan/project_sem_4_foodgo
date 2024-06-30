@@ -11,11 +11,29 @@ import {
     UPDATE_ORDER_STATUS_FAILURE
 } from './ActionType';
 
-export const updateOrderStatus = ({ orderId, orderStatus, jwt }) => {
+// export const updateOrderStatus = ({ orderId, orderStatus, jwt }) => {
+//     return async (dispatch) => {
+//         dispatch({ type: UPDATE_ORDER_STATUS_REQUEST });
+//         try {
+//             const response = await api.put(`/api/admin/orders/${orderId}/${orderStatus}`, {}, {
+//                 headers: {
+//                     Authorization: `Bearer ${jwt}`
+//                 }
+//             });
+//             dispatch({ type: UPDATE_ORDER_STATUS_SUCCESS, payload: response.data });
+//             console.log("UPDATE ORDER STATUS SUCCESS", response.data);
+//         } catch (error) {
+//             dispatch({ type: UPDATE_ORDER_STATUS_FAILURE, payload: error });
+//             console.log("UPDATE ORDER STATUS FAILURE", error);
+//         }
+//     }
+// }
+
+export const updateOrderStatus = ({ orderId, jwt }) => {
     return async (dispatch) => {
         dispatch({ type: UPDATE_ORDER_STATUS_REQUEST });
         try {
-            const response = await api.put(`/api/admin/orders/${orderId}/${orderStatus}`, {}, {
+            const response = await api.put(`/api/admin/order/update-status/${orderId}`, {}, {
                 headers: {
                     Authorization: `Bearer ${jwt}`
                 }

@@ -16,4 +16,6 @@ public interface IngredientService {
 
     // Tính tổng giá của các nguyên liệu
     public long calculateTotalPrice(List<String> ingredients);
+
+    public IngredientsItem findIngredientById(Long id);
 }

@@ -6,10 +6,7 @@ import com.foodgo.request.OrderRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,12 +42,83 @@ public class OrderServiceImp implements OrderService{
     @Autowired
     private PaymentService paymentService;
 
-    @Override
-    public Order createOrder(OrderRequest order, User user) throws Exception {
-        Address shipAddress = order.getDeliveryAddress(); // lay dia chi giao hang tu request
-        //Address savedAddress = addressRepository.save(shipAddress); // luu dia chi giao hang
+//    @Override
+//    public Order createOrder(OrderRequest order, User user) throws Exception {
+//        Address shipAddress = order.getDeliveryAddress(); // lay dia chi giao hang tu request
+//        //Address savedAddress = addressRepository.save(shipAddress); // luu dia chi giao hang
+//
+//        // kiểm tra xem địa chỉ giao hàng đã có trong danh sách địa chỉ của user chưa
+//        Address savedAddress = addressService.findByStreetAddressAndCityAndStateAndPinCode(
+//                shipAddress.getStreetAddress(),
+//                shipAddress.getCity(),
+//                shipAddress.getState(),
+//                shipAddress.getPinCode(),
+//                user.getId()
+//        );
+//
+//        // nếu địa chỉ không tồn tại thì lưu địa chỉ mới
+//        if (savedAddress == null) {
+//            savedAddress = addressRepository.save(shipAddress);
+//            // thêm vào danh sách địa chỉ của user
+//            user.getAddresses().add(savedAddress);
+//            // lưu lại user
+//            userRepository.save(user);
+//        }
+//
+//        Restaurant restaurant = restaurantService.findRestaurantById(order.getRestaurantId());
+//        Order createdOrder = new Order();
+//        createdOrder.setCustomer(user);
+//        createdOrder.setCreatedAt(new Date());
+//        createdOrder.setOrderStatus("PENDING");
+//        createdOrder.setDeliveryAddress(savedAddress);
+//        createdOrder.setRestaurant(restaurant);
+//
+//        Cart cart = cartService.findCartByUserId(user.getId());
+//        List<OrderItem> orderItems = new ArrayList<>();
+//        int count = 0;
+//        for (CartItem cartItem : cart.getCartItems()) {
+//            OrderItem orderItem = new OrderItem();
+//
+//            orderItem.setFood(cartItem.getFood());
+//            orderItem.setIngredients(cartItem.getIngredients());
+//            orderItem.setQuantity(cartItem.getQuantity());
+//            count += cartItem.getQuantity();
+//
+//            orderItem.setTotalPrice(cartItem.getTotalPrice());
+//
+//            OrderItem savedOrderItem = orderItemRepository.save(orderItem);
+//            orderItems.add(savedOrderItem);
+//
+//        }
+//
+//        createdOrder.setTotalItem(Long.valueOf(count));
+//        createdOrder.setTotalAmount(cart.getTotal());
+//
+//        Long totalPrice = cartService.calculateCartTotals(cart);
+//        totalPrice += 18000; // delivery charge
+//
+//        createdOrder.setItems(orderItems);
+//        createdOrder.setTotalPrice(totalPrice != null ? totalPrice : 0L);
+//        createdOrder.setPaymentMethod(order.getPaymentMethod());
+//
+//        if (order.getPaymentMethod().contains("BY_CASH")) {
+//            createdOrder.setIsPaid(true);
+//        }
+//
+//        Order savedOrder = orderRepository.save(createdOrder);
+//        //clear cart
+//        if(createdOrder.getIsPaid()){
+//            cartService.clearCart(cart.getId());
+//            restaurant.getOrders().add(savedOrder); // thêm order vào danh sách order của restaurant
+//        }
+//
+//        return savedOrder;
+//    }
 
-        // kiểm tra xem địa chỉ giao hàng đã có trong danh sách địa chỉ của user chưa
+    @Override
+    public List<Order> createOrder(OrderRequest order, User user) throws Exception {
+        Address shipAddress = order.getDeliveryAddress();
+
         Address savedAddress = addressService.findByStreetAddressAndCityAndStateAndPinCode(
                 shipAddress.getStreetAddress(),
                 shipAddress.getCity(),
@@ -59,63 +127,72 @@ public class OrderServiceImp implements OrderService{
                 user.getId()
         );
 
-        // nếu địa chỉ không tồn tại thì lưu địa chỉ mới
         if (savedAddress == null) {
             savedAddress = addressRepository.save(shipAddress);
-            // thêm vào danh sách địa chỉ của user
             user.getAddresses().add(savedAddress);
-            // lưu lại user
             userRepository.save(user);
         }
 
-        Restaurant restaurant = restaurantService.findRestaurantById(order.getRestaurantId());
-        Order createdOrder = new Order();
-        createdOrder.setCustomer(user);
-        createdOrder.setCreatedAt(new Date());
-        createdOrder.setOrderStatus("PENDING");
-        createdOrder.setDeliveryAddress(savedAddress);
-        createdOrder.setRestaurant(restaurant);
-
         Cart cart = cartService.findCartByUserId(user.getId());
-        List<OrderItem> orderItems = new ArrayList<>();
-        int count = 0;
-        for (CartItem cartItem : cart.getCartItems()) {
-            OrderItem orderItem = new OrderItem();
 
-            orderItem.setFood(cartItem.getFood());
-            orderItem.setIngredients(cartItem.getIngredients());
-            orderItem.setQuantity(cartItem.getQuantity());
-            count += cartItem.getQuantity();
+        // Nhóm các món ăn theo nhà hàng
+        Map<Restaurant, List<CartItem>> itemsGroupedByRestaurant = cart.getCartItems().stream()
+                .collect(Collectors.groupingBy(cartItem -> cartItem.getFood().getRestaurant()));
 
-            orderItem.setTotalPrice(cartItem.getTotalPrice());
+        List<Order> createdOrders = new ArrayList<>();
 
-            OrderItem savedOrderItem = orderItemRepository.save(orderItem);
-            orderItems.add(savedOrderItem);
+        for (Map.Entry<Restaurant, List<CartItem>> entry : itemsGroupedByRestaurant.entrySet()) {
+            Restaurant restaurant = entry.getKey();
+            List<CartItem> cartItems = entry.getValue();
 
+            Order createdOrder = new Order();
+            createdOrder.setCustomer(user);
+            createdOrder.setCreatedAt(new Date());
+            createdOrder.setOrderStatus("PENDING");
+            createdOrder.setDeliveryAddress(savedAddress);
+            createdOrder.setRestaurant(restaurant);
+
+            List<OrderItem> orderItems = new ArrayList<>();
+            int count = 0;
+            long totalAmount = 0;
+
+            for (CartItem cartItem : cartItems) {
+                OrderItem orderItem = new OrderItem();
+                orderItem.setFood(cartItem.getFood());
+                orderItem.setIngredients(cartItem.getIngredients());
+                orderItem.setQuantity(cartItem.getQuantity());
+                count += cartItem.getQuantity();
+                orderItem.setTotalPrice(cartItem.getTotalPrice());
+                OrderItem savedOrderItem = orderItemRepository.save(orderItem);
+                orderItems.add(savedOrderItem);
+                totalAmount += cartItem.getTotalPrice();
+            }
+
+            createdOrder.setTotalItem(Long.valueOf(count));
+            createdOrder.setTotalAmount(totalAmount);
+
+            long totalPrice = totalAmount + 18000; // delivery charge
+            createdOrder.setItems(orderItems);
+            createdOrder.setTotalPrice(totalPrice);
+            createdOrder.setPaymentMethod(order.getPaymentMethod());
+
+            if (order.getPaymentMethod().contains("BY_CASH")) {
+                createdOrder.setIsPaid(true);
+            }
+
+            Order savedOrder = orderRepository.save(createdOrder);
+
+            if (createdOrder.getIsPaid()) {
+                restaurant.getOrders().add(savedOrder);
+            }
+
+            createdOrders.add(savedOrder);
         }
 
-        createdOrder.setTotalItem(Long.valueOf(count));
-        createdOrder.setTotalAmount(cart.getTotal());
+        // clear cart
+        cartService.clearCart(cart.getId());
 
-        Long totalPrice = cartService.calculateCartTotals(cart);
-        totalPrice += 18000; // delivery charge
-
-        createdOrder.setItems(orderItems);
-        createdOrder.setTotalPrice(totalPrice != null ? totalPrice : 0L);
-        createdOrder.setPaymentMethod(order.getPaymentMethod());
-
-        if (order.getPaymentMethod().contains("BY_CASH")) {
-            createdOrder.setIsPaid(true);
-        }
-
-        Order savedOrder = orderRepository.save(createdOrder);
-        //clear cart
-        if(createdOrder.getIsPaid()){
-            cartService.clearCart(cart.getId());
-            restaurant.getOrders().add(savedOrder); // thêm order vào danh sách order của restaurant
-        }
-
-        return savedOrder;
+        return createdOrders;
     }
     @Override
     public Long getTotalPrice(User user) throws Exception {
@@ -142,21 +219,55 @@ public class OrderServiceImp implements OrderService{
         return orderRepository.save(order);
     }
 
+//    @Override
+//    public Order updateOrder(Long orderId, String orderStatus) throws Exception {
+//        Order order = findOrderById(orderId);
+//        if (orderStatus.equals("OUT_FOR_DELIVERY")
+//                || orderStatus.equals("DELIVERED")
+//                || orderStatus.equals("COMPLETED")
+//                || orderStatus.equals("PENDING")
+//                || orderStatus.equals("IN_PROGRESS"))
+//        {
+//            order.setOrderStatus(orderStatus);
+//            return orderRepository.save(order);
+//        } else {
+//            throw new Exception("Invalid order status");
+//        }
+//    }
+
+//    @Override
+//    public Order updateOrder(Long orderId, String orderStatus) throws Exception {
+//        Order order = findOrderById(orderId);
+//        ORDER_STATUS currentStatus = ORDER_STATUS.valueOf(order.getOrderStatus());
+//        ORDER_STATUS newStatus = ORDER_STATUS.valueOf(orderStatus);
+//
+//        if (currentStatus.canTransitionTo(newStatus)) {
+//            order.setOrderStatus(orderStatus);
+//            return orderRepository.save(order);
+//        } else {
+//            throw new Exception("Invalid order status transition");
+//        }
+//    }
+
     @Override
-    public Order updateOrder(Long orderId, String orderStatus) throws Exception {
+    public Order updateOrder(Long orderId) throws Exception {
         Order order = findOrderById(orderId);
-        if (orderStatus.equals("OUT_FOR_DELIVERY")
-                || orderStatus.equals("DELIVERED")
-                || orderStatus.equals("COMPLETED")
-                || orderStatus.equals("PENDING")
-                || orderStatus.equals("IN_PROGRESS"))
-        {
-            order.setOrderStatus(orderStatus);
+
+        if (order.getOrderStatus().equals("CANCELLED")) {
+            refundOrder(orderId);
+        }
+
+        ORDER_STATUS currentStatus = ORDER_STATUS.valueOf(order.getOrderStatus());
+        ORDER_STATUS newStatus = currentStatus.getNext();
+
+        if (currentStatus.canTransitionTo(newStatus)) {
+            order.setOrderStatus(newStatus.toString());
             return orderRepository.save(order);
         } else {
-            throw new Exception("Invalid order status");
+            throw new Exception("Invalid order status transition");
         }
     }
+
 
     @Override
     public void cancelOrder(Long orderId) throws Exception {
@@ -214,13 +325,20 @@ public class OrderServiceImp implements OrderService{
     public String refundOrder(Long orderId) throws Exception {
         Order order = findOrderById(orderId);
 
+//        if (order.getPaymentMethod().contains("BY_CASH")) {
+//            order.setOrderStatus("CANCELLED");
+//            order.setPaymentIntentId("refunded by cash");
+//            orderRepository.save(order);
+//            return "succeeded";
+//        }
+
         if (order.getIsPaid() && order.getPaymentMethod().contains("BY_CREDIT_CARD")) {
             String paymentIntentId = order.getPaymentIntentId();
             String refundStatus = paymentService.refundPayment(paymentIntentId);
 
             if ("succeeded".equals(refundStatus)) {
                 order.setIsPaid(false);
-                order.setOrderStatus("REFUNDED");
+                order.setOrderStatus("CANCELLED");
                 orderRepository.save(order);
             }
 

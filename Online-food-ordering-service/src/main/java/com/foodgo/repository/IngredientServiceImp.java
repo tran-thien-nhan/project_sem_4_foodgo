@@ -86,4 +86,10 @@ public class IngredientServiceImp implements IngredientService {
         }
         return total; // trả về total
     }
+
+    @Override
+    public IngredientsItem findIngredientById(Long id) {
+        Optional<IngredientsItem> opt = ingredientItemRepository.findById(id); // tìm ingredient item theo id
+        return opt.orElse(null); // trả về ingredient item hoặc null nếu không tìm thấy
+    }
 }

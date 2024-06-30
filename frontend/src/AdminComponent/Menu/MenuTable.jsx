@@ -24,11 +24,12 @@ import CreateIcon from '@mui/icons-material/Create';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { getMenuItemsByRestaurantId, deleteFoodAction } from '../../component/State/Menu/Action';
+import { getMenuItemsByRestaurantId, deleteFoodAction, updateMenuItemsAvailability } from '../../component/State/Menu/Action';
+
 
 const MenuTable = () => {
     const dispatch = useDispatch();
-    const navigate = useNavigate();
+    const jwt = localStorage.getItem('jwt');
     const { restaurant, menu } = useSelector(store => store);
     const [showAll, setShowAll] = useState({});
     const [searchTerm, setSearchTerm] = useState('');
@@ -36,13 +37,13 @@ const MenuTable = () => {
     const [sortColumn, setSortColumn] = useState('');
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const navigate = useNavigate();
     const [filters, setFilters] = useState({
         vegetarian: false,
         nonVegetarian: false,
         seasonal: false,
         foodCategory: ""
     });
-    const jwt = localStorage.getItem('jwt');
 
     useEffect(() => {
         dispatch(getMenuItemsByRestaurantId({
@@ -56,7 +57,7 @@ const MenuTable = () => {
     }, [dispatch, restaurant.usersRestaurant?.id, jwt]);
 
     const handleDelete = (foodId) => {
-        const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa mục này không?");
+        const confirmDelete = window.confirm("Are you sure?");
         if (confirmDelete) {
             dispatch(deleteFoodAction({
                 foodId: foodId,
@@ -64,6 +65,13 @@ const MenuTable = () => {
             }));
         }
     };
+
+    const handleUpdateAvailability = (foodId) => {
+        dispatch(updateMenuItemsAvailability({
+            foodId: foodId,
+            jwt: localStorage.getItem('jwt')
+        }));
+    }
 
     const handleToggle = (id) => {
         setShowAll(prevShowAll => ({ ...prevShowAll, [id]: !prevShowAll[id] }));
@@ -223,7 +231,23 @@ const MenuTable = () => {
                                         }
                                     </TableCell>
                                     <TableCell align="right">{item.price.toLocaleString('vi-VN')}đ</TableCell>
-                                    <TableCell align="right">{item.available ? "Yes" : "No"}</TableCell>
+                                    <TableCell align="right">
+                                        {
+                                            item.available
+                                                ? <Chip
+                                                    label={"in stock"}
+                                                    style={{ cursor: 'pointer', margin: '3px' }}
+                                                    onClick={() => handleUpdateAvailability(item.id)}
+                                                    sx={{ backgroundColor: "green" }}
+                                                />
+                                                : <Chip
+                                                    label={"out of stock"}
+                                                    style={{ cursor: 'pointer', margin: '3px' }}
+                                                    onClick={() => handleUpdateAvailability(item.id)}
+                                                    sx={{ backgroundColor: "#e91e63" }}
+                                                />
+                                        }
+                                    </TableCell>
                                     <TableCell align="right">
                                         <IconButton aria-label="delete" onClick={() => handleDelete(item.id)}>
                                             <DeleteIcon />

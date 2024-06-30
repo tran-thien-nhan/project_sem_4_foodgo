@@ -4,7 +4,7 @@ public enum ORDER_STATUS {
     PENDING,
     CONFIRMED,
     DELIVERING,
-    DELIVERED,
+    COMPLETED,
     CANCELLED;
 
     private ORDER_STATUS next;
@@ -16,8 +16,8 @@ public enum ORDER_STATUS {
     static {
         PENDING.next = CONFIRMED;
         CONFIRMED.next = DELIVERING;
-        DELIVERING.next = DELIVERED;
-        DELIVERED.next = null; // DELIVERED là trạng thái cuối cùng
+        DELIVERING.next = COMPLETED;
+        COMPLETED.next = CANCELLED;
         CANCELLED.next = null; // CANCELLED không có trạng thái kế tiếp
     }
 

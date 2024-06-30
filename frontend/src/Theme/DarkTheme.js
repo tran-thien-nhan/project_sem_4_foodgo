@@ -11,6 +11,25 @@ export const darkTheme = createTheme({ //createTheme là một hàm tạo theme 
             main: "#f48fb1", // Pink
             // main: "#000000", // Black 
         },
+        error: {
+            main: "#f44336", // Red
+        },
+        warning: {
+            main: "#ff9800", // Orange
+        },
+        info: {
+            main: "#2196f3", // Blue
+        },
+        success: {
+            main: "#4caf50", // Green
+        },
+        background: {
+            default: "#121212", // Dark grey
+            paper: "#121212", // Dark grey
+        },
+        text: {
+            primary: "#ffffff", // White
+        },
         black: {
             main: "#000000", // Black
         },

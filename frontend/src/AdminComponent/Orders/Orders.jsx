@@ -1,6 +1,6 @@
-import { Card, FormControl, FormControlLabel, Radio, RadioGroup, Typography } from '@mui/material'
-import React, { useState } from 'react'
-import OrderTable from './OrderTable'
+import { Card, FormControl, FormControlLabel, Radio, RadioGroup, Typography } from '@mui/material';
+import React, { useState } from 'react';
+import OrderTable from './OrderTable';
 
 const OrderStatus = [
   {
@@ -8,8 +8,8 @@ const OrderStatus = [
     label: "All"
   },
   {
-    value: "DELIVERY",
-    label: "delivery"
+    value: "DELIVERING",
+    label: "Delivery"
   },
   {
     value: "PENDING",
@@ -23,13 +23,14 @@ const OrderStatus = [
     value: "CANCELLED",
     label: "Cancelled"
   }
-]
+];
 
 const Orders = () => {
-  const [filterValue, setFilterValue] = useState("all")
+  const [filterValue, setFilterValue] = useState("ALL");
   const handleFilter = (e, value) => {
-    setFilterValue(value)
-  }
+    setFilterValue(value);
+  };
+
   return (
     <div className='px-2'>
       <Card className='p-5'>
@@ -37,7 +38,7 @@ const Orders = () => {
           Order Status
         </Typography>
         <FormControl>
-          <RadioGroup row name='category' value={filterValue || "all"} onChange={handleFilter}>
+          <RadioGroup row name='category' value={filterValue} onChange={handleFilter}>
             {
               OrderStatus.map((item) => (
                 <FormControlLabel
@@ -54,7 +55,7 @@ const Orders = () => {
       </Card>
       <OrderTable filterValue={filterValue} />
     </div>
-  )
-}
+  );
+};
 
-export default Orders
+export default Orders;
