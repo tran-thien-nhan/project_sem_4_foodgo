@@ -4,6 +4,7 @@ import React from 'react'
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../State/Authentication/Action';
+import { Bounce, toast } from 'react-toastify';
 
 const initialValues = {
     email: "",
@@ -14,7 +15,7 @@ const LoginForm = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const handleSubmit = (values) => {
-        dispatch(loginUser({userData:values, navigate}));
+        dispatch(loginUser({ userData: values, navigate }));
     }
     return (
         <div>
@@ -37,6 +38,7 @@ const LoginForm = () => {
                         fullWidth
                         variant='outlined'
                         margin='normal'
+                        type='password'
                     />
                     <Button
                         type='submit'

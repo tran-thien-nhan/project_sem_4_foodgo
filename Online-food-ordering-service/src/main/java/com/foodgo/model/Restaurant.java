@@ -34,6 +34,7 @@ public class Restaurant {
 
     private String openingHours; // Giờ mở cửa
 
+    @JsonIgnore
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true) // Một nhà hàng có nhiều order, mappedBy trỏ tới restaurant trong Order
     // Khi xóa nhà hàng thì xóa hết order, orphanRemoval xóa order khi không có nhà hàng nào sử dụng
     private List<Order> orders = new ArrayList<>(); // Mảng chứa thông tin các order

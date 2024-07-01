@@ -18,9 +18,9 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/profile")
-    public ApiResponse<?> findUserByJwtToken(@RequestHeader("Authorization") String jwt) throws Exception {
+    public ResponseEntity<User> findUserByJwtToken(@RequestHeader("Authorization") String jwt) throws Exception {
         User user = userService.findUserByJwtToken(jwt);
-        //return new ResponseEntity<>(user, HttpStatus.OK);
-        return ApiResponse.success(user,"find user by jwt token successfully");
+        return new ResponseEntity<>(user, HttpStatus.OK);
+        //return ApiResponse.success(user,"find user by jwt token successfully");
     }
 }

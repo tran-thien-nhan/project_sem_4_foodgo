@@ -27,7 +27,7 @@ public class Order {
 
     private Long totalAmount;
 
-    private String orderStatus;
+    private String orderStatus = ORDER_STATUS.PENDING.name();
 
     private Date createdAt;
 
@@ -38,7 +38,13 @@ public class Order {
     private List<OrderItem> items;
 
     //private Payment payment;
-    private int totalItem;
+    private Long totalItem;
 
     private Long totalPrice;
+
+    private String PaymentMethod;
+
+    private Boolean isPaid = false;
+
+    private String paymentIntentId;
 }

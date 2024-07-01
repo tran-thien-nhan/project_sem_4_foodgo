@@ -1,5 +1,6 @@
 package com.foodgo.request;
 
+import com.foodgo.model.IngredientsItem;
 import lombok.Data;
 
 import java.util.List;
@@ -9,6 +10,6 @@ public class AddCartItemRequest {
     private Long foodId;
     private int quantity;
     private List<String> ingredients;
-
-
+    private Long totalPrice;
+    private Long ingredientsTotalPrice;
 }

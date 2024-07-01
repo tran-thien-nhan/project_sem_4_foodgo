@@ -1,29 +1,40 @@
-import React from 'react'
+import React, { useEffect } from 'react';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { logOut } from '../State/Authentication/Action';
+import { getAllRestaurantsAction } from '../State/Restaurant/Action';
 
 const UserProfile = () => {
-    const handleLogout = () => {
-        console.log("Logout");
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const jwt = localStorage.getItem('jwt');
+    const {auth} = useSelector(store => store);
+
+    console.log(auth);
+
+    const handleNavigate = (itemName) => {
+        if (itemName === "Logout") {
+            dispatch(logOut());
+            navigate("/");
+        } else {
+            navigate(`/my-profile/${itemName.toLowerCase()}`);
+        }
     }
+
     return (
-        <div
-            className='min-h-[80vh] flex flex-col justify-center items-center'
-        >
-            <div
-                className='flex flex-col justify-center items-center'
-            >
+        <div className='min-h-[80vh] flex flex-col justify-center items-center'>
+            <div className='flex flex-col justify-center items-center'>
                 <AccountCircleIcon sx={{ fontSize: "9rem" }} />
-                <h1
-                    className='py-5 text-2xl font-semibold'
-                >
-                    nhan thien tran
+                <h1 className='py-5 text-2xl font-semibold'>
+                    {auth.user?.fullName}
                 </h1>
-                <p>Email: nhan@gmail.com</p>
+                <p>Email: {auth.user?.email}</p>
                 <Button
                     variant='contained'
-                    onClick={handleLogout}
+                    onClick={() => handleNavigate("Logout")}
                     sx={{ margin: "2rem 0rem" }}
                 >
                     <LogoutIcon
@@ -32,10 +43,9 @@ const UserProfile = () => {
                     />
                     Logout
                 </Button>
-
             </div>
         </div>
-    )
+    );
 }
 
-export default UserProfile
+export default UserProfile;

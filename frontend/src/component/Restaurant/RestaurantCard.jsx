@@ -1,23 +1,62 @@
-import { Card, IconButton } from '@mui/material'
-import React from 'react'
+import { Card, IconButton } from '@mui/material';
+import React, { useEffect } from 'react';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import Chip from '@mui/material/Chip';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { addToFavorite } from '../State/Authentication/Action';
+import { isPresentInFavorite } from '../Config/logic';
+import { getRestaurantById } from '../State/Restaurant/Action';
+import { Bounce, toast } from 'react-toastify';
 
-const RestaurantCard = () => {
+const RestaurantCard = ({ item }) => {
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const jwt = localStorage.getItem('jwt');
+    const { auth } = useSelector(store => store);
+
+    const handleAddToFavorite = () => {
+        if(jwt){
+            dispatch(addToFavorite({ jwt: jwt, restaurantId: item.id }));
+        }
+        else{
+            toast.warn('Please login to add to favorites !', {
+                position: "top-center",
+                autoClose: 2000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "dark",
+                transition: Bounce,
+                });
+            navigate('/account/login');
+        }
+    }
+
+    console.log("item", item);
+
+    const handleNavigateToRestaurant = () => {
+        //let newItem = dispatch(getRestaurantById({ jwt: jwt, restaurantId: item.id }));
+        
+        navigate(`/restaurant/${item.address?.city || item.city}/${item.name || item.title}/${item.id}`);
+    }
+
     return (
         <Card className='w-[18rem]'>
             <div className={`${true ? 'cursor-pointer' : 'cursor-not-allowed'} relative`}>
 
                 <img
+                    onClick={handleNavigateToRestaurant}
                     className='w-full h-[10rem] object-cover object-center rounded-t-md'
-                    src='https://cdn.vox-cdn.com/thumbor/5d_RtADj8ncnVqh-afV3mU-XQv0=/0x0:1600x1067/1200x900/filters:focal(672x406:928x662)/cdn.vox-cdn.com/uploads/chorus_image/image/57698831/51951042270_78ea1e8590_h.7.jpg' alt="" />
+                    src={item?.images[0] || ""} alt="" />
                 <Chip
                     size='small'
                     className='absolute top-2 right-2'
-                    color={true ? 'success' : 'error'}
-                    label={true ? 'Open' : 'Closed'}
+                    color={item.open ? 'success' : 'error'}
+                    label={item.open ? 'Open' : 'Closed'}
                 />
 
             </div>
@@ -29,21 +68,22 @@ const RestaurantCard = () => {
                 >
 
                     <p
-                        className='text-lg font-semibold'
+                        className='text-lg font-semibold cursor-pointer'
+                        onClick={handleNavigateToRestaurant}
                     >
-                        Alma Lounge
+                        {item.name || item.title}
                     </p>
 
                     <p
                         className='text-gray-500 text-sm'
                     >
-                        Craving it all? Order from this restaurant
+                        {item.description}
                     </p>
 
                 </div>
                 <div>
-                    <IconButton>
-                        {true ? <FavoriteIcon className='text-red-500' /> : <FavoriteBorderIcon />}
+                    <IconButton onClick={handleAddToFavorite}>
+                        {isPresentInFavorite(auth.favorites, item) ? <FavoriteIcon className='text-red-500' /> : <FavoriteBorderIcon />}
                     </IconButton>
                 </div>
 
@@ -52,4 +92,4 @@ const RestaurantCard = () => {
     )
 }
 
-export default RestaurantCard
+export default RestaurantCard;

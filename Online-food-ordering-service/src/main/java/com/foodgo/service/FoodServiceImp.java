@@ -8,6 +8,7 @@ import com.foodgo.request.CreateFoodRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -18,10 +19,16 @@ public class FoodServiceImp implements FoodService{
     @Autowired
     private FoodRepository foodRepository;
 
+    @Autowired
+    private CategoryService categoryService;
+
     @Override
-    public Food createFood(CreateFoodRequest req, Category category, Restaurant restaurant) {
+    public Food createFood(CreateFoodRequest req,  Category category, Restaurant restaurant) throws Exception {
         Food food = new Food();
+        //Category findCategory = categoryService.findCategoryById(category.getId());
+
         food.setFoodCategory(category);
+        //food.setFoodCategory(findCategory);
         food.setRestaurant(restaurant);
         food.setDescription(req.getDescription());
         food.setImages(req.getImages());
@@ -30,6 +37,8 @@ public class FoodServiceImp implements FoodService{
         food.setIngredients(req.getIngredients());
         food.setSeasonal(req.isSeasional());
         food.setVegetarian(req.isVegetarian());
+        food.setAvailable(false);
+        food.setCreationDate(new Date());
 
         Food savedFood = foodRepository.save(food);
         restaurant.getFoods().add(savedFood);

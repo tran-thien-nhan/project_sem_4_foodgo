@@ -1,6 +1,7 @@
 package com.foodgo.controller;
 
 import com.foodgo.helper.ApiResponse;
+import com.foodgo.model.ORDER_STATUS;
 import com.foodgo.model.Order;
 import com.foodgo.model.User;
 import com.foodgo.service.OrderService;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -22,24 +24,46 @@ public class AdminOrderController {
     private UserService userService;
 
     @GetMapping("/order/restaurant/{id}")
-    public ApiResponse<?> getOrderHistory(@PathVariable Long id,
+    public ResponseEntity<Order> getOrderHistory(@PathVariable Long id,
                                                     @RequestParam(required = false) String order_status,
                                                     @RequestHeader("Authorization") String jwt) throws Exception {
         try {
             User user = userService.findUserByJwtToken(jwt);
             List<Order> order = orderService.getRestaurantsOrder(id, order_status);
-            return ApiResponse.success(order, "get order history success");
+            return new ResponseEntity(order, HttpStatus.OK);
         } catch (Exception e) {
-            return ApiResponse.errorServer(null, "error", null);
+            return new ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @PutMapping("/order/{id}/{orderStatus}")
+    @GetMapping("/all/order/restaurant/{id}")
+    public ResponseEntity<Order> getAllOrderHistory(@PathVariable Long id,
+                                          @RequestHeader("Authorization") String jwt) throws Exception {
+        try {
+            User user = userService.findUserByJwtToken(jwt);
+            List<Order> order = orderService.getRestaurantsAllOrder(id);
+            return new ResponseEntity(order, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+//    @PutMapping("/order/{id}/{orderStatus}")
+//    public ResponseEntity<Order> updateOrderStatus(@PathVariable Long id,
+//                                                   @PathVariable String orderStatus,
+//                                                   @RequestHeader("Authorization") String jwt) throws Exception {
+//        User user = userService.findUserByJwtToken(jwt);
+//        Order order = orderService.updateOrder(id, orderStatus);
+//        return new ResponseEntity<>(order, HttpStatus.OK);
+//    }
+
+    @PutMapping("/order/update-status/{id}")
     public ResponseEntity<Order> updateOrderStatus(@PathVariable Long id,
-                                                   @PathVariable String orderStatus,
+                                                   @RequestBody Map<String, String> requestBody,
                                                    @RequestHeader("Authorization") String jwt) throws Exception {
         User user = userService.findUserByJwtToken(jwt);
-        Order order = orderService.updateOrder(id, orderStatus);
+        ORDER_STATUS newStatus = ORDER_STATUS.valueOf(requestBody.get("newStatus"));
+        Order order = orderService.updateOrder(id, newStatus);
         return new ResponseEntity<>(order, HttpStatus.OK);
     }
 }

@@ -46,7 +46,7 @@ public class IngredientServiceImp implements IngredientService {
     }
 
     @Override
-    public IngredientsItem createdIngredientItem(Long restaurantId, String ingredientName, Long categoryId) throws Exception {
+    public IngredientsItem createdIngredientItem(Long restaurantId, String ingredientName, Long categoryId, Long price, int quantity) throws Exception {
         Restaurant restaurant = restaurantService.findRestaurantById(restaurantId); // tìm nhà hàng theo id người dùng
         IngredientCategory category = findIngredientCategoryById(categoryId); // tìm category theo id
 
@@ -54,6 +54,8 @@ public class IngredientServiceImp implements IngredientService {
         item.setName(ingredientName); // set tên cho ingredient item
         item.setCategory(category); // set category cho ingredient item
         item.setRestaurant(restaurant); // set nhà hàng cho ingredient item
+        item.setPrice(price); // set giá cho ingredient item
+        item.setQuantity(quantity); // set số lượng cho ingredient item
 
         IngredientsItem ingredient = ingredientItemRepository.save(item); // lưu ingredient item vào database
         category.getIngredients().add(ingredient); // thêm ingredient item vào danh sách ingredient của category
@@ -74,5 +76,20 @@ public class IngredientServiceImp implements IngredientService {
         IngredientsItem ingredientsItem = optinalIngredientsItem.get(); // lấy ingredient item
         ingredientsItem.setInStoke(!ingredientsItem.isInStoke()); // cập nhật trạng thái ingredient item
         return ingredientItemRepository.save(ingredientsItem); // lưu ingredient item vào database
+    }
+
+    @Override
+    public long calculateTotalPrice(List<String> ingredients) {
+        long total = 0; // khởi tạo total
+        for (String ingredient : ingredients) { // duyệt qua từng ingredient
+            total += Long.parseLong(ingredient); // cộng vào total
+        }
+        return total; // trả về total
+    }
+
+    @Override
+    public IngredientsItem findIngredientById(Long id) {
+        Optional<IngredientsItem> opt = ingredientItemRepository.findById(id); // tìm ingredient item theo id
+        return opt.orElse(null); // trả về ingredient item hoặc null nếu không tìm thấy
     }
 }

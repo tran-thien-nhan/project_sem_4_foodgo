@@ -1,11 +1,15 @@
-import { Button, Divider, Card, Modal, Box, Grid, TextField } from '@mui/material';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Button, Divider, Card, Modal, Box, Grid, TextField, IconButton, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio } from '@mui/material';
+import ClearIcon from '@mui/icons-material/Clear';
+import { useDispatch, useSelector } from 'react-redux';
 import CartItem from './CartItem';
 import AddressCard from './AddressCard';
-import HomeIcon from '@mui/icons-material/Home';
-import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
+import { useNavigate } from 'react-router-dom';
+import { getAllCartItems, clearCartAction, findCart } from '../State/Cart/Action';
+import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
+import { createOrder, createPaymentLink } from '../State/Order/Action';
 
 export const style = {
     position: 'absolute',
@@ -24,31 +28,64 @@ const initialValues = {
     state: '',
     pinCode: '',
     city: '',
+    paymentMethod: 'BY_CASH', // giá trị mặc định cho hình thức thanh toán
 };
-
-const validationSchema = Yup.object().shape({
-    streetAddress: Yup.string().required('Street Address Is Required'),
-    state: Yup.string().required('State Is Required'),
-    pinCode: Yup.string().required('Pin Code Is Required'),
-    city: Yup.string().required('City Is Required'),
-});
-
-const HandleSubmit = (values) => {
-    console.log('Address Added ', values);
-};
-
-const items = [1, 1];
 
 const Cart = () => {
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = useState(false);
+    const { auth, cart } = useSelector(store => store);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const token = localStorage.getItem('jwt');
+    const [cartItems, setCartItems] = useState([]);
+    const [totalPrice, setTotalPrice] = useState(0);
+
+    useEffect(() => {
+        dispatch(findCart(token));
+    }, [dispatch, token]);
+
+    const validationSchema = Yup.object().shape({
+        streetAddress: Yup.string().required('Street Address Is Required'),
+        state: Yup.string().required('State Is Required'),
+        pinCode: Yup.string().required('Pin Code Is Required'),
+        city: Yup.string().required('City Is Required'),
+        paymentMethod: Yup.string().required('Payment Method Is Required'),
+    });
+
+    const HandleSubmit = (values) => {
+        const data = {
+            jwt: localStorage.getItem('jwt'),
+            order: {
+                restaurantId: cart.cart?.cartItems[0].food?.restaurant?.id,
+                deliveryAddress: {
+                    fullName: auth.user?.fullName,
+                    streetAddress: values.streetAddress,
+                    city: values.city,
+                    state: values.state,
+                    pinCode: values.pinCode,
+                    country: "vietnam"
+                },
+                paymentMethod: values.paymentMethod, 
+            }
+        }
+        dispatch(createOrder(data));
+
+        // navigate về trang chủ "/"
+        //window.location.href = '/';
+        
+        if (values.paymentMethod === 'BY_CASH') {
+            window.location.href = '/';
+        }
+    };
+
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
-    const handleSelectAddress = () => { 
+    const handleSelectAddress = () => {
         console.log('Address Selected');
     };
 
-    const createOrderUsingSelectedAddress = () => { 
+    const createOrderUsingSelectedAddress = () => {
         console.log('Order Created Using Selected Address');
     };
 
@@ -56,20 +93,35 @@ const Cart = () => {
         handleOpen();
     };
 
+    const handleClearCart = () => {
+        dispatch(clearCartAction(token));
+        navigate("/")
+    };
+
     return (
         <>
             <main className='lg:flex justify-between'>
                 <section className='lg:w-[30%] space-y-6 lg:min-h-screen pt-10'>
-                    {items.map((item, index) => (
-                        <CartItem key={index} />
+                    {cart.cart?.cartItems?.map((item) => (
+                        <CartItem key={item.id} item={item}/>
                     ))}
+                    <div className="flex justify-end w-full px-3">
+                        <Button
+                            variant='contained'
+                            color='secondary'
+                            onClick={handleClearCart}
+                            startIcon={<ClearIcon />}
+                        >
+                            Clear Cart
+                        </Button>
+                    </div>
                     <Divider />
                     <div className='billDetails px-5 text-sm'>
                         <p className='font-extrabold py-5'>Bill Detail</p>
                         <div className='space-y-3'>
                             <div className='flex justify-between text-gray-400'>
                                 <p>Item Total</p>
-                                <p>600.000đ</p>
+                                <p>{cart.cart?.total.toLocaleString('vi-VN')}đ</p>
                             </div>
                             <div className='flex justify-between text-gray-400'>
                                 <p>Delivery Fee</p>
@@ -85,9 +137,9 @@ const Cart = () => {
                             </div>
                             <Divider />
                         </div>
-                        <div className='flex justify-between text-gray-400'>
+                        <div className='flex justify-between text-gray-400 mb-8'>
                             <p>Total Pay</p>
-                            <p>618.100đ</p>
+                            <p>{(cart.cart?.total + 10000 + 1000 + 7100).toLocaleString('vi-VN')}đ</p>
                         </div>
                     </div>
                 </section>
@@ -187,13 +239,21 @@ const Cart = () => {
                                     />
                                 </Grid>
                                 <Grid item xs={12}>
+                                    <FormControl component="fieldset">
+                                        <FormLabel component="legend">Payment Method</FormLabel>
+                                        <Field as={RadioGroup} name="paymentMethod">
+                                            <FormControlLabel value="BY_CASH" control={<Radio />} label="Cash" />
+                                            <FormControlLabel value="BY_CREDIT_CARD" control={<Radio />} label="Credit Card" />
+                                        </Field>
+                                    </FormControl>
+                                </Grid>
+                                <Grid item xs={12}>
                                     <Button variant='contained' fullWidth type='submit' color='primary'>
-                                        Save
+                                        Delivery Here
                                     </Button>
                                 </Grid>
                             </Grid>
                         </Form>
-
                     </Formik>
                 </Box>
             </Modal>
