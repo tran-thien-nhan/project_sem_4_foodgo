@@ -26,6 +26,7 @@ import {
     REFUND_ORDER_FAILURE
 } from './ActionType';
 import { Bounce, toast } from "react-toastify";
+import { fetchRestaurantsAllOrder } from '../Restaurant Order/Action';
 
 export const createOrder = (reqData) => {
     return async (dispatch) => {
@@ -42,6 +43,7 @@ export const createOrder = (reqData) => {
 
                 //do là mảng chứa các payment_url nên sẽ dùng vòng lặp để mở 2 link này sang tab mới
                 // Mở mỗi payment_url trong tab mới
+                
                 data.forEach(paymentResponse => {
                     window.open(paymentResponse.payment_url, '_blank');
                 });
@@ -161,7 +163,11 @@ export const refundOrder = (reqData) => {
             });
 
             dispatch({ type: REFUND_ORDER_SUCCESS, payload: data });
-            dispatch(getUsersOrders(reqData.jwt)); // Cập nhật lại danh sách đơn hàng sau khi hoàn tiền
+            // dispatch(getUsersOrders(reqData.jwt)); // Cập nhật lại danh sách đơn hàng sau khi hoàn tiền
+            dispatch(fetchRestaurantsAllOrder({
+                restaurantId: reqData.restaurantId,
+                jwt: reqData.jwt,
+            }))
             toast.success('refund order successfully!', {
                 position: "top-center",
                 autoClose: 1000,

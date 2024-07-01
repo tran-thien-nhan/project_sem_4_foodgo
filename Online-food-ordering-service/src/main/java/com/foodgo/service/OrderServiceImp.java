@@ -204,7 +204,7 @@ public class OrderServiceImp implements OrderService{
     public Order toggleOrderPaymentStatus(Long orderId) throws Exception {
         Order order = findOrderById(orderId);
         order.setIsPaid(true);
-        order.setOrderStatus("PAID");
+        order.setOrderStatus("PENDING");
         // tìm cart
         Cart cart = cartService.findCartByUserId(order.getCustomer().getId());
         // neu cart khong rong
@@ -249,16 +249,25 @@ public class OrderServiceImp implements OrderService{
 //        }
 //    }
 
+//    @Override
+//    public Order updateOrder(Long orderId) throws Exception {
+//        Order order = findOrderById(orderId);
+//
+//        ORDER_STATUS currentStatus = ORDER_STATUS.valueOf(order.getOrderStatus());
+//        ORDER_STATUS newStatus = currentStatus.getNext();
+//
+//        if (currentStatus.canTransitionTo(newStatus)) {
+//            order.setOrderStatus(newStatus.toString());
+//            return orderRepository.save(order);
+//        } else {
+//            throw new Exception("Invalid order status transition");
+//        }
+//    }
     @Override
-    public Order updateOrder(Long orderId) throws Exception {
+    public Order updateOrder(Long orderId, ORDER_STATUS newStatus) throws Exception {
         Order order = findOrderById(orderId);
 
-        if (order.getOrderStatus().equals("CANCELLED")) {
-            refundOrder(orderId);
-        }
-
         ORDER_STATUS currentStatus = ORDER_STATUS.valueOf(order.getOrderStatus());
-        ORDER_STATUS newStatus = currentStatus.getNext();
 
         if (currentStatus.canTransitionTo(newStatus)) {
             order.setOrderStatus(newStatus.toString());
@@ -325,20 +334,21 @@ public class OrderServiceImp implements OrderService{
     public String refundOrder(Long orderId) throws Exception {
         Order order = findOrderById(orderId);
 
-//        if (order.getPaymentMethod().contains("BY_CASH")) {
-//            order.setOrderStatus("CANCELLED");
-//            order.setPaymentIntentId("refunded by cash");
-//            orderRepository.save(order);
-//            return "succeeded";
-//        }
+        if(order.getPaymentMethod().contains("BY_CASH")){
+            String paymentIntentId = PAYMENT_METHOD.BY_CASH.toString();
+            String refundStatus = "succeeded";
+            order.setOrderStatus("CANCELLED_REFUNDED");
+            order.setPaymentIntentId(paymentIntentId);
+            orderRepository.save(order);
+            return refundStatus;
+        }
 
         if (order.getIsPaid() && order.getPaymentMethod().contains("BY_CREDIT_CARD")) {
             String paymentIntentId = order.getPaymentIntentId();
             String refundStatus = paymentService.refundPayment(paymentIntentId);
 
             if ("succeeded".equals(refundStatus)) {
-                order.setIsPaid(false);
-                order.setOrderStatus("CANCELLED");
+                order.setOrderStatus("CANCELLED_REFUNDED");
                 orderRepository.save(order);
             }
 

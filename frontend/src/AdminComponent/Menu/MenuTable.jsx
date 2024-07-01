@@ -36,7 +36,7 @@ const MenuTable = () => {
     const [sortOrder, setSortOrder] = useState('asc');
     const [sortColumn, setSortColumn] = useState('');
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
     const navigate = useNavigate();
     const [filters, setFilters] = useState({
         vegetarian: false,

@@ -40,7 +40,7 @@ const IngredientTable = () => {
 
     // Pagination state
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(25);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
 
     useEffect(() => {
         dispatch(getIngredientsOfRestaurant({
@@ -86,7 +86,7 @@ const IngredientTable = () => {
         setSortOrder('asc');
         setSortColumn('');
         setPage(0);
-        setRowsPerPage(25);
+        setRowsPerPage(5);
     };
 
     const filteredIngredients = ingredients.ingredients
@@ -208,7 +208,7 @@ const IngredientTable = () => {
                                         <Button onClick={() => handleUpdateStock(item.id)}>
                                             {item.inStoke ? (
                                                 <div className='pt-3 space-x-2'>
-                                                    <Chip label="in stock" className='my-1' />
+                                                    <Chip label="in stock" className='my-1' sx={{ backgroundColor: "green" }} />
                                                 </div>
                                             ) : (
                                                 <div className='pt-3 space-x-2'>

@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider } from '@emotion/react';
-import { darkTheme } from './Theme/DarkTheme';
-import { CssBaseline } from '@mui/material';
+
+import { CssBaseline, ThemeProvider } from '@mui/material';
 import { Navbar } from './component/Navbar/Navbar';
 import Home from './component/Home/Home';
 import RestaurantDetail from './component/Restaurant/RestaurantDetail';
@@ -16,6 +15,7 @@ import { Bounce, ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Routers from './Routers/Routers';
 import { getRestaurantByUserId } from './component/State/Restaurant/Action';
+import { darkTheme } from './Theme/DarkTheme';
 
 function App() {
   const dispatch = useDispatch();

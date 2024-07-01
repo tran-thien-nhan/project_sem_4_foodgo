@@ -1,6 +1,7 @@
 package com.foodgo.controller;
 
 import com.foodgo.helper.ApiResponse;
+import com.foodgo.model.ORDER_STATUS;
 import com.foodgo.model.Order;
 import com.foodgo.model.User;
 import com.foodgo.service.OrderService;
@@ -60,12 +61,9 @@ public class AdminOrderController {
     public ResponseEntity<Order> updateOrderStatus(@PathVariable Long id,
                                                    @RequestBody Map<String, String> requestBody,
                                                    @RequestHeader("Authorization") String jwt) throws Exception {
-//        String orderStatus = requestBody.get("orderStatus");
-//        if (orderStatus == null) {
-//            throw new Exception("Order status is required");
-//        }
         User user = userService.findUserByJwtToken(jwt);
-        Order order = orderService.updateOrder(id);
+        ORDER_STATUS newStatus = ORDER_STATUS.valueOf(requestBody.get("newStatus"));
+        Order order = orderService.updateOrder(id, newStatus);
         return new ResponseEntity<>(order, HttpStatus.OK);
     }
 }

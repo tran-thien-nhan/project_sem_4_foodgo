@@ -30,8 +30,8 @@ export const darkTheme = createTheme({ //createTheme là một hàm tạo theme 
         text: {
             primary: "#ffffff", // White
         },
-        black: {
-            main: "#000000", // Black
+        grey: {
+            main: "#757575", // Grey
         },
         background: {
             main: "#000000", // Dark grey

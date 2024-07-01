@@ -71,7 +71,7 @@ const Cart = () => {
         dispatch(createOrder(data));
 
         // navigate về trang chủ "/"
-        window.location.href = '/';
+        //window.location.href = '/';
         
         if (values.paymentMethod === 'BY_CASH') {
             window.location.href = '/';

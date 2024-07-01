@@ -7,7 +7,10 @@ import {
     UPDATE_ORDER_STATUS_FAILURE,
     GET_RESTAURANTS_ALL_ORDER_REQUEST,
     GET_RESTAURANTS_ALL_ORDER_SUCCESS,
-    GET_RESTAURANTS_ALL_ORDER_FAILURE
+    GET_RESTAURANTS_ALL_ORDER_FAILURE,
+    REFUND_ORDER_REQUEST,
+    REFUND_ORDER_SUCCESS,
+    REFUND_ORDER_FAILURE
 } from './ActionType';
 
 const initialState = {
@@ -19,8 +22,9 @@ const initialState = {
 export const restaurantOrderReducer = (state = initialState, action) => {
     switch (action.type) {
         case GET_RESTAURANTS_ORDER_REQUEST:
-        case GET_RESTAURANTS_ALL_ORDER_REQUEST:
         case UPDATE_ORDER_STATUS_REQUEST:
+        case GET_RESTAURANTS_ALL_ORDER_REQUEST:
+        case REFUND_ORDER_REQUEST:
             return {
                 ...state,
                 loading: true,
@@ -40,9 +44,17 @@ export const restaurantOrderReducer = (state = initialState, action) => {
                 loading: false,
                 orders: updatedOrders
             };
+        case REFUND_ORDER_SUCCESS:
+            return {
+                ...state,
+                orders: state.orders.map(order =>
+                    order.id === action.payload.orderId ? { ...order, orderStatus: 'CANCELLED' } : order
+                )
+            };
         case GET_RESTAURANTS_ORDER_FAILURE:
         case GET_RESTAURANTS_ALL_ORDER_FAILURE:
         case UPDATE_ORDER_STATUS_FAILURE:
+        case REFUND_ORDER_FAILURE:
             return {
                 ...state,
                 loading: false,

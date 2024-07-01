@@ -29,11 +29,11 @@ import {
 //     }
 // }
 
-export const updateOrderStatus = ({ orderId, jwt }) => {
+export const updateOrderStatus = ({ orderId, jwt, newStatus }) => {
     return async (dispatch) => {
         dispatch({ type: UPDATE_ORDER_STATUS_REQUEST });
         try {
-            const response = await api.put(`/api/admin/order/update-status/${orderId}`, {}, {
+            const response = await api.put(`/api/admin/order/update-status/${orderId}`, { newStatus }, {
                 headers: {
                     Authorization: `Bearer ${jwt}`
                 }
@@ -44,8 +44,8 @@ export const updateOrderStatus = ({ orderId, jwt }) => {
             dispatch({ type: UPDATE_ORDER_STATUS_FAILURE, payload: error });
             console.log("UPDATE ORDER STATUS FAILURE", error);
         }
-    }
-}
+    };
+};
 
 export const fetchRestaurantsOrder = ({ restaurantId, orderStatus, jwt }) => {
     return async (dispatch) => {

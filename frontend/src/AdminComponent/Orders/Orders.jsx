@@ -8,12 +8,12 @@ const OrderStatus = [
     label: "All"
   },
   {
-    value: "DELIVERING",
-    label: "Delivery"
-  },
-  {
     value: "PENDING",
     label: "Pending"
+  },
+  {
+    value: "DELIVERING",
+    label: "Delivery"
   },
   {
     value: "COMPLETED",
@@ -22,6 +22,10 @@ const OrderStatus = [
   {
     value: "CANCELLED",
     label: "Cancelled"
+  },
+  {
+    value: "CANCELLED_REFUNDED",
+    label: "Cancelled Refunded"
   }
 ];
 
