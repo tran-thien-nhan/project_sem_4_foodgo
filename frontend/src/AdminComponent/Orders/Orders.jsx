@@ -12,6 +12,10 @@ const OrderStatus = [
     label: "Pending"
   },
   {
+    value: "CONFIRMED",
+    label: "Confirmed"
+  },
+  {
     value: "DELIVERING",
     label: "Delivery"
   },

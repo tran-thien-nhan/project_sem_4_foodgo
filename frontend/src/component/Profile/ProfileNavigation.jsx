@@ -12,6 +12,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { logOut } from '../State/Authentication/Action';
+import { useClerk } from '@clerk/clerk-react';
 
 const menu = [
     {
@@ -49,6 +50,7 @@ const ProfileNavigation = ({ open, handleClose }) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [anchorEl, setAnchorEl] = useState(null);
+    const { signOut } = useClerk();
 
     const handleMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);
@@ -62,6 +64,7 @@ const ProfileNavigation = ({ open, handleClose }) => {
         handleMenuClose();
         if (item.title === "Logout") {
             dispatch(logOut());
+            signOut();
             navigate("/");
         } else {
             navigate(`/my-profile/${item.title.toLowerCase()}`);

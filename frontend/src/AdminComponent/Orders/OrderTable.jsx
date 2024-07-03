@@ -24,11 +24,17 @@ import {
     Typography,
     Button,
     Divider,
+    FormControlLabel,
+    Switch,
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchRestaurantsAllOrder, updateOrderStatus } from '../../component/State/Restaurant Order/Action';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { refundOrder } from '../../component/State/Order/Action';
+import PrintIcon from '@mui/icons-material/Print';
+import DoneIcon from '@mui/icons-material/Done';
+import CancelIcon from '@mui/icons-material/Cancel';
+import Fade from '@mui/material/Fade';
 
 const style = {
     position: 'absolute',
@@ -67,6 +73,7 @@ const OrderTable = ({ filterValue }) => {
     const { restaurant, restaurantOrder } = useSelector(store => store);
     const [showAll, setShowAll] = useState({});
     const [searchTerm, setSearchTerm] = useState('');
+    const [searchOrderTerm, setSearchOrderTerm] = useState('');
     const [sortOrder, setSortOrder] = useState('desc');
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -74,6 +81,7 @@ const OrderTable = ({ filterValue }) => {
     const [open, setOpen] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [localRestaurantOrder, setLocalRestaurantOrder] = useState(restaurantOrder.orders);
+    const [checked, setChecked] = useState(false);
 
     const handleOpen = (order) => {
         setSelectedOrder(order);
@@ -107,9 +115,18 @@ const OrderTable = ({ filterValue }) => {
         setPage(0);
     };
 
+    const handleSearchOrderChange = (event) => {
+        setSearchOrderTerm(event.target.value);
+        setPage(0);
+    };
+
     const handlePaymentMethodFilterChange = (event) => {
         setPaymentMethodFilter(event.target.value);
         setPage(0);
+    };
+
+    const handleChange = () => {
+        setChecked((prev) => !prev);
     };
 
     const handleUpdateOrderStatusDelivering = (orderId, currentStatus, newStatus) => {
@@ -203,6 +220,7 @@ const OrderTable = ({ filterValue }) => {
         .filter(order =>
             order.isPaid &&
             order.customer?.fullName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+            order.id.toString().includes(searchOrderTerm) &&
             (paymentMethodFilter === '' || order.paymentMethod === paymentMethodFilter) &&
             (filterValue === 'ALL' || order.orderStatus === filterValue)
         )
@@ -220,26 +238,36 @@ const OrderTable = ({ filterValue }) => {
                     sx={{ pt: 2, alignItems: 'center' }}
                 />
                 <Box p={2} display="flex" flexDirection="column" gap={2}>
-                    <TextField
-                        label="Search Customer"
-                        variant="outlined"
-                        value={searchTerm}
-                        onChange={handleSearchChange}
-                        fullWidth
-                    />
-                    <FormControl fullWidth>
-                        <InputLabel id="payment-method-filter-label">Filter by Payment Method</InputLabel>
-                        <Select
-                            labelId="payment-method-filter-label"
-                            value={paymentMethodFilter}
-                            onChange={handlePaymentMethodFilterChange}
+
+                        <TextField
+                            label="Search Customer"
+                            variant="outlined"
+                            value={searchTerm}
+                            onChange={handleSearchChange}
                             fullWidth
-                        >
-                            <MenuItem value=""><em>All</em></MenuItem>
-                            <MenuItem value="BY_CASH">COD</MenuItem>
-                            <MenuItem value="BY_CREDIT_CARD">By Credit Card</MenuItem>
-                        </Select>
-                    </FormControl>
+                            sx={{marginBottom: "1rem"}}
+                        />
+                        <TextField
+                            label="Search Order Id"
+                            variant="outlined"
+                            value={searchOrderTerm}
+                            onChange={handleSearchOrderChange}
+                            fullWidth
+                            sx={{marginBottom: "1rem"}}
+                        />
+                        <FormControl fullWidth sx={{marginBottom: "1rem"}}>
+                            <InputLabel id="payment-method-filter-label">Filter by Payment Method</InputLabel>
+                            <Select
+                                labelId="payment-method-filter-label"
+                                value={paymentMethodFilter}
+                                onChange={handlePaymentMethodFilterChange}
+                                fullWidth
+                            >
+                                <MenuItem value=""><em>All</em></MenuItem>
+                                <MenuItem value="BY_CASH">COD</MenuItem>
+                                <MenuItem value="BY_CREDIT_CARD">By Credit Card</MenuItem>
+                            </Select>
+                        </FormControl>
                 </Box>
                 <TableContainer component={Paper}>
                     <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -317,11 +345,13 @@ const OrderTable = ({ filterValue }) => {
                                             {
                                                 order.orderStatus === "PENDING" && (
                                                     <Button
-                                                        variant="contained"
+                                                        //variant="contained"
                                                         color="error"
                                                         onClick={() => handleOpen(order)}
                                                     >
-                                                        Print Invoice
+                                                        <IconButton aria-label="view">
+                                                            <PrintIcon />
+                                                        </IconButton>
                                                     </Button>
                                                 )
                                             }
@@ -339,19 +369,23 @@ const OrderTable = ({ filterValue }) => {
                                             {order.orderStatus === "DELIVERING" && (
                                                 <Box display="flex" flexDirection="column" alignItems="center">
                                                     <Button
-                                                        variant="contained"
+                                                        //variant="contained"
                                                         color="primary"
                                                         onClick={() => handleUpdateOrderStatusDelivering(order.id, order.orderStatus, "COMPLETED")}
                                                         sx={{ mb: 1 }}
                                                     >
-                                                        Mark as Completed
+                                                        <IconButton aria-label="view">
+                                                            <DoneIcon />
+                                                        </IconButton>
                                                     </Button>
                                                     <Button
-                                                        variant="contained"
+                                                        //variant="contained"
                                                         color="secondary"
                                                         onClick={() => handleUpdateOrderStatusDelivering(order.id, order.orderStatus, "CANCELLED")}
                                                     >
-                                                        Cancel Order
+                                                        <IconButton aria-label="view">
+                                                            <CancelIcon />
+                                                        </IconButton>
                                                     </Button>
                                                 </Box>
                                             )}
@@ -406,38 +440,69 @@ const OrderTable = ({ filterValue }) => {
                             Order Details
                         </Typography>
                         <Typography
-                            //id="modal-modal-description" 
                             sx={{ mt: 2 }}
                             id='invoice-details'
                         >
-                            <strong>Order ID:</strong> {selectedOrder.id}<br />
-                            <strong>Customer:</strong> {selectedOrder.customer?.fullName}<br />
-                            <strong>Total Price:</strong> {selectedOrder.totalPrice.toLocaleString('vi-VN')}đ<br />
-                            <strong>Payment Method:</strong> {selectedOrder.paymentMethod === "BY_CASH" ? "COD" : "By credit card"}<br />
-                            <strong>Status:</strong> {selectedOrder.orderStatus}<br />
-                            <strong>Delivery Address:</strong> {selectedOrder.deliveryAddress.streetAddress}, {selectedOrder.deliveryAddress.city}, {selectedOrder.deliveryAddress.state}, {selectedOrder.deliveryAddress.country}<br />
-                            <strong>Items:</strong><br />
-                            {selectedOrder.items.map((item, index) => (
-                                <div key={index}>
-                                    <strong> - {item.food?.name}:</strong> {item.quantity} x {item.totalPrice.toLocaleString('vi-VN')}đ<br />
-                                    <strong>Ingredients: </strong><br />
-                                    <strong> - </strong>
-                                    {
-                                        (item.ingredients.length > 0)
-                                            ? item.ingredients.join(', ')
-                                            : 'No ingredients'
-                                    }
-                                    <br />
-                                    <Divider
-                                        className='py-3'
-                                    />
-                                </div>
-                            ))}
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Order ID:</strong></td>
+                                        <td>{selectedOrder.id}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Customer:</strong></td>
+                                        <td>{selectedOrder.customer?.fullName}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Total Price:</strong></td>
+                                        <td>{selectedOrder.totalPrice.toLocaleString('vi-VN')}đ</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Payment Method:</strong></td>
+                                        <td>{selectedOrder.paymentMethod === "BY_CASH" ? "COD" : "By credit card"}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Status:</strong></td>
+                                        <td>{selectedOrder.orderStatus}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Delivery Address:</strong></td>
+                                        <td>{selectedOrder.deliveryAddress.streetAddress}, {selectedOrder.deliveryAddress.city}, {selectedOrder.deliveryAddress.state}, {selectedOrder.deliveryAddress.country}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Items:</strong></td>
+                                        <td>
+                                            {selectedOrder.items.map((item, index) => (
+                                                <div key={index}>
+                                                    <strong>{item.food?.name}:</strong> {item.quantity} x {item.totalPrice.toLocaleString('vi-VN')}đ<br />
+                                                    <strong>Ingredients: </strong>
+                                                    {
+                                                        (item.ingredients.length > 0)
+                                                            ? item.ingredients.join(', ')
+                                                            : 'No ingredients'
+                                                    }
+                                                    <br />
+                                                    <Divider className='py-3' />
+                                                </div>
+                                            ))}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
                         </Typography>
                         {
                             selectedOrder.orderStatus === "PENDING" && (
-                                <Button variant="contained" color="primary" onClick={() => handlePrintInvoiceModal()}>
-                                    Print Invoice
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => handlePrintInvoiceModal()}
+                                    className='justify-center items-center'
+                                    fullWidth
+                                >
+                                    <IconButton>
+                                        <PrintIcon />
+                                    </IconButton>
                                 </Button>)
                         }
                     </Box>

@@ -23,9 +23,12 @@ public class User {
     private String email;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) //chỉ cho phép ghi, không cho phép đọc
+    @Column(nullable = true) //cho phép null
     private String password;
 
     private USER_ROLE role = USER_ROLE.ROLE_CUSTOMER; //mặc định role là ROLE_CUSTOMER
+
+    private PROVIDER provider = PROVIDER.NORMAL; //mặc định provider là NORMAL
 
     @JsonIgnore //tránh lặp vô hạn, không lấy thông tin của orders, chỉ lấy thông tin của user
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "customer") //một user có thể có nhiều order, khi xóa user thì xóa hết order, mappedBy trỏ tới customer trong Order

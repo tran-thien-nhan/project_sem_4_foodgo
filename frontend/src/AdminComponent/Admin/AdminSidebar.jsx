@@ -10,6 +10,7 @@ import { Divider, Drawer, useMediaQuery } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { logOut } from '../../component/State/Authentication/Action';
+import { useClerk } from '@clerk/clerk-react';
 
 const menu = [
     { title: 'Dashboard', icon: <Dashboard />, path: '/' },
@@ -26,10 +27,12 @@ const AdminSidebar = ({ handleClose }) => {
     const isSmallScreen = useMediaQuery('(max-width: 1080px)');
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const { signOut } = useClerk();
 
     const handleNavigate = (item) => {
         navigate(`/admin/restaurants${item.path}`);
         if (item.title === 'Log out') {
+            signOut();
             navigate('/');
             dispatch(logOut());
         }

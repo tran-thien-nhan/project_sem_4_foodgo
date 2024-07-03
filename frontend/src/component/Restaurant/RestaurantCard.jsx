@@ -36,7 +36,7 @@ const RestaurantCard = ({ item }) => {
         }
     }
 
-    console.log("item", item);
+    //console.log("item", item);
 
     const handleNavigateToRestaurant = () => {
         //let newItem = dispatch(getRestaurantById({ jwt: jwt, restaurantId: item.id }));
