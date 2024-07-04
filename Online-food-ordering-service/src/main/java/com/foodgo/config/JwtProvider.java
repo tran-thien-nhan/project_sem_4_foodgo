@@ -64,8 +64,8 @@ public class JwtProvider {
                 .build()
                 .parseClaimsJws(jwt)
                 .getBody();
-        String provider = String.valueOf(claims.get("provider"));
-        return PROVIDER.valueOf(provider);
+        PROVIDER provider = PROVIDER.valueOf(String.valueOf(claims.get("provider")));
+        return provider;
     }
     private String populateAuthorities(Collection<? extends GrantedAuthority> authorities) {
         Set<String> auths = new HashSet<>();

@@ -35,6 +35,7 @@ import PrintIcon from '@mui/icons-material/Print';
 import DoneIcon from '@mui/icons-material/Done';
 import CancelIcon from '@mui/icons-material/Cancel';
 import Fade from '@mui/material/Fade';
+import * as XLSX from 'xlsx';
 
 const style = {
     position: 'absolute',
@@ -67,7 +68,7 @@ const getButtonColor = (status) => {
     }
 };
 
-const OrderTable = ({ filterValue }) => {
+const OrderTable = ({ filterValue, setFilterValue }) => {
     const dispatch = useDispatch();
     const jwt = localStorage.getItem('jwt');
     const { restaurant, restaurantOrder } = useSelector(store => store);
@@ -230,6 +231,24 @@ const OrderTable = ({ filterValue }) => {
             return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
         });
 
+    const handleExportExcel = () => {
+        const ws = XLSX.utils.json_to_sheet(restaurantOrder.orders);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Orders");
+        XLSX.writeFile(wb, "Orders.xlsx");
+    };
+
+    const handleReset = () => {
+        setSearchTerm('');
+        setSearchOrderTerm('');
+        setSortOrder('desc');
+        setPage(0);
+        setRowsPerPage(5);
+        setPaymentMethodFilter('');
+        setChecked(false);
+        setFilterValue("ALL");
+    };
+
     return (
         <Box>
             <Card className='mt-1'>
@@ -237,37 +256,55 @@ const OrderTable = ({ filterValue }) => {
                     title={"All Orders"}
                     sx={{ pt: 2, alignItems: 'center' }}
                 />
+
                 <Box p={2} display="flex" flexDirection="column" gap={2}>
 
-                        <TextField
-                            label="Search Customer"
-                            variant="outlined"
-                            value={searchTerm}
-                            onChange={handleSearchChange}
+                    <TextField
+                        label="Search Customer"
+                        variant="outlined"
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        fullWidth
+                        sx={{ marginBottom: "1rem" }}
+                    />
+                    <TextField
+                        label="Search Order Id"
+                        variant="outlined"
+                        value={searchOrderTerm}
+                        onChange={handleSearchOrderChange}
+                        fullWidth
+                        sx={{ marginBottom: "1rem" }}
+                    />
+                    <FormControl fullWidth sx={{ marginBottom: "1rem" }}>
+                        <InputLabel id="payment-method-filter-label">Filter by Payment Method</InputLabel>
+                        <Select
+                            labelId="payment-method-filter-label"
+                            value={paymentMethodFilter}
+                            onChange={handlePaymentMethodFilterChange}
                             fullWidth
-                            sx={{marginBottom: "1rem"}}
-                        />
-                        <TextField
-                            label="Search Order Id"
-                            variant="outlined"
-                            value={searchOrderTerm}
-                            onChange={handleSearchOrderChange}
-                            fullWidth
-                            sx={{marginBottom: "1rem"}}
-                        />
-                        <FormControl fullWidth sx={{marginBottom: "1rem"}}>
-                            <InputLabel id="payment-method-filter-label">Filter by Payment Method</InputLabel>
-                            <Select
-                                labelId="payment-method-filter-label"
-                                value={paymentMethodFilter}
-                                onChange={handlePaymentMethodFilterChange}
-                                fullWidth
-                            >
-                                <MenuItem value=""><em>All</em></MenuItem>
-                                <MenuItem value="BY_CASH">COD</MenuItem>
-                                <MenuItem value="BY_CREDIT_CARD">By Credit Card</MenuItem>
-                            </Select>
-                        </FormControl>
+                        >
+                            <MenuItem value=""><em>ALL</em></MenuItem>
+                            <MenuItem value="BY_CASH">CASH</MenuItem>
+                            <MenuItem value="BY_CREDIT_CARD">BANKCARD</MenuItem>
+                            <MenuItem value="BY_VNPAY">VNPAY</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <Box display="flex" justifyContent="space-between">
+                        <Button variant="contained" onClick={handleReset}>
+                            Reset
+                        </Button>
+                        <Button
+                            onClick={handleExportExcel}
+                            variant="contained"
+                            color="primary"
+                            sx={{ alignSelf: "flex-start" }}
+                        >
+                            <div className='flex'>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="white" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm1.8 18H14l-2-3.4l-2 3.4H8.2l2.9-4.5L8.2 11H10l2 3.4l2-3.4h1.8l-2.9 4.5zM13 9V3.5L18.5 9z" /></svg>
+                                <p className='m-1'>Export to Excel</p>
+                            </div>
+                        </Button>
+                    </Box>
                 </Box>
                 <TableContainer component={Paper}>
                     <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -278,8 +315,8 @@ const OrderTable = ({ filterValue }) => {
                                 <TableCell align="right">Customer</TableCell>
                                 <TableCell align="right">Price</TableCell>
                                 <TableCell align="right">Name</TableCell>
-                                <TableCell align="right">Method</TableCell>
                                 <TableCell align="right">Ingredients</TableCell>
+                                <TableCell align="right">Method</TableCell>
                                 <TableCell align="right">Status</TableCell>
                                 <TableCell align="right">Detail</TableCell>
                                 <TableCell align="right">Actions</TableCell>
@@ -325,7 +362,10 @@ const OrderTable = ({ filterValue }) => {
                                             )}
                                         </TableCell>
                                         <TableCell align="right" rowSpan={order.items.length}>
-                                            {order.paymentMethod === "BY_CASH" ? "COD" : "By credit card"}
+                                            {order.paymentMethod === "BY_CASH" ? "COD" : (
+                                                order.paymentMethod === "BY_CREDIT_CARD"
+                                                ? 'BANK CARD' : 'VN PAY'
+                                            )}
                                         </TableCell>
                                         <TableCell align="right" rowSpan={order.items.length}>
                                             <Button
@@ -419,6 +459,7 @@ const OrderTable = ({ filterValue }) => {
                         </TableBody>
                     </Table>
                 </TableContainer>
+
                 <TablePagination
                     component="div"
                     count={filteredOrders.length}
@@ -427,6 +468,7 @@ const OrderTable = ({ filterValue }) => {
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
                 />
+
             </Card>
             {selectedOrder && (
                 <Modal
@@ -508,6 +550,7 @@ const OrderTable = ({ filterValue }) => {
                     </Box>
                 </Modal>
             )}
+
         </Box>
     );
 };

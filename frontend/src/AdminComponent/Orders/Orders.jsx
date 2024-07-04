@@ -61,7 +61,7 @@ const Orders = () => {
           </RadioGroup>
         </FormControl>
       </Card>
-      <OrderTable filterValue={filterValue} />
+      <OrderTable filterValue={filterValue} setFilterValue={setFilterValue} />
     </div>
   );
 };

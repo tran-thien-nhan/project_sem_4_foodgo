@@ -1,16 +1,14 @@
 package com.foodgo.controller;
 
 import com.foodgo.config.JwtProvider;
-import com.foodgo.model.Cart;
-import com.foodgo.model.PROVIDER;
-import com.foodgo.model.USER_ROLE;
-import com.foodgo.model.User;
+import com.foodgo.model.*;
 import com.foodgo.repository.CartRepository;
 import com.foodgo.repository.UserRepository;
 import com.foodgo.request.GoogleLoginRequest;
 import com.foodgo.request.LoginRequest;
 import com.foodgo.response.AuthResponse;
 import com.foodgo.service.CustomerUserDetailsService;
+import com.foodgo.service.EmailService;
 import com.foodgo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -45,6 +43,8 @@ public class AuthController {
     private CartRepository cartRepository;
     @Autowired
     private UserService userService;
+    @Autowired
+    private EmailService emailService;
 
     @PostMapping("/signup") //đánh dấu phương thức createUserHandler là phương thức xử lý request POST tới /auth/signup
     public ResponseEntity<AuthResponse> createUserHandler(@RequestBody User user) throws Exception {
@@ -93,6 +93,13 @@ public class AuthController {
         authResponse.setJwt(jwt); //set jwt cho AuthResponse
         authResponse.setMessage("Sign Up successfully"); //set message cho AuthResponse
         authResponse.setRole(savedUser.getRole()); //set role cho AuthResponse
+
+        if (user.getRole().equals(USER_ROLE.ROLE_RESTAURANT_OWNER)) {
+            emailService.sendMailWelcomeOwner(user.getEmail(), user.getFullName());
+        }
+        else if (user.getRole().equals(USER_ROLE.ROLE_CUSTOMER)) {
+            emailService.sendMailWelcomeCustomer(user.getEmail(), user.getFullName());
+        }
 
         return new ResponseEntity<>(authResponse, HttpStatus.CREATED); //trả về AuthResponse và status code 200 (OK)
     }

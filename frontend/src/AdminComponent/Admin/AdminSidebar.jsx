@@ -23,7 +23,7 @@ const menu = [
     { title: 'Log out', icon: <LogoutIcon />, path: '/' },
 ]
 
-const AdminSidebar = ({ handleClose }) => {
+const AdminSidebar = ({ toggleDrawer }) => {
     const isSmallScreen = useMediaQuery('(max-width: 1080px)');
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -39,15 +39,15 @@ const AdminSidebar = ({ handleClose }) => {
     }
 
     return (
-        <div>
+        <div onClick={toggleDrawer(false)}>
             <>
-                <Drawer
+                {/* <Drawer
                     variant={isSmallScreen ? 'temporary' : 'permanent'}
-                    onClose={handleClose}
+                    // onClose={handleClose}
                     open={true}
                     anchor='left'
                     sx={{ zIndex: 1 }}
-                >
+                > */}
 
                     <div className='w-[70vw] lg:w-[20vw] h-screen flex flex-col justify-center text-x
                      space-y-[1.65rem]'>
@@ -64,7 +64,7 @@ const AdminSidebar = ({ handleClose }) => {
                         }
                     </div>
 
-                </Drawer>
+                {/* </Drawer> */}
             </>
         </div>
     )

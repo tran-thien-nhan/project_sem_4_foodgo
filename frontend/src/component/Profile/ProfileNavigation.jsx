@@ -7,7 +7,7 @@ import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import EventIcon from '@mui/icons-material/Event';
 import FmdGoodIcon from '@mui/icons-material/FmdGood';
-import { Divider, Drawer, useMediaQuery, MenuItem, Menu, IconButton } from '@mui/material';
+import { Divider, Drawer, useMediaQuery, MenuItem, Menu, IconButton, Box } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
@@ -45,12 +45,16 @@ const menu = [
     }
 ]
 
-const ProfileNavigation = ({ open, handleClose }) => {
+const ProfileNavigation = ({ open, handleClose, setOpen }) => {
     const isSmallScreen = useMediaQuery('(max-width:900px)');
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [anchorEl, setAnchorEl] = useState(null);
     const { signOut } = useClerk();
+
+    const toggleDrawer = (newOpen) => () => {
+        setOpen(newOpen);
+    };
 
     const handleMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);
@@ -79,26 +83,28 @@ const ProfileNavigation = ({ open, handleClose }) => {
                         edge="start"
                         color="inherit"
                         aria-label="menu"
-                        onClick={handleMenuOpen}
+                        onClick={toggleDrawer(true)}
                     >
                         <MenuIcon />
                     </IconButton>
-                    <Menu
-                        anchorEl={anchorEl}
-                        keepMounted
-                        open={Boolean(anchorEl)}
-                        onClose={handleMenuClose}
-                    >
-                        {menu.map((item, i) => (
-                            <MenuItem
-                                onClick={() => handleNavigate(item)}
-                                key={i}
-                            >
-                                {item.icon}
-                                <span style={{ marginLeft: 10 }}>{item.title}</span>
-                            </MenuItem>
-                        ))}
-                    </Menu>
+                    <Drawer open={open} onClose={toggleDrawer(false)}>
+                        <Box
+                            // sx={{ width: 250 }}
+                            className="w-[50vw] lg:w-[20vw] h-[100vh] flex flex-col justify-center text-x gap-8"
+                            role="presentation"
+                            onClick={toggleDrawer(false)}
+                        >
+                            {menu.map((item, i) => (
+                                <MenuItem
+                                    onClick={() => handleNavigate(item)}
+                                    key={i}
+                                >
+                                    {item.icon}
+                                    <span style={{ marginLeft: 10 }}>{item.title}</span>
+                                </MenuItem>
+                            ))}
+                        </Box>
+                    </Drawer>
                 </>
             ) : (
                 <Drawer

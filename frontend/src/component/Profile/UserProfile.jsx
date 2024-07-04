@@ -41,7 +41,7 @@ const UserProfile = () => {
                     &&
                     (
                         <Avatar
-                            sx={{ bgcolor: "white", color: pink.A400, width: 120, height: 120 }}
+                            sx={{ bgcolor: "white", color: pink.A400, width: 120, height: 120, fontSize: "5rem" }}
                             className='cursor-pointer'
                             src={(auth.user || userLoggedIn) ? user?.imageUrl : ""}
                         >

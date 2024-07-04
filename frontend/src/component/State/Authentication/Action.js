@@ -16,9 +16,9 @@ export const registerUser = (reqData) => async (dispatch) => {
         }
         else {
             if (data.message != "Sign In successfully") {
-                toast.success('register successfully!', {
+                toast.success('register successfully! Please Check Your Email', {
                     position: "top-center",
-                    autoClose: 500,
+                    autoClose: 5000,
                     hideProgressBar: false,
                     closeOnClick: true,
                     pauseOnHover: true,

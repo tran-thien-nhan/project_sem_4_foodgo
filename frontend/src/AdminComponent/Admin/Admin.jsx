@@ -14,6 +14,8 @@ import { getRestaurantById, getRestaurantsCategory } from '../../component/State
 import { getMenuItemsByRestaurantId } from '../../component/State/Menu/Action'
 import { getUsersOrders } from '../../component/State/Order/Action'
 import { fetchRestaurantsAllOrder, fetchRestaurantsOrder } from '../../component/State/Restaurant Order/Action'
+import { Box, Button, Drawer } from '@mui/material'
+import AdminNavBar from '../../component/Navbar/AdminNavBar'
 
 const Admin = () => {
     const { restaurant } = useSelector(store => store);
@@ -21,7 +23,9 @@ const Admin = () => {
     const jwt = localStorage.getItem('jwt');
     const [open, setOpen] = useState(false);
 
-
+    const toggleDrawer = (newOpen) => () => {
+        setOpen(newOpen);
+    };
 
     const handleClose = (value) => {
         console.log(value)
@@ -33,9 +37,9 @@ const Admin = () => {
     }
 
     useEffect(() => {
-        dispatch(getRestaurantsCategory({ 
-            jwt, 
-            restaurantId: restaurant.usersRestaurant?.id 
+        dispatch(getRestaurantsCategory({
+            jwt,
+            restaurantId: restaurant.usersRestaurant?.id
         }));
         dispatch(fetchRestaurantsAllOrder({
             restaurantId: restaurant.usersRestaurant?.id,
@@ -49,10 +53,12 @@ const Admin = () => {
     return (
         <div>
             <div className='lg:flex justify-between'>
-                <div>
-                    <AdminSidebar handleClose={(value) => handleClose(value)} />
-                </div>
-                <div className='lg:w-[80%] '>
+
+                <Drawer open={open} onClose={toggleDrawer(false)}>
+                    <AdminSidebar toggleDrawer={toggleDrawer} />
+                </Drawer>
+                <div className='lg:w-[100%] '>
+                    <AdminNavBar toggleDrawer={toggleDrawer} />
                     <Routes>
                         <Route path="/" element={<RestaurantDashboard />} />
                         <Route path="/orders" element={<Orders />} />

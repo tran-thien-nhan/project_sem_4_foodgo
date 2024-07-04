@@ -52,7 +52,11 @@ const Orders = () => {
                 Total Price: {order.totalPrice.toLocaleString('vi-VN')}đ
               </p>
               <p className='text-md font-semibold text-gray-500'>
-                Payment Method: {(order.paymentMethod === 'BY_CASH') ? 'Cash on delivery' : 'Online payment'}
+                Payment Method: {(order.paymentMethod === 'BY_CASH') ? 'Cash on delivery' :
+                  (order.paymentMethod === 'BY_CREDIT_CARD')
+                    ? 'Bank Card'
+                    : 'VN Pay'
+                }
               </p>
               {
                 order.items.map((item) => (
@@ -62,7 +66,7 @@ const Orders = () => {
             </div>
           ))
         }
-        <Divider/>
+        <Divider />
       </div>
       <div className='flex justify-center my-5'>
         <Button
