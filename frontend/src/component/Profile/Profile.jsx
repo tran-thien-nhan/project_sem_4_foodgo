@@ -14,7 +14,7 @@ const Profile = () => {
     return (
         <Box className='lg:flex justify-between'>
             <Box className='sticky lg:h-[80vh] lg:w-[20%] h-auto mx-5'>
-                <ProfileNavigation open={openSideBar} handleClose={() => setOpenSideBar(false)} />
+                <ProfileNavigation open={openSideBar} handleClose={() => setOpenSideBar(false)} setOpen={setOpenSideBar} />
             </Box>
             <Box className='lg:w-[80%] w-full h-auto'>
                 <Routes>

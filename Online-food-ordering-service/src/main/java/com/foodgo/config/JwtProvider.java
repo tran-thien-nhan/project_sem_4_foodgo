@@ -1,5 +1,7 @@
 package com.foodgo.config;
 
+import com.foodgo.model.PROVIDER;
+import com.foodgo.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -18,12 +20,25 @@ import java.util.stream.Collectors;
 public class JwtProvider {
     private SecretKey key = Keys.hmacShaKeyFor(JwtConstant.SECRET_KEY.getBytes()); //tạo ra một key từ chuỗi bí mật để mã hóa và giải mã token của người dùng gửi lên server
 
-    public String generateToken(Authentication auth) { // tạo ra token từ thông tin người dùng
+    public String generateToken(Authentication auth, PROVIDER provider) { // tạo ra token từ thông tin người dùng
         Collection<? extends GrantedAuthority>authorities = auth.getAuthorities(); //lấy danh sách authorities của người dùng
         String roles = populateAuthorities(authorities); //tạo ra chuỗi authorities từ danh sách authorities
         String jwt = Jwts.builder().setIssuedAt(new Date()) //tạo ra token từ thông tin người dùng, builder() tạo ra một đối tượng JwtBuilder, setIssuedAt() set thời gian tạo token
                 .setExpiration(new Date(new Date().getTime() + 86400000)) //set thời gian hết hạn của token, 86400000 là 1 ngày
                 .claim("email", auth.getName()) //set thông tin email vào token
+                .claim("provider", provider) //set thông tin provider vào token
+                .claim("authorities", roles) //set thông tin authorities vào token
+                .signWith(key) //set key để mã hóa token
+                .compact(); //tạo ra token
+
+        return jwt;
+    }
+
+    public String generateTokenWithUserDetails(User user) { // tạo ra token từ thông tin người dùng
+        String roles = "ROLE_USER"; // Giả sử vai trò mặc định là ROLE_USER, bạn có thể thay đổi theo logic của mình
+        String jwt = Jwts.builder().setIssuedAt(new Date()) //tạo ra token từ thông tin người dùng, builder() tạo ra một đối tượng JwtBuilder, setIssuedAt() set thời gian tạo token
+                .setExpiration(new Date(new Date().getTime() + 86400000)) //set thời gian hết hạn của token, 86400000 là 1 ngày
+                .claim("email", user.getEmail()) //set thông tin email vào token
                 .claim("authorities", roles) //set thông tin authorities vào token
                 .signWith(key) //set key để mã hóa token
                 .compact(); //tạo ra token
@@ -40,6 +55,17 @@ public class JwtProvider {
                 .getBody(); //lấy thông tin trong token
         String email = String.valueOf(claims.get("email")); //lấy thông tin email từ token
         return email;
+    }
+
+    public PROVIDER getProviderFromJwtToken(String jwt){
+        jwt = jwt.substring(7);
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(jwt)
+                .getBody();
+        PROVIDER provider = PROVIDER.valueOf(String.valueOf(claims.get("provider")));
+        return provider;
     }
     private String populateAuthorities(Collection<? extends GrantedAuthority> authorities) {
         Set<String> auths = new HashSet<>();

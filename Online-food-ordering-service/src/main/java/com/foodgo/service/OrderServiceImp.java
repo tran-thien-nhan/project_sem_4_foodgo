@@ -42,79 +42,6 @@ public class OrderServiceImp implements OrderService{
     @Autowired
     private PaymentService paymentService;
 
-//    @Override
-//    public Order createOrder(OrderRequest order, User user) throws Exception {
-//        Address shipAddress = order.getDeliveryAddress(); // lay dia chi giao hang tu request
-//        //Address savedAddress = addressRepository.save(shipAddress); // luu dia chi giao hang
-//
-//        // kiểm tra xem địa chỉ giao hàng đã có trong danh sách địa chỉ của user chưa
-//        Address savedAddress = addressService.findByStreetAddressAndCityAndStateAndPinCode(
-//                shipAddress.getStreetAddress(),
-//                shipAddress.getCity(),
-//                shipAddress.getState(),
-//                shipAddress.getPinCode(),
-//                user.getId()
-//        );
-//
-//        // nếu địa chỉ không tồn tại thì lưu địa chỉ mới
-//        if (savedAddress == null) {
-//            savedAddress = addressRepository.save(shipAddress);
-//            // thêm vào danh sách địa chỉ của user
-//            user.getAddresses().add(savedAddress);
-//            // lưu lại user
-//            userRepository.save(user);
-//        }
-//
-//        Restaurant restaurant = restaurantService.findRestaurantById(order.getRestaurantId());
-//        Order createdOrder = new Order();
-//        createdOrder.setCustomer(user);
-//        createdOrder.setCreatedAt(new Date());
-//        createdOrder.setOrderStatus("PENDING");
-//        createdOrder.setDeliveryAddress(savedAddress);
-//        createdOrder.setRestaurant(restaurant);
-//
-//        Cart cart = cartService.findCartByUserId(user.getId());
-//        List<OrderItem> orderItems = new ArrayList<>();
-//        int count = 0;
-//        for (CartItem cartItem : cart.getCartItems()) {
-//            OrderItem orderItem = new OrderItem();
-//
-//            orderItem.setFood(cartItem.getFood());
-//            orderItem.setIngredients(cartItem.getIngredients());
-//            orderItem.setQuantity(cartItem.getQuantity());
-//            count += cartItem.getQuantity();
-//
-//            orderItem.setTotalPrice(cartItem.getTotalPrice());
-//
-//            OrderItem savedOrderItem = orderItemRepository.save(orderItem);
-//            orderItems.add(savedOrderItem);
-//
-//        }
-//
-//        createdOrder.setTotalItem(Long.valueOf(count));
-//        createdOrder.setTotalAmount(cart.getTotal());
-//
-//        Long totalPrice = cartService.calculateCartTotals(cart);
-//        totalPrice += 18000; // delivery charge
-//
-//        createdOrder.setItems(orderItems);
-//        createdOrder.setTotalPrice(totalPrice != null ? totalPrice : 0L);
-//        createdOrder.setPaymentMethod(order.getPaymentMethod());
-//
-//        if (order.getPaymentMethod().contains("BY_CASH")) {
-//            createdOrder.setIsPaid(true);
-//        }
-//
-//        Order savedOrder = orderRepository.save(createdOrder);
-//        //clear cart
-//        if(createdOrder.getIsPaid()){
-//            cartService.clearCart(cart.getId());
-//            restaurant.getOrders().add(savedOrder); // thêm order vào danh sách order của restaurant
-//        }
-//
-//        return savedOrder;
-//    }
-
     @Override
     public List<Order> createOrder(OrderRequest order, User user) throws Exception {
         Address shipAddress = order.getDeliveryAddress();
@@ -190,7 +117,8 @@ public class OrderServiceImp implements OrderService{
         }
 
         // clear cart
-        cartService.clearCart(cart.getId());
+        //cartService.clearCart(cart.getId());
+        cartService.clearCart(user.getId());
 
         return createdOrders;
     }

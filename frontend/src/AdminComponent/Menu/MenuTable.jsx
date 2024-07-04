@@ -10,7 +10,8 @@ import {
     TableSortLabel,
     Checkbox,
     FormControlLabel,
-    Grid
+    Grid,
+    useMediaQuery
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import Table from '@mui/material/Table';
@@ -44,6 +45,7 @@ const MenuTable = () => {
         seasonal: false,
         foodCategory: ""
     });
+    const isSmallScreen = useMediaQuery('(max-width:900px)');
 
     useEffect(() => {
         dispatch(getMenuItemsByRestaurantId({
@@ -140,42 +142,87 @@ const MenuTable = () => {
                         fullWidth
                     />
                     <Grid container spacing={2}>
-                        <Grid item xs={2}>
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        checked={filters.vegetarian}
-                                        onChange={handleFilterChange}
-                                        name="vegetarian"
-                                    />
-                                }
-                                label="Vegetarian"
-                            />
-                        </Grid>
-                        <Grid item xs={2}>
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        checked={filters.nonVegetarian}
-                                        onChange={handleFilterChange}
-                                        name="nonVegetarian"
-                                    />
-                                }
-                                label="Non-Vegetarian"
-                            />
-                        </Grid>
-                        <Grid item xs={2}>
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        checked={filters.seasonal}
-                                        onChange={handleFilterChange}
-                                        name="seasonal"
-                                    />
-                                }
-                                label="Seasonal"
-                            />
-                        </Grid>
+                        {
+                            isSmallScreen
+                                ?
+                                <>
+                                    <Grid item xs={12}>
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={filters.vegetarian}
+                                                    onChange={handleFilterChange}
+                                                    name="vegetarian"
+                                                />
+                                            }
+                                            label="Vegetarian"
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={filters.nonVegetarian}
+                                                    onChange={handleFilterChange}
+                                                    name="nonVegetarian"
+                                                />
+                                            }
+                                            label="Non-Vegetarian"
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={filters.seasonal}
+                                                    onChange={handleFilterChange}
+                                                    name="seasonal"
+                                                />
+                                            }
+                                            label="Seasonal"
+                                        />
+                                    </Grid>
+                                </>
+                                :
+                                <>
+                                    <Grid item xs={2}>
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={filters.vegetarian}
+                                                    onChange={handleFilterChange}
+                                                    name="vegetarian"
+                                                />
+                                            }
+                                            label="Vegetarian"
+                                        />
+                                    </Grid>
+                                    <Grid item xs={2}>
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={filters.nonVegetarian}
+                                                    onChange={handleFilterChange}
+                                                    name="nonVegetarian"
+                                                />
+                                            }
+                                            label="Non-Vegetarian"
+                                        />
+                                    </Grid>
+                                    <Grid item xs={2}>
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={filters.seasonal}
+                                                    onChange={handleFilterChange}
+                                                    name="seasonal"
+                                                />
+                                            }
+                                            label="Seasonal"
+                                        />
+                                    </Grid>
+                                </>
+                        }
                     </Grid>
                 </Box>
                 <TableContainer component={Paper}>

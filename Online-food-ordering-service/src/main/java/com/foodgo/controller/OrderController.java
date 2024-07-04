@@ -1,10 +1,7 @@
 package com.foodgo.controller;
 
 import com.foodgo.helper.OrderTemp;
-import com.foodgo.model.Cart;
-import com.foodgo.model.CartItem;
-import com.foodgo.model.Order;
-import com.foodgo.model.User;
+import com.foodgo.model.*;
 import com.foodgo.request.AddCartItemRequest;
 import com.foodgo.request.OrderRequest;
 import com.foodgo.response.PaymentResponse;
@@ -53,11 +50,24 @@ public class OrderController {
         User user = userService.findUserByJwtToken(jwt);
         List<Order> orders = orderService.createOrder(req, user);
 
-        if(req.getPaymentMethod().contains("BY_CREDIT_CARD")){
+        if(req.getPaymentMethod().contains(PAYMENT_METHOD.BY_CREDIT_CARD.toString())){
             List<PaymentResponse> paymentResponses = orders.stream()
                     .map(order -> {
                         try {
                             return paymentService.createPaymentLink(order);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .collect(Collectors.toList());
+            return new ResponseEntity<>(paymentResponses, HttpStatus.OK);
+        }
+
+        if(req.getPaymentMethod().contains(PAYMENT_METHOD.BY_VNPAY.toString())){
+            List<PaymentResponse> paymentResponses = orders.stream()
+                    .map(order -> {
+                        try {
+                            return paymentService.createPaymentUrlVnPay(order);
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }

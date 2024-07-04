@@ -36,7 +36,7 @@ const CreateRestaurantForm = () => {
   const jwt = localStorage.getItem('jwt');
 
   const handlebackHome = () => {
-    dispatch(logOut());
+    navigate("/")
   }
 
   const formik = useFormik({

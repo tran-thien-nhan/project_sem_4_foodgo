@@ -12,7 +12,7 @@ const Home = () => {
     const {restaurant} = useSelector(store => store)
     const navigate = useNavigate()
 
-    console.log("restaurant", restaurant);
+    //console.log("restaurant", restaurant);
 
     useEffect(() => {
         dispatch(getAllRestaurantsAction(jwt))

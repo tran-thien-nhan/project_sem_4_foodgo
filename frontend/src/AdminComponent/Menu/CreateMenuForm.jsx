@@ -43,7 +43,7 @@ const CreateMenuForm = () => {
             //     return { id: ingredient.id, name: ingredient.name };
             // });
             // values.ingredients = listSelectedIngredients;
-            
+
             dispatch(createMenuItem({
                 menu: values,
                 jwt
@@ -311,6 +311,14 @@ const CreateMenuForm = () => {
                         fullWidth
                     >
                         Create Menu Item
+                    </Button>
+                    <Button
+                        variant='contained'
+                        color='secondary'
+                        fullWidth
+                        onClick={() => navigate("/admin/restaurants/menu")}
+                    >
+                        Back To Menu
                     </Button>
                 </form>
             </div>

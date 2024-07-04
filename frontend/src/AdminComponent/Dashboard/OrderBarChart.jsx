@@ -73,7 +73,7 @@ const OrderBarChart = () => {
                     label: 'million (vnđ)',
                 }
             ]}
-            margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
+            margin={{ top: 10, bottom: 30, left: 50, right: 10 }}
             tooltip={{
                 trigger: 'axis',
                 formatter: (params) => {

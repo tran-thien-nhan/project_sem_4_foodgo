@@ -1,31 +1,52 @@
-import { Button, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
-import { Field, Form, Formik } from 'formik';
 import React from 'react';
+import { Button, FormControl, IconButton, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
+import { Field, Form, Formik } from 'formik';
 import { useNavigate } from 'react-router-dom';
-import { registerUser } from '../State/Authentication/Action';
 import { useDispatch } from 'react-redux';
+import { registerUser } from '../State/Authentication/Action';
+import { SignInButton, SignUpButton, useSignUp, useUser } from '@clerk/clerk-react';
+import GoogleIcon from '@mui/icons-material/Google';
+import { useState } from "react";
+
 
 const initialValues = {
     fullName: "",
     email: "",
     password: "",
-    role: "ROLE_CUSTOMER"
+    role: "ROLE_CUSTOMER",
 };
 
 const RegisterForm = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const { signUp } = useSignUp();
+    const { user } = useUser();
+    const [roleUser, setRoleUser] = useState("");
+
+    const handleGoogleSignUp = async () => {
+        try {
+            await signUp.authenticateWithRedirect({
+                strategy: 'oauth_google',
+                redirectUrl: `/signup-google-success`,
+            });
+        } catch (error) {
+            console.error("Google sign up failed", error);
+        }
+    };
 
     const handleSubmit = (values) => {
         if (!values.fullName || !values.email || !values.password || !values.role) {
             alert("All fields are required");
             return;
         }
-        console.log('form values', values);
         dispatch(registerUser({ userData: values, navigate }));
     };
 
-    return (
+    return user ? (
+        <Typography variant='h6' className='text-center'>
+            You are already registered.
+        </Typography>
+    ) : (
         <div>
             <Typography variant='h5' className='text-center'>Register</Typography>
             <Formik initialValues={initialValues} onSubmit={handleSubmit}>
@@ -68,6 +89,7 @@ const RegisterForm = () => {
                             <MenuItem value={"ROLE_RESTAURANT_OWNER"}>Restaurant Owner</MenuItem>
                         </Field>
                     </FormControl>
+                    <Field type='hidden' name='provider' />
                     <Button
                         type='submit'
                         variant='contained'
@@ -79,16 +101,31 @@ const RegisterForm = () => {
                     </Button>
                 </Form>
             </Formik>
-            <Typography
-                variant='body2'
-                align='center'
-                sx={{ mt: 3 }}
-            >
+            <SignInButton
+                mode='modal'
+                redirectUrl="/"
+                children={
+                    <Button
+                        variant='contained'
+                        color='primary'
+                        fullWidth
+                        sx={{ mt: 2 }}
+                        //onClick={handleGoogleSignUp}
+                    >
+                        <div className='flex'>
+                            <span>
+                                <IconButton>
+                                    <GoogleIcon />
+                                </IconButton>
+                            </span>
+                        </div>
+                        <p>Sign up with Google</p>
+                    </Button>
+                }
+            />
+            <Typography variant='body2' align='center' sx={{ mt: 3 }}>
                 Already have an account?
-                <Button
-                    size='small'
-                    onClick={() => navigate('/account/login')}
-                >
+                <Button size='small' onClick={() => navigate('/account/login')}>
                     Login
                 </Button>
             </Typography>

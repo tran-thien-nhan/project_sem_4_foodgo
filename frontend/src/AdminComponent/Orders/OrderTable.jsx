@@ -24,11 +24,18 @@ import {
     Typography,
     Button,
     Divider,
+    FormControlLabel,
+    Switch,
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchRestaurantsAllOrder, updateOrderStatus } from '../../component/State/Restaurant Order/Action';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { refundOrder } from '../../component/State/Order/Action';
+import PrintIcon from '@mui/icons-material/Print';
+import DoneIcon from '@mui/icons-material/Done';
+import CancelIcon from '@mui/icons-material/Cancel';
+import Fade from '@mui/material/Fade';
+import * as XLSX from 'xlsx';
 
 const style = {
     position: 'absolute',
@@ -61,12 +68,13 @@ const getButtonColor = (status) => {
     }
 };
 
-const OrderTable = ({ filterValue }) => {
+const OrderTable = ({ filterValue, setFilterValue }) => {
     const dispatch = useDispatch();
     const jwt = localStorage.getItem('jwt');
     const { restaurant, restaurantOrder } = useSelector(store => store);
     const [showAll, setShowAll] = useState({});
     const [searchTerm, setSearchTerm] = useState('');
+    const [searchOrderTerm, setSearchOrderTerm] = useState('');
     const [sortOrder, setSortOrder] = useState('desc');
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -74,6 +82,7 @@ const OrderTable = ({ filterValue }) => {
     const [open, setOpen] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [localRestaurantOrder, setLocalRestaurantOrder] = useState(restaurantOrder.orders);
+    const [checked, setChecked] = useState(false);
 
     const handleOpen = (order) => {
         setSelectedOrder(order);
@@ -107,9 +116,18 @@ const OrderTable = ({ filterValue }) => {
         setPage(0);
     };
 
+    const handleSearchOrderChange = (event) => {
+        setSearchOrderTerm(event.target.value);
+        setPage(0);
+    };
+
     const handlePaymentMethodFilterChange = (event) => {
         setPaymentMethodFilter(event.target.value);
         setPage(0);
+    };
+
+    const handleChange = () => {
+        setChecked((prev) => !prev);
     };
 
     const handleUpdateOrderStatusDelivering = (orderId, currentStatus, newStatus) => {
@@ -203,6 +221,7 @@ const OrderTable = ({ filterValue }) => {
         .filter(order =>
             order.isPaid &&
             order.customer?.fullName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+            order.id.toString().includes(searchOrderTerm) &&
             (paymentMethodFilter === '' || order.paymentMethod === paymentMethodFilter) &&
             (filterValue === 'ALL' || order.orderStatus === filterValue)
         )
@@ -212,6 +231,24 @@ const OrderTable = ({ filterValue }) => {
             return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
         });
 
+    const handleExportExcel = () => {
+        const ws = XLSX.utils.json_to_sheet(restaurantOrder.orders);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Orders");
+        XLSX.writeFile(wb, "Orders.xlsx");
+    };
+
+    const handleReset = () => {
+        setSearchTerm('');
+        setSearchOrderTerm('');
+        setSortOrder('desc');
+        setPage(0);
+        setRowsPerPage(5);
+        setPaymentMethodFilter('');
+        setChecked(false);
+        setFilterValue("ALL");
+    };
+
     return (
         <Box>
             <Card className='mt-1'>
@@ -219,15 +256,26 @@ const OrderTable = ({ filterValue }) => {
                     title={"All Orders"}
                     sx={{ pt: 2, alignItems: 'center' }}
                 />
+
                 <Box p={2} display="flex" flexDirection="column" gap={2}>
+
                     <TextField
                         label="Search Customer"
                         variant="outlined"
                         value={searchTerm}
                         onChange={handleSearchChange}
                         fullWidth
+                        sx={{ marginBottom: "1rem" }}
                     />
-                    <FormControl fullWidth>
+                    <TextField
+                        label="Search Order Id"
+                        variant="outlined"
+                        value={searchOrderTerm}
+                        onChange={handleSearchOrderChange}
+                        fullWidth
+                        sx={{ marginBottom: "1rem" }}
+                    />
+                    <FormControl fullWidth sx={{ marginBottom: "1rem" }}>
                         <InputLabel id="payment-method-filter-label">Filter by Payment Method</InputLabel>
                         <Select
                             labelId="payment-method-filter-label"
@@ -235,11 +283,28 @@ const OrderTable = ({ filterValue }) => {
                             onChange={handlePaymentMethodFilterChange}
                             fullWidth
                         >
-                            <MenuItem value=""><em>All</em></MenuItem>
-                            <MenuItem value="BY_CASH">COD</MenuItem>
-                            <MenuItem value="BY_CREDIT_CARD">By Credit Card</MenuItem>
+                            <MenuItem value=""><em>ALL</em></MenuItem>
+                            <MenuItem value="BY_CASH">CASH</MenuItem>
+                            <MenuItem value="BY_CREDIT_CARD">BANKCARD</MenuItem>
+                            <MenuItem value="BY_VNPAY">VNPAY</MenuItem>
                         </Select>
                     </FormControl>
+                    <Box display="flex" justifyContent="space-between">
+                        <Button variant="contained" onClick={handleReset}>
+                            Reset
+                        </Button>
+                        <Button
+                            onClick={handleExportExcel}
+                            variant="contained"
+                            color="primary"
+                            sx={{ alignSelf: "flex-start" }}
+                        >
+                            <div className='flex'>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="white" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm1.8 18H14l-2-3.4l-2 3.4H8.2l2.9-4.5L8.2 11H10l2 3.4l2-3.4h1.8l-2.9 4.5zM13 9V3.5L18.5 9z" /></svg>
+                                <p className='m-1'>Export to Excel</p>
+                            </div>
+                        </Button>
+                    </Box>
                 </Box>
                 <TableContainer component={Paper}>
                     <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -250,8 +315,8 @@ const OrderTable = ({ filterValue }) => {
                                 <TableCell align="right">Customer</TableCell>
                                 <TableCell align="right">Price</TableCell>
                                 <TableCell align="right">Name</TableCell>
-                                <TableCell align="right">Method</TableCell>
                                 <TableCell align="right">Ingredients</TableCell>
+                                <TableCell align="right">Method</TableCell>
                                 <TableCell align="right">Status</TableCell>
                                 <TableCell align="right">Detail</TableCell>
                                 <TableCell align="right">Actions</TableCell>
@@ -297,7 +362,10 @@ const OrderTable = ({ filterValue }) => {
                                             )}
                                         </TableCell>
                                         <TableCell align="right" rowSpan={order.items.length}>
-                                            {order.paymentMethod === "BY_CASH" ? "COD" : "By credit card"}
+                                            {order.paymentMethod === "BY_CASH" ? "COD" : (
+                                                order.paymentMethod === "BY_CREDIT_CARD"
+                                                ? 'BANK CARD' : 'VN PAY'
+                                            )}
                                         </TableCell>
                                         <TableCell align="right" rowSpan={order.items.length}>
                                             <Button
@@ -317,11 +385,13 @@ const OrderTable = ({ filterValue }) => {
                                             {
                                                 order.orderStatus === "PENDING" && (
                                                     <Button
-                                                        variant="contained"
+                                                        //variant="contained"
                                                         color="error"
                                                         onClick={() => handleOpen(order)}
                                                     >
-                                                        Print Invoice
+                                                        <IconButton aria-label="view">
+                                                            <PrintIcon />
+                                                        </IconButton>
                                                     </Button>
                                                 )
                                             }
@@ -339,19 +409,23 @@ const OrderTable = ({ filterValue }) => {
                                             {order.orderStatus === "DELIVERING" && (
                                                 <Box display="flex" flexDirection="column" alignItems="center">
                                                     <Button
-                                                        variant="contained"
+                                                        //variant="contained"
                                                         color="primary"
                                                         onClick={() => handleUpdateOrderStatusDelivering(order.id, order.orderStatus, "COMPLETED")}
                                                         sx={{ mb: 1 }}
                                                     >
-                                                        Mark as Completed
+                                                        <IconButton aria-label="view">
+                                                            <DoneIcon />
+                                                        </IconButton>
                                                     </Button>
                                                     <Button
-                                                        variant="contained"
+                                                        //variant="contained"
                                                         color="secondary"
                                                         onClick={() => handleUpdateOrderStatusDelivering(order.id, order.orderStatus, "CANCELLED")}
                                                     >
-                                                        Cancel Order
+                                                        <IconButton aria-label="view">
+                                                            <CancelIcon />
+                                                        </IconButton>
                                                     </Button>
                                                 </Box>
                                             )}
@@ -385,6 +459,7 @@ const OrderTable = ({ filterValue }) => {
                         </TableBody>
                     </Table>
                 </TableContainer>
+
                 <TablePagination
                     component="div"
                     count={filteredOrders.length}
@@ -393,6 +468,7 @@ const OrderTable = ({ filterValue }) => {
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
                 />
+
             </Card>
             {selectedOrder && (
                 <Modal
@@ -406,43 +482,75 @@ const OrderTable = ({ filterValue }) => {
                             Order Details
                         </Typography>
                         <Typography
-                            //id="modal-modal-description" 
                             sx={{ mt: 2 }}
                             id='invoice-details'
                         >
-                            <strong>Order ID:</strong> {selectedOrder.id}<br />
-                            <strong>Customer:</strong> {selectedOrder.customer?.fullName}<br />
-                            <strong>Total Price:</strong> {selectedOrder.totalPrice.toLocaleString('vi-VN')}đ<br />
-                            <strong>Payment Method:</strong> {selectedOrder.paymentMethod === "BY_CASH" ? "COD" : "By credit card"}<br />
-                            <strong>Status:</strong> {selectedOrder.orderStatus}<br />
-                            <strong>Delivery Address:</strong> {selectedOrder.deliveryAddress.streetAddress}, {selectedOrder.deliveryAddress.city}, {selectedOrder.deliveryAddress.state}, {selectedOrder.deliveryAddress.country}<br />
-                            <strong>Items:</strong><br />
-                            {selectedOrder.items.map((item, index) => (
-                                <div key={index}>
-                                    <strong> - {item.food?.name}:</strong> {item.quantity} x {item.totalPrice.toLocaleString('vi-VN')}đ<br />
-                                    <strong>Ingredients: </strong><br />
-                                    <strong> - </strong>
-                                    {
-                                        (item.ingredients.length > 0)
-                                            ? item.ingredients.join(', ')
-                                            : 'No ingredients'
-                                    }
-                                    <br />
-                                    <Divider
-                                        className='py-3'
-                                    />
-                                </div>
-                            ))}
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Order ID:</strong></td>
+                                        <td>{selectedOrder.id}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Customer:</strong></td>
+                                        <td>{selectedOrder.customer?.fullName}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Total Price:</strong></td>
+                                        <td>{selectedOrder.totalPrice.toLocaleString('vi-VN')}đ</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Payment Method:</strong></td>
+                                        <td>{selectedOrder.paymentMethod === "BY_CASH" ? "COD" : "By credit card"}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Status:</strong></td>
+                                        <td>{selectedOrder.orderStatus}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Delivery Address:</strong></td>
+                                        <td>{selectedOrder.deliveryAddress.streetAddress}, {selectedOrder.deliveryAddress.city}, {selectedOrder.deliveryAddress.state}, {selectedOrder.deliveryAddress.country}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Items:</strong></td>
+                                        <td>
+                                            {selectedOrder.items.map((item, index) => (
+                                                <div key={index}>
+                                                    <strong>{item.food?.name}:</strong> {item.quantity} x {item.totalPrice.toLocaleString('vi-VN')}đ<br />
+                                                    <strong>Ingredients: </strong>
+                                                    {
+                                                        (item.ingredients.length > 0)
+                                                            ? item.ingredients.join(', ')
+                                                            : 'No ingredients'
+                                                    }
+                                                    <br />
+                                                    <Divider className='py-3' />
+                                                </div>
+                                            ))}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
                         </Typography>
                         {
                             selectedOrder.orderStatus === "PENDING" && (
-                                <Button variant="contained" color="primary" onClick={() => handlePrintInvoiceModal()}>
-                                    Print Invoice
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => handlePrintInvoiceModal()}
+                                    className='justify-center items-center'
+                                    fullWidth
+                                >
+                                    <IconButton>
+                                        <PrintIcon />
+                                    </IconButton>
                                 </Button>)
                         }
                     </Box>
                 </Modal>
             )}
+
         </Box>
     );
 };

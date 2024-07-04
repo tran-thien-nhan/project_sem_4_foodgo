@@ -68,6 +68,7 @@ const Cart = () => {
                 paymentMethod: values.paymentMethod, 
             }
         }
+        console.log("DATA:",data);
         dispatch(createOrder(data));
 
         // navigate về trang chủ "/"
@@ -244,6 +245,7 @@ const Cart = () => {
                                         <Field as={RadioGroup} name="paymentMethod">
                                             <FormControlLabel value="BY_CASH" control={<Radio />} label="Cash" />
                                             <FormControlLabel value="BY_CREDIT_CARD" control={<Radio />} label="Credit Card" />
+                                            <FormControlLabel value="BY_VNPAY" control={<Radio />} label="VN Pay" />
                                         </Field>
                                     </FormControl>
                                 </Grid>

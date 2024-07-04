@@ -12,6 +12,10 @@ const OrderStatus = [
     label: "Pending"
   },
   {
+    value: "CONFIRMED",
+    label: "Confirmed"
+  },
+  {
     value: "DELIVERING",
     label: "Delivery"
   },
@@ -57,7 +61,7 @@ const Orders = () => {
           </RadioGroup>
         </FormControl>
       </Card>
-      <OrderTable filterValue={filterValue} />
+      <OrderTable filterValue={filterValue} setFilterValue={setFilterValue} />
     </div>
   );
 };

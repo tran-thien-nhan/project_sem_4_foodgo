@@ -1,5 +1,6 @@
 package com.foodgo.service;
 
+import com.foodgo.model.PROVIDER;
 import com.foodgo.model.USER_ROLE;
 import com.foodgo.model.User;
 import com.foodgo.repository.UserRepository;
@@ -24,6 +25,21 @@ public class CustomerUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmail(username); // tìm user theo email, nếu không tìm thấy thì trả về null
         if (user == null) { // nếu không tìm thấy user
             throw new UsernameNotFoundException("User not found with email " + username); // nếu không tìm thấy user thì trả về thông báo "User not found"
+        }
+        USER_ROLE role = user.getRole(); // lấy role của user
+
+        List<GrantedAuthority> authorities = new ArrayList<>(); // tạo mảng authorities chứa thông tin về quyền của user
+
+        authorities.add(new SimpleGrantedAuthority(role.toString())); // thêm quyền của user vào mảng authorities, role.toString() chuyển role từ kiểu enum sang kiểu string
+
+        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities); // trả về thông tin user, bao gồm email, password và authorities
+    }
+
+    // loadUserByEmailAndProvider
+    public UserDetails loadUserByEmailAndProvider(String email,String password, PROVIDER provider) throws UsernameNotFoundException { //loadUserByUsername nghĩa là load user theo username
+        User user = userRepository.findByEmailAndProvider(email, provider).get(0); // tìm user theo email, nếu không tìm thấy thì trả về null
+        if (user == null) { // nếu không tìm thấy user
+            throw new UsernameNotFoundException("User not found with email " + email); // nếu không tìm thấy user thì trả về thông báo "User not found"
         }
         USER_ROLE role = user.getRole(); // lấy role của user
 

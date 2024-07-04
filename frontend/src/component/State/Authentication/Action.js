@@ -15,17 +15,20 @@ export const registerUser = (reqData) => async (dispatch) => {
             reqData.navigate("/admin/restaurants");
         }
         else {
-            toast.success('register successfully!', {
-                position: "top-center",
-                autoClose: 500,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "colored",
-                transition: Bounce,
-            });
+            if (data.message != "Sign In successfully") {
+                toast.success('register successfully! Please Check Your Email', {
+                    position: "top-center",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "colored",
+                    transition: Bounce,
+                });
+            }
+
             reqData.navigate("/");
         }
 
@@ -35,7 +38,7 @@ export const registerUser = (reqData) => async (dispatch) => {
     } catch (error) {
         dispatch({ type: REGISTER_FAILURE, payload: error });
         console.log("ERROR: ", error);
-        
+
     }
 }
 
@@ -60,10 +63,10 @@ export const loginUser = (reqData) => async (dispatch) => {
         }
 
         if (data.role === "ROLE_RESTAURANT_OWNER") {
-            reqData.navigate("/admin/restaurants");            
+            reqData.navigate("/admin/restaurants");
         }
         else {
-            reqData.navigate("/");            
+            reqData.navigate("/");
         }
 
         dispatch({ type: LOGIN_SUCCESS, payload: data.jwt });
@@ -72,7 +75,7 @@ export const loginUser = (reqData) => async (dispatch) => {
     } catch (error) {
         dispatch({ type: LOGIN_FAILURE, payload: error });
         console.log("ERROR: ", error);
-        
+
     }
 }
 
@@ -88,14 +91,14 @@ export const getUser = (jwt) => async (dispatch) => {
         dispatch({ type: GET_USER_SUCCESS, payload: data });
 
     } catch (error) {
-        dispatch({ type: GET_USER_FAILURE, payload: error});
+        dispatch({ type: GET_USER_FAILURE, payload: error });
         console.log("ERROR: ", error);
-        
+
     }
 }
 
 export const addToFavorite = ({ jwt, restaurantId }) => async (dispatch) => {
-    
+
     try {
         const { data } = await api.put(`/api/restaurants/${restaurantId}/add-to-favorites`, {}, {
             headers: {
@@ -107,9 +110,9 @@ export const addToFavorite = ({ jwt, restaurantId }) => async (dispatch) => {
         console.log("ADD TO FAVORITE: ", data);
 
     } catch (error) {
-        dispatch({ type: ADD_TO_FAVORITE_FAILURE, payload: error});
+        dispatch({ type: ADD_TO_FAVORITE_FAILURE, payload: error });
         console.log("ERROR: ", error);
-        
+
     }
 }
 
@@ -121,6 +124,6 @@ export const logOut = () => async (dispatch) => {
 
     } catch (error) {
         console.log("ERROR: ", error);
-        
+
     }
 }
