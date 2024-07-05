@@ -15,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -63,5 +64,10 @@ public class AppConfig {
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(); // tạo ra một đối tượng BCryptPasswordEncoder để mã hóa mật khẩu người dùng
+    }
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate(); // tạo ra một đối tượng RestTemplate để gửi yêu cầu HTTP đến server khác
     }
 }
