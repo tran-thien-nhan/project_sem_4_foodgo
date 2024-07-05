@@ -1,13 +1,6 @@
 package com.foodgo.service;
 
 import com.foodgo.config.NexmoConfig;
-import com.foodgo.config.TwilioConfig;
-import com.twilio.Twilio;
-import com.twilio.rest.api.v2010.account.Call;
-import com.twilio.rest.api.v2010.account.Message;
-import com.twilio.twiml.VoiceResponse;
-import com.twilio.twiml.voice.Say;
-import com.twilio.type.PhoneNumber;
 import com.vonage.client.VonageClient;
 import com.vonage.client.sms.MessageStatus;
 import com.vonage.client.sms.SmsSubmissionResponse;
@@ -15,19 +8,8 @@ import com.vonage.client.sms.messages.TextMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.net.URI;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-
 @Service
 public class SmsServiceImp implements SmsService{
-
-    @Autowired
-    private TwilioConfig twilioConfig;
 
     private final NexmoConfig nexmoConfig;
 
