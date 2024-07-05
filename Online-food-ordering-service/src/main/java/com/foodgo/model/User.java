@@ -40,4 +40,7 @@ public class User {
     //@JsonIgnore //tránh lặp vô hạn, không lấy thông tin của addresses, chỉ lấy thông tin của user
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true) //một user có thể có nhiều địa chỉ, khi xóa user thì xóa hết địa chỉ, orphanRemoval xóa địa chỉ khi không có user nào sử dụng
     private List<Address> addresses = new ArrayList<>(); //mảng chứa thông tin các địa chỉ
+
+    private String resetPasswordToken;
+    private Date resetPasswordExpires;
 }

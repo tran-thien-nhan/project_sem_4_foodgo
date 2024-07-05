@@ -12,6 +12,7 @@ import { ClerkProvider, RedirectToSignIn, SignedIn, SignedOut, SignIn, SignUp, U
 import ProtectedPage from '../component/Auth/ProtectedPage'
 import GoogleSignUp from '../component/Auth/GoogleSignUp'
 import GoogleSignUpSuccess from '../component/Auth/GoogleSignUpSuccess'
+import ResetPassword from '../component/Auth/ResetPassword'
 
 const CustomerRouter = () => {
     return (
@@ -23,11 +24,11 @@ const CustomerRouter = () => {
                 <Route path='/account/:login' element={<Home />} />
                 <Route path='/login-google' element={<GoogleSignIn/>} />
                 <Route path='/signup-google' element={<GoogleSignUp/>} />
-                <Route path='/signup-google-success' element={<GoogleSignUpSuccess />} />
                 <Route path='/restaurant/:city/:title/:id' element={<RestaurantDetail />} />
                 <Route path='/cart' element={<Cart />} />
                 <Route path='/my-profile/*' element={<Profile />} />
                 <Route path='/payment/success/:orderId' element={<PaymentSuccess />} />
+                <Route path="/reset-password/*" element={<ResetPassword />} />
             </Routes>
             <Auth />
         </div>

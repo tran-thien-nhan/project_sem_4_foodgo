@@ -1,4 +1,4 @@
-import { ADD_TO_FAVORITE_FAILURE, ADD_TO_FAVORITE_REQUEST, ADD_TO_FAVORITE_SUCCESS, GET_USER_FAILURE, GET_USER_REQUEST, GET_USER_SUCCESS, LOGIN_FAILURE, LOGIN_REQUEST, LOGIN_SUCCESS, LOGOUT, REGISTER_FAILURE, REGISTER_REQUEST, REGISTER_SUCCESS } from "./ActionType";
+import { ADD_TO_FAVORITE_FAILURE, ADD_TO_FAVORITE_REQUEST, ADD_TO_FAVORITE_SUCCESS, GET_USER_FAILURE, GET_USER_REQUEST, GET_USER_SUCCESS, LOGIN_FAILURE, LOGIN_REQUEST, LOGIN_SUCCESS, LOGOUT, REGISTER_FAILURE, REGISTER_REQUEST, REGISTER_SUCCESS, RESET_PASSWORD_REQUEST, RESET_PASSWORD_SUCCESS, RESET_PASSWORD_FAILURE, CHANGE_PASSWORD_REQUEST, CHANGE_PASSWORD_SUCCESS, CHANGE_PASSWORD_FAILURE } from "./ActionType";
 import { API_URL, api } from "../../Config/api";
 import axios from "axios";
 import { Bounce, toast } from "react-toastify";
@@ -127,3 +127,67 @@ export const logOut = () => async (dispatch) => {
 
     }
 }
+
+export const forgotPassword = (email) => async (dispatch) => {
+    dispatch({ type: RESET_PASSWORD_REQUEST });
+    try {
+        await axios.post(`${API_URL}/auth/forgot-password`, { email });
+        dispatch({ type: RESET_PASSWORD_SUCCESS });
+        toast.success('Password reset email sent!', {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+        });
+    } catch (error) {
+        dispatch({ type: RESET_PASSWORD_FAILURE, payload: error });
+        toast.error('Failed to send password reset email!', {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+        });
+    }
+};
+
+export const resetPassword = ({ token, newPassword, navigate }) => async dispatch => {
+    dispatch({type:CHANGE_PASSWORD_REQUEST})
+    try {
+        await axios.post(`${API_URL}/auth/reset-password`, { token, newPassword });
+        dispatch({type:CHANGE_PASSWORD_SUCCESS});
+        toast.success('Password has been reset successfully!', {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+        });
+        navigate('/');
+        // alert('Password has been reset successfully');
+    } catch (error) {
+        dispatch({type:CHANGE_PASSWORD_FAILURE, payload: error});
+        console.error('There was an error resetting the password!', error);
+        // alert('Failed to reset password');
+        toast.error(error.message, {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+        });
+    }
+};

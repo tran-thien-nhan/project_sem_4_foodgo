@@ -10,6 +10,7 @@ import com.foodgo.response.AuthResponse;
 import com.foodgo.service.CustomerUserDetailsService;
 import com.foodgo.service.EmailService;
 import com.foodgo.service.UserService;
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +26,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -246,6 +249,22 @@ public class AuthController {
 
         return new ResponseEntity<>(authResponse, HttpStatus.OK);
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody Map<String, String> request) throws MessagingException, UnsupportedEncodingException {
+        String email = request.get("email");
+        userService.processForgotPassword(email);
+        return new ResponseEntity<>("Password reset email sent.", HttpStatus.OK);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> request) throws Exception {
+        String token = request.get("token");
+        String newPassword = request.get("newPassword");
+        userService.updatePassword(token, newPassword);
+        return new ResponseEntity<>("Password has been reset.", HttpStatus.OK);
+    }
+
 
 
 }

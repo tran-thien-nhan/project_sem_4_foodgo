@@ -1,5 +1,5 @@
 import { isPresentInFavorite } from "../../Config/logic";
-import { ADD_TO_FAVORITE_FAILURE, ADD_TO_FAVORITE_REQUEST, ADD_TO_FAVORITE_SUCCESS, GET_USER_FAILURE, GET_USER_REQUEST, GET_USER_SUCCESS, LOGIN_FAILURE, LOGIN_REQUEST, LOGIN_SUCCESS, LOGOUT, REGISTER_FAILURE, REGISTER_REQUEST, REGISTER_SUCCESS } from "./ActionType";
+import { ADD_TO_FAVORITE_FAILURE, ADD_TO_FAVORITE_REQUEST, ADD_TO_FAVORITE_SUCCESS, GET_USER_FAILURE, GET_USER_REQUEST, GET_USER_SUCCESS, LOGIN_FAILURE, LOGIN_REQUEST, LOGIN_SUCCESS, LOGOUT, REGISTER_FAILURE, REGISTER_REQUEST, REGISTER_SUCCESS, RESET_PASSWORD_REQUEST, RESET_PASSWORD_SUCCESS, RESET_PASSWORD_FAILURE, CHANGE_PASSWORD_REQUEST, CHANGE_PASSWORD_SUCCESS, CHANGE_PASSWORD_FAILURE } from "./ActionType";
 
 const initialState = {
     user: null,
@@ -16,12 +16,22 @@ export const authReducer = (state = initialState, action) => {
         case LOGIN_REQUEST:
         case GET_USER_REQUEST:
         case ADD_TO_FAVORITE_REQUEST:
+        case RESET_PASSWORD_REQUEST:
+        case CHANGE_PASSWORD_REQUEST:
             return {
                 ...state,
                 isLoading: true,
                 error: null,
                 success: null
             };
+        case RESET_PASSWORD_SUCCESS:
+            return {
+               ...state,
+                isLoading: false,
+                error: null,
+                success: action.payload
+            };
+        case RESET_PASSWORD_SUCCESS:
         case REGISTER_SUCCESS:
         case LOGIN_SUCCESS:
             return {
@@ -47,10 +57,19 @@ export const authReducer = (state = initialState, action) => {
                 error: null,
                 success: "Add to favorite success"
             };
+        case CHANGE_PASSWORD_SUCCESS:
+            return {
+               ...state,
+                isLoading: false,
+                error: null,
+                success: "Change password success"
+            };
         case REGISTER_FAILURE:
         case LOGIN_FAILURE:
         case GET_USER_FAILURE:
         case ADD_TO_FAVORITE_FAILURE:
+        case RESET_PASSWORD_FAILURE:
+        case CHANGE_PASSWORD_FAILURE:
             return {
                 ...state,
                 isLoading: false,

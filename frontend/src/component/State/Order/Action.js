@@ -23,10 +23,186 @@ import {
     UPDATE_ORDER_ISPAY_FAILURE,
     REFUND_ORDER_REQUEST,
     REFUND_ORDER_SUCCESS,
-    REFUND_ORDER_FAILURE
+    REFUND_ORDER_FAILURE,
+    SEND_OTP_REQUEST,
+    SEND_OTP_SUCCESS,
+    SEND_OTP_FAILURE,
+    VERIFY_OTP_REQUEST,
+    VERIFY_OTP_SUCCESS,
+    VERIFY_OTP_FAILURE,
+    SEND_OTP_VIA_EMAIL_REQUEST,
+    SEND_OTP_VIA_EMAIL_SUCCESS,
+    SEND_OTP_VIA_EMAIL_FAILURE,
+    VERIFY_OTP_VIA_EMAIL_REQUEST,
+    VERIFY_OTP_VIA_EMAIL_SUCCESS,
+    VERIFY_OTP_VIA_EMAIL_FAILURE
 } from './ActionType';
 import { Bounce, toast } from "react-toastify";
 import { fetchRestaurantsAllOrder } from '../Restaurant Order/Action';
+
+// Gửi OTP via sms
+export const sendOtp = ({ phoneNumber, jwt }) => {
+    return async (dispatch) => {
+        dispatch({ type: SEND_OTP_REQUEST });
+        try {
+            const { data } = await api.post('/api/otp/send', { phoneNumber }, {
+                headers: {
+                    Authorization: `Bearer ${jwt}`
+                }
+            });
+            dispatch({ type: SEND_OTP_SUCCESS, payload: data });
+            toast.success('OTP sent successfully!', {
+                position: "top-center",
+                autoClose: 1000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+            });
+        } catch (error) {
+            dispatch({ type: SEND_OTP_FAILURE, payload: error });
+            toast.error('Failed to send OTP!', {
+                position: "top-center",
+                autoClose: 1000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+            });
+            console.log("ERROR SEND OTP: ", error);
+        }
+    }
+}
+
+// Xác minh OTP via sms
+export const verifyOtp = ({ phoneNumber, otp, jwt }) => {
+    return async (dispatch) => {
+        dispatch({ type: VERIFY_OTP_REQUEST });
+        try {
+            const { data } = await api.post('/api/otp/verify', { phoneNumber, otp }, {
+                headers: {
+                    Authorization: `Bearer ${jwt}`
+                }
+            });
+            dispatch({ type: VERIFY_OTP_SUCCESS, payload: data });
+            return data;
+        } catch (error) {
+            dispatch({ type: VERIFY_OTP_FAILURE, payload: error });
+            toast.error('Failed to verify OTP!', {
+                position: "top-center",
+                autoClose: 1000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+            });
+        }
+    }
+}
+
+// Gửi OTP via email
+export const sendOtpViaEmail = ({ email, jwt }) => {
+    return async (dispatch) => {
+        dispatch({ type: SEND_OTP_VIA_EMAIL_REQUEST });
+        try {
+            const { data } = await api.post('/api/otp/email/send', { email }, {
+                headers: {
+                    Authorization: `Bearer ${jwt}`
+                }
+            });
+            dispatch({ type: SEND_OTP_VIA_EMAIL_SUCCESS, payload: data });
+            toast.success('OTP sent successfully!', {
+                position: "top-center",
+                autoClose: 1000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+            });
+        } catch (error) {
+            dispatch({ type: SEND_OTP_VIA_EMAIL_FAILURE, payload: error });
+            toast.error('Failed to send OTP!', {
+                position: "top-center",
+                autoClose: 1000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+            });
+            console.log("ERROR SEND OTP: ", error);
+        }
+    }
+}
+
+// Xác minh OTP via email
+export const verifyOtpViaEmail = ({ email, otp, jwt }) => {
+    return async (dispatch) => {
+        dispatch({ type: VERIFY_OTP_VIA_EMAIL_REQUEST });
+        try {
+            const { data } = await api.post('/api/otp/email/verify', { email, otp }, {
+                headers: {
+                    Authorization: `Bearer ${jwt}`
+                }
+            });
+            dispatch({ type: VERIFY_OTP_VIA_EMAIL_SUCCESS, payload: data });
+            if (data == true) {
+                toast.success('verified OTP successfully!', {
+                    position: "top-center",
+                    autoClose: 1000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "colored",
+                    transition: Bounce,
+                });
+            }
+            else {
+                toast.error('Failed to verify OTP!', {
+                    position: "top-center",
+                    autoClose: 1000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "colored",
+                    transition: Bounce,
+                });
+            }
+            return data;
+        } catch (error) {
+            dispatch({ type: VERIFY_OTP_VIA_EMAIL_FAILURE, payload: error });
+            toast.error(error, {
+                position: "top-center",
+                autoClose: 1000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+            });
+        }
+    }
+}
 
 export const createOrder = (reqData) => {
     return async (dispatch) => {
@@ -43,7 +219,7 @@ export const createOrder = (reqData) => {
 
                 //do là mảng chứa các payment_url nên sẽ dùng vòng lặp để mở 2 link này sang tab mới
                 // Mở mỗi payment_url trong tab mới
-                
+
                 data.forEach(paymentResponse => {
                     window.open(paymentResponse.payment_url, '_blank');
                 });

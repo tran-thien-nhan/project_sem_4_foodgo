@@ -146,51 +146,6 @@ public class OrderServiceImp implements OrderService{
 
         return orderRepository.save(order);
     }
-
-//    @Override
-//    public Order updateOrder(Long orderId, String orderStatus) throws Exception {
-//        Order order = findOrderById(orderId);
-//        if (orderStatus.equals("OUT_FOR_DELIVERY")
-//                || orderStatus.equals("DELIVERED")
-//                || orderStatus.equals("COMPLETED")
-//                || orderStatus.equals("PENDING")
-//                || orderStatus.equals("IN_PROGRESS"))
-//        {
-//            order.setOrderStatus(orderStatus);
-//            return orderRepository.save(order);
-//        } else {
-//            throw new Exception("Invalid order status");
-//        }
-//    }
-
-//    @Override
-//    public Order updateOrder(Long orderId, String orderStatus) throws Exception {
-//        Order order = findOrderById(orderId);
-//        ORDER_STATUS currentStatus = ORDER_STATUS.valueOf(order.getOrderStatus());
-//        ORDER_STATUS newStatus = ORDER_STATUS.valueOf(orderStatus);
-//
-//        if (currentStatus.canTransitionTo(newStatus)) {
-//            order.setOrderStatus(orderStatus);
-//            return orderRepository.save(order);
-//        } else {
-//            throw new Exception("Invalid order status transition");
-//        }
-//    }
-
-//    @Override
-//    public Order updateOrder(Long orderId) throws Exception {
-//        Order order = findOrderById(orderId);
-//
-//        ORDER_STATUS currentStatus = ORDER_STATUS.valueOf(order.getOrderStatus());
-//        ORDER_STATUS newStatus = currentStatus.getNext();
-//
-//        if (currentStatus.canTransitionTo(newStatus)) {
-//            order.setOrderStatus(newStatus.toString());
-//            return orderRepository.save(order);
-//        } else {
-//            throw new Exception("Invalid order status transition");
-//        }
-//    }
     @Override
     public Order updateOrder(Long orderId, ORDER_STATUS newStatus) throws Exception {
         Order order = findOrderById(orderId);

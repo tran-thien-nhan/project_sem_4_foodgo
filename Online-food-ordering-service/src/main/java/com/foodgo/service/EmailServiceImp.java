@@ -198,4 +198,31 @@ public class EmailServiceImp implements EmailService {
                 "</body>\n" +
                 "</html>";
     }
+
+    public void sendPasswordResetEmail(String email, String token) throws MessagingException, UnsupportedEncodingException {
+        String resetUrl = "http://localhost:3000/reset-password?token=" + token;
+        String content = "<p>Hello,</p>"
+                + "<p>You have requested to reset your password.</p>"
+                + "<p>Click the link below to reset your password:</p>"
+                + "<p><a href=\"" + resetUrl + "\">Reset Password</a></p>"
+                + "<p>Ignore this email if you do remember your password, "
+                + "or you have not made the request.</p>";
+        sendEmail(email, "Password Reset Request", content);
+    }
+
+    @Override
+    public void sendOtpEmail(String email, String otp) throws MessagingException, UnsupportedEncodingException {
+        String subject = "Your OTP Code";
+        String content = "<p>Your OTP code is: <b>" + otp + "</b></p>";
+
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+        helper.setFrom(new InternetAddress(sender, "FOOD GO"));
+        helper.setTo(email);
+        helper.setSubject(subject);
+        helper.setText(content, true);
+
+        mailSender.send(mimeMessage);
+    }
+
 }
