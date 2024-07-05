@@ -32,19 +32,6 @@ public class OrderController {
     @Autowired
     private CartService cartService;
 
-//    @PostMapping("/order")
-//    public ResponseEntity<PaymentResponse> createOrder(@RequestBody OrderRequest req, @RequestHeader("Authorization") String jwt) throws Exception {
-//        User user = userService.findUserByJwtToken(jwt);
-//        Order order = orderService.createOrder(req, user);
-//
-//        if(req.getPaymentMethod().contains("BY_CREDIT_CARD")){ // Nếu phương thức thanh toán là thẻ
-//            PaymentResponse res = paymentService.createPaymentLink(order);
-//            return new ResponseEntity<>(res, HttpStatus.OK);
-//        }
-//
-//        return new ResponseEntity<>(HttpStatus.OK);
-//    }
-
     @PostMapping("/order")
     public ResponseEntity<List<PaymentResponse>> createOrder(@RequestBody OrderRequest req, @RequestHeader("Authorization") String jwt) throws Exception {
         User user = userService.findUserByJwtToken(jwt);

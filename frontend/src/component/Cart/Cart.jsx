@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Divider, Card, Modal, Box, Grid, TextField, IconButton, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio } from '@mui/material';
+import { Button, Divider, Card, Modal, Box, Grid, TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useDispatch, useSelector } from 'react-redux';
 import CartItem from './CartItem';
@@ -9,7 +9,15 @@ import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
 import { getAllCartItems, clearCartAction, findCart } from '../State/Cart/Action';
 import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
-import { createOrder, createPaymentLink } from '../State/Order/Action';
+import { createOrder, sendOtp, sendOtpViaEmail, verifyOtp, verifyOtpViaEmail } from '../State/Order/Action';
+
+const initialValues = {
+    streetAddress: '',
+    state: '',
+    pinCode: '',
+    city: '',
+    paymentMethod: 'BY_CASH',
+};
 
 export const style = {
     position: 'absolute',
@@ -23,14 +31,6 @@ export const style = {
     p: 4,
 };
 
-const initialValues = {
-    streetAddress: '',
-    state: '',
-    pinCode: '',
-    city: '',
-    paymentMethod: 'BY_CASH', // giá trị mặc định cho hình thức thanh toán
-};
-
 const Cart = () => {
     const [open, setOpen] = useState(false);
     const { auth, cart } = useSelector(store => store);
@@ -39,6 +39,12 @@ const Cart = () => {
     const token = localStorage.getItem('jwt');
     const [cartItems, setCartItems] = useState([]);
     const [totalPrice, setTotalPrice] = useState(0);
+    const [phone, setPhone] = useState('');
+    const [mail, setMail] = useState('');
+    const [otp, setOtp] = useState('');
+    const [verifying, setVerifying] = useState(false);
+    const [otpVerified, setOtpVerified] = useState(false);
+    const [otpMethod, setOtpMethod] = useState('email');
 
     useEffect(() => {
         dispatch(findCart(token));
@@ -52,7 +58,12 @@ const Cart = () => {
         paymentMethod: Yup.string().required('Payment Method Is Required'),
     });
 
-    const HandleSubmit = (values) => {
+    const handleSubmitOrder = (values) => {
+        if (!otpVerified) {
+            alert("You need to verify the OTP before placing the order.");
+            return;
+        }
+
         const data = {
             jwt: localStorage.getItem('jwt'),
             order: {
@@ -65,15 +76,12 @@ const Cart = () => {
                     pinCode: values.pinCode,
                     country: "vietnam"
                 },
-                paymentMethod: values.paymentMethod, 
+                paymentMethod: values.paymentMethod,
             }
         }
-        console.log("DATA:",data);
+        console.log("DATA:", data);
         dispatch(createOrder(data));
 
-        // navigate về trang chủ "/"
-        //window.location.href = '/';
-        
         if (values.paymentMethod === 'BY_CASH') {
             window.location.href = '/';
         }
@@ -99,12 +107,65 @@ const Cart = () => {
         navigate("/")
     };
 
+    const handleSendOtp = async (e) => {
+        e.preventDefault();
+        if (otpMethod === "email") {
+            if (!mail) {
+                alert("Email is required!");
+                return;
+            }
+            dispatch(sendOtpViaEmail({ email: mail, jwt: token }));
+            setVerifying(true);
+        }
+        else {
+            if (!phone) {
+                alert("Phone is required!");
+                return;
+            }
+            dispatch(sendOtp({ phoneNumber: phone, jwt: token }));
+            setVerifying(true);
+        }
+    };
+
+    const handleVerifyOtp = async (e) => {
+        e.preventDefault();
+        if (otpMethod === "email") {
+            const result = await dispatch(verifyOtpViaEmail({ email: mail, otp, jwt: token }));
+            if (result == true) {
+                console.log(result);
+                setOtpVerified(true); // Xác nhận OTP thành công
+                setVerifying(false);
+                // alert("OTP verified successfully!");
+            } else {
+                console.log(result);
+                setOtpVerified(false); // Xác nhận OTP thất bại
+                setVerifying(false);
+                // alert("OTP verification failed!");
+            }
+        }
+        else {
+            const result = await dispatch(verifyOtp({ phoneNumber: phone, otp, jwt: token }));
+            if (result == true) {
+                console.log(result);
+                setOtpVerified(true); // Xác nhận OTP thành công
+                setVerifying(false);
+                // alert("OTP verified successfully!");
+            } else {
+                console.log(result);
+                setOtpVerified(false); // Xác nhận OTP thất bại
+                setVerifying(false);
+                // alert("OTP verification failed!");
+            }
+        }
+
+    };
+
     return (
         <>
             <main className='lg:flex justify-between'>
                 <section className='lg:w-[30%] space-y-6 lg:min-h-screen pt-10'>
                     {cart.cart?.cartItems?.map((item) => (
-                        <CartItem key={item.id} item={item}/>
+                        <CartItem key={item.id} item={item} />
                     ))}
                     <div className="flex justify-end w-full px-3">
                         <Button
@@ -172,7 +233,7 @@ const Cart = () => {
                 aria-describedby='modal-modal-description'
             >
                 <Box sx={style}>
-                    <Formik initialValues={initialValues} onSubmit={HandleSubmit} validationSchema={validationSchema}>
+                    <Formik initialValues={initialValues} onSubmit={handleSubmitOrder} validationSchema={validationSchema}>
                         <Form>
                             <Grid container spacing={2}>
                                 <Grid item xs={12}>
@@ -240,23 +301,68 @@ const Cart = () => {
                                     />
                                 </Grid>
                                 <Grid item xs={12}>
-                                    <FormControl component="fieldset">
-                                        <FormLabel component="legend">Payment Method</FormLabel>
+                                    <FormControl component='fieldset'>
+                                        <FormLabel component='legend'>Payment Method</FormLabel>
                                         <Field as={RadioGroup} name="paymentMethod">
-                                            <FormControlLabel value="BY_CASH" control={<Radio />} label="Cash" />
-                                            <FormControlLabel value="BY_CREDIT_CARD" control={<Radio />} label="Credit Card" />
-                                            <FormControlLabel value="BY_VNPAY" control={<Radio />} label="VN Pay" />
+                                            <FormControlLabel value='BY_CASH' control={<Radio />} label='By Cash' />
+                                            <FormControlLabel value='BY_CREDIT_CARD' control={<Radio />} label='By Bank' />
+                                            <FormControlLabel value='BY_VNPAY' control={<Radio />} label='By VNPay' />
                                         </Field>
                                     </FormControl>
                                 </Grid>
                                 <Grid item xs={12}>
-                                    <Button variant='contained' fullWidth type='submit' color='primary'>
-                                        Delivery Here
+                                    <Button type='submit' variant='contained' color='primary' fullWidth disabled={!otpVerified}>
+                                        Submit Order
                                     </Button>
                                 </Grid>
                             </Grid>
                         </Form>
                     </Formik>
+                    <Divider sx={{ my: 2 }} />
+                    <FormControl component="fieldset" className='mb-3'>
+                        <FormLabel component="legend">Choose OTP method</FormLabel>
+                        <RadioGroup
+                            aria-label="otp-method"
+                            name="otpMethod"
+                            value={otpMethod}
+                            onChange={(e) => setOtpMethod(e.target.value)}
+                        >
+                            <div className='flex'>
+                                <FormControlLabel value="email" control={<Radio />} label="Email" />
+                                <FormControlLabel value="sms" control={<Radio />} label="SMS" />
+                            </div>
+                        </RadioGroup>
+                    </FormControl>
+
+                    {verifying ? (
+                        <>
+                            <TextField
+                                label='Enter OTP'
+                                value={otp}
+                                onChange={(e) => setOtp(e.target.value)}
+                                fullWidth
+                            />
+                            <Button onClick={handleVerifyOtp} variant='contained' color='success' fullWidth sx={{ mt: 2 }}>
+                                Verify OTP
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <TextField
+                                label={otpMethod === 'email' ? 'Email' : 'Phone Number'}
+                                value={otpMethod === 'email' ? mail : phone}
+                                onChange={
+                                    otpMethod === 'email'
+                                        ? (e) => setMail(e.target.value)
+                                        : (e) => setPhone(e.target.value)
+                                }
+                                fullWidth
+                            />
+                            <Button onClick={handleSendOtp} variant='contained' color='primary' fullWidth sx={{ mt: 2 }}>
+                                Send OTP
+                            </Button>
+                        </>
+                    )}
                 </Box>
             </Modal>
         </>

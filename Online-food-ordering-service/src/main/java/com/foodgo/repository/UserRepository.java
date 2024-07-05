@@ -10,4 +10,6 @@ public interface UserRepository extends JpaRepository<User, Long>{ // Tạo inte
     public User findByEmail(String username); // Tìm kiếm user theo email
 
     public List<User> findByEmailAndProvider(String email, PROVIDER provider);
+
+    User findByResetPasswordToken(String token);
 }
