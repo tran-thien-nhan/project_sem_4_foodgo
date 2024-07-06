@@ -1,11 +1,9 @@
 package com.foodgo.controller;
 
-import com.foodgo.model.Category;
-import com.foodgo.model.Food;
-import com.foodgo.model.Restaurant;
-import com.foodgo.model.User;
+import com.foodgo.model.*;
 import com.foodgo.service.CategoryService;
 import com.foodgo.service.FoodService;
+import com.foodgo.service.RatingService;
 import com.foodgo.service.RestaurantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,6 +23,9 @@ public class PublicController {
 
     @Autowired
     private FoodService foodService;
+
+    @Autowired
+    private RatingService ratingService;
 
     @GetMapping("/restaurants")
     public ResponseEntity<List<Restaurant>> getAllRestaurant() throws Exception {
@@ -52,5 +53,11 @@ public class PublicController {
                                                         @PathVariable Long restaurantId) throws Exception {
         List<Food> foods = foodService.getRestaurantsFood(restaurantId, vegetarian, nonVegan, seasonal, food_category);
         return new ResponseEntity<>(foods, HttpStatus.OK);
+    }
+
+    @GetMapping("/ratings/{restaurantId}")
+    public ResponseEntity<List<Rating>> getRatings(@PathVariable Long restaurantId) throws Exception {
+        List<Rating> ratings = ratingService.getRatings(restaurantId);
+        return new ResponseEntity<>(ratings, HttpStatus.OK);
     }
 }

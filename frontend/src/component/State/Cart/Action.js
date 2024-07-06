@@ -18,6 +18,9 @@ import {
     REMOVE_CART_ITEM_REQUEST,
     REMOVE_CART_ITEM_SUCCESS,
     REMOVE_CART_ITEM_FAILURE,
+    REMOVE_INGREDIENT_OF_ITEM_CART_REQUEST,
+    REMOVE_INGREDIENT_OF_ITEM_CART_SUCCESS,
+    REMOVE_INGREDIENT_OF_ITEM_CART_FAILURE,
 } from './ActionType';
 
 export const findCart = (token) => {
@@ -120,6 +123,25 @@ export const removeCartItem = ({ cartItemId, jwt }) => {
         } catch (error) {
             dispatch({ type: REMOVE_CART_ITEM_FAILURE, payload: error.message });
             //console.log("REMOVE CART ITEM FAILURE: ", error);
+        }
+    }
+}
+
+export const removeIngredientFromCart = ({ cartItemId, ingredientId, jwt }) => {
+    return async (dispatch) => {
+        dispatch({ type: REMOVE_INGREDIENT_OF_ITEM_CART_REQUEST });
+        try {
+            const { data } = await api.delete(`/api/cart-item/${cartItemId}/ingredient/${ingredientId}/remove`, {
+                headers: {
+                    Authorization: `Bearer ${jwt}`,
+                },
+            });
+            dispatch({ type: REMOVE_INGREDIENT_OF_ITEM_CART_SUCCESS, payload: { cartItemId, ingredientId } });
+            dispatch(findCart(jwt)); // Dispatch findCart to update cart id
+            //console.log("REMOVE INGREDIENT FROM CART SUCCESS: ", data);
+        } catch (error) {
+            dispatch({ type: REMOVE_INGREDIENT_OF_ITEM_CART_FAILURE, payload: error.message });
+            console.log("REMOVE INGREDIENT FROM CART FAILURE: ", error);
         }
     }
 }

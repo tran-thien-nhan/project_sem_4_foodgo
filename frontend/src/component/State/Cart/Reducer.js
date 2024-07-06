@@ -14,6 +14,7 @@ const cartReducer = (state = initialState, action) => {
         case actionTypes.GET_ALL_CART_ITEMS_REQUEST:
         case actionTypes.UPDATE_CART_ITEM_REQUEST:
         case actionTypes.REMOVE_CART_ITEM_REQUEST:
+        case actionTypes.REMOVE_INGREDIENT_OF_ITEM_CART_REQUEST:
             return {
                 ...state,
                 loading: true,
@@ -47,6 +48,7 @@ const cartReducer = (state = initialState, action) => {
                 cartItems: state.cartItems.map((item) => item.id === action.payload.id ? action.payload : item)
             };
         case actionTypes.REMOVE_CART_ITEM_SUCCESS:
+        case actionTypes.REMOVE_INGREDIENT_OF_ITEM_CART_SUCCESS:
             return {
                 ...state,
                 loading: false,
@@ -56,6 +58,7 @@ const cartReducer = (state = initialState, action) => {
         case actionTypes.UPDATE_CART_ITEM_FAILURE:
         case actionTypes.REMOVE_CART_ITEM_FAILURE:
         case actionTypes.ADD_ITEM_TO_CART_FAILURE:
+        case actionTypes.REMOVE_INGREDIENT_OF_ITEM_CART_FAILURE:
             return {
                 ...state,
                 loading: false,

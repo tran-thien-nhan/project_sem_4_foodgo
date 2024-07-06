@@ -7,9 +7,10 @@ import AddressCard from './AddressCard';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
-import { getAllCartItems, clearCartAction, findCart } from '../State/Cart/Action';
+import { getAllCartItems, clearCartAction, findCart, removeCartItem, updateCartItem } from '../State/Cart/Action';
 import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
 import { createOrder, sendOtp, sendOtpViaEmail, verifyOtp, verifyOtpViaEmail } from '../State/Order/Action';
+import { Bounce, toast } from "react-toastify";
 
 const initialValues = {
     streetAddress: '',
@@ -33,7 +34,7 @@ export const style = {
 
 const Cart = () => {
     const [open, setOpen] = useState(false);
-    const { auth, cart } = useSelector(store => store);
+    const { auth, cart, menu } = useSelector(store => store);
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const token = localStorage.getItem('jwt');
@@ -45,10 +46,72 @@ const Cart = () => {
     const [verifying, setVerifying] = useState(false);
     const [otpVerified, setOtpVerified] = useState(false);
     const [otpMethod, setOtpMethod] = useState('email');
+    const [selectedAddress, setSelectedAddress] = useState(null);
 
     useEffect(() => {
         dispatch(findCart(token));
+        console.log("CART: ",cart);
     }, [dispatch, token]);
+
+    const alertSuccess = (str) => {
+        toast.success(str, {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+        });
+    };
+
+    const alertFail = (str) => {
+        toast.error(str, {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+        });
+    };
+
+    const checkCartForUnavailableItems = () => {
+        if (!cart.cart?.cartItems) {
+            return;
+        }
+    
+        // Kiểm tra food không còn available
+        const foodUnAvailable = cart.cart?.cartItems?.filter(cartItem => !cartItem.food?.available);
+    
+        if (foodUnAvailable.length > 0) {
+            alertFail(`There are ${foodUnAvailable.length} items that are unavailable, please try again!`);
+            return false;
+        }
+    
+        // Kiểm tra nguyên liệu không còn inStoke
+        for (const cartItem of cart.cart?.cartItems) {
+            if (cartItem == null || cartItem.empty) {
+                continue;
+            }
+    
+            const unavailableIngredients = cartItem.ingredients.filter(ingredientName => {
+                const ingredient = cartItem.food.ingredients.find(ing => ing.name === ingredientName);
+                return ingredient && !ingredient.inStoke;
+            });
+    
+            if (unavailableIngredients.length > 0) {
+                alertFail(`There are unavailable ingredients in your cart, please try again!`);
+                return false;
+            }
+        }
+    
+        return true;
+    };
+    
 
     const validationSchema = Yup.object().shape({
         streetAddress: Yup.string().required('Street Address Is Required'),
@@ -60,7 +123,7 @@ const Cart = () => {
 
     const handleSubmitOrder = (values) => {
         if (!otpVerified) {
-            alert("You need to verify the OTP before placing the order.");
+            alertFail("You need to verify the OTP before placing the order.");
             return;
         }
 
@@ -90,15 +153,13 @@ const Cart = () => {
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
-    const handleSelectAddress = () => {
-        console.log('Address Selected');
-    };
-
-    const createOrderUsingSelectedAddress = () => {
-        console.log('Order Created Using Selected Address');
+    const handleSelectAddress = (address) => {
+        setSelectedAddress(address);
+        handleOpen();
     };
 
     const handleOpenAddressModal = () => {
+        setSelectedAddress(null);
         handleOpen();
     };
 
@@ -109,19 +170,31 @@ const Cart = () => {
 
     const handleSendOtp = async (e) => {
         e.preventDefault();
+
+        const isCartValid = checkCartForUnavailableItems();
+
         if (otpMethod === "email") {
             if (!mail) {
-                alert("Email is required!");
+                alertFail("Email is required!");
                 return;
             }
+            if (!isCartValid) {
+                return;
+            }
+
             dispatch(sendOtpViaEmail({ email: mail, jwt: token }));
             setVerifying(true);
         }
         else {
             if (!phone) {
-                alert("Phone is required!");
+                alertFail("Phone is required!");
                 return;
             }
+
+            if (!isCartValid.valid) {
+                return;
+            }
+
             dispatch(sendOtp({ phoneNumber: phone, jwt: token }));
             setVerifying(true);
         }
@@ -210,8 +283,13 @@ const Cart = () => {
                     <div>
                         <h1 className='text-center font-semibold text-2xl py-10'>Choose Delivery Address</h1>
                         <div className='flex flex-wrap items-center gap-5 justify-center'>
-                            {[1, 1, 1].map((item, index) => (
-                                <AddressCard key={index} showButton={true} handleSelectAddress={createOrderUsingSelectedAddress} />
+                            {auth.user?.addresses?.map((address, index) => (
+                                <AddressCard
+                                    key={index}
+                                    showButton={true}
+                                    address={address}
+                                    onSelectAddress={handleSelectAddress}
+                                />
                             ))}
                             <Card className='flex gap-5 w-64 p-5'>
                                 <AddLocationAltIcon />
@@ -233,90 +311,110 @@ const Cart = () => {
                 aria-describedby='modal-modal-description'
             >
                 <Box sx={style}>
-                    <Formik initialValues={initialValues} onSubmit={handleSubmitOrder} validationSchema={validationSchema}>
-                        <Form>
-                            <Grid container spacing={2}>
-                                <Grid item xs={12}>
-                                    <Field
-                                        as={TextField}
-                                        name='streetAddress'
-                                        label='Street Address'
-                                        fullWidth
-                                        variant='outlined'
-                                        error={!Boolean(ErrorMessage('streetAddress'))}
-                                        helperText={
-                                            <ErrorMessage name='streetAddress'>
-                                                {(msg) => <span className='text-red-600'>{msg}</span>}
-                                            </ErrorMessage>
-                                        }
-                                    />
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <Grid container spacing={2}>
-                                        <Grid item xs={6}>
-                                            <Field
-                                                as={TextField}
-                                                name='state'
-                                                label='State'
-                                                fullWidth
-                                                variant='outlined'
-                                                error={!Boolean(ErrorMessage('state'))}
-                                                helperText={
-                                                    <ErrorMessage name='state'>
-                                                        {(msg) => <span className='text-red-600'>{msg}</span>}
-                                                    </ErrorMessage>
-                                                }
-                                            />
-                                        </Grid>
-                                        <Grid item xs={6}>
-                                            <Field
-                                                as={TextField}
-                                                name='pinCode'
-                                                label='Pin Code'
-                                                fullWidth
-                                                variant='outlined'
-                                                error={!Boolean(ErrorMessage('pinCode'))}
-                                                helperText={
-                                                    <ErrorMessage name='pinCode'>
-                                                        {(msg) => <span className='text-red-600'>{msg}</span>}
-                                                    </ErrorMessage>
-                                                }
-                                            />
+                    <Formik
+                        // initialValues={initialValues}
+                        initialValues={selectedAddress || initialValues}
+                        onSubmit={handleSubmitOrder}
+                        validationSchema={validationSchema}
+                    >
+                        {({ handleChange, handleSubmit, setFieldValue }) => (
+                            <Form>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12}>
+                                        <Field
+                                            as={TextField}
+                                            name='streetAddress'
+                                            label='Street Address'
+                                            fullWidth
+                                            variant='outlined'
+                                            onChange={handleChange}
+                                            defaultValue={selectedAddress?.streetAddress || ''}
+                                            error={!Boolean(ErrorMessage('streetAddress'))}
+                                            helperText={
+                                                <ErrorMessage name='streetAddress'>
+                                                    {(msg) => <span className='text-red-600'>{msg}</span>}
+                                                </ErrorMessage>
+                                            }
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Grid container spacing={2}>
+                                            <Grid item xs={6}>
+                                                <Field
+                                                    as={TextField}
+                                                    name='state'
+                                                    label='State'
+                                                    fullWidth
+                                                    variant='outlined'
+                                                    onChange={handleChange}
+                                                    defaultValue={selectedAddress?.state || ''}
+                                                    error={!Boolean(ErrorMessage('state'))}
+                                                    helperText={
+                                                        <ErrorMessage name='state'>
+                                                            {(msg) => <span className='text-red-600'>{msg}</span>}
+                                                        </ErrorMessage>
+                                                    }
+                                                />
+                                            </Grid>
+                                            <Grid item xs={6}>
+                                                <Field
+                                                    as={TextField}
+                                                    name='pinCode'
+                                                    label='Pin Code'
+                                                    fullWidth
+                                                    variant='outlined'
+                                                    onChange={handleChange}
+                                                    defaultValue={selectedAddress?.pinCode || ''}
+                                                    error={!Boolean(ErrorMessage('pinCode'))}
+                                                    helperText={
+                                                        <ErrorMessage name='pinCode'>
+                                                            {(msg) => <span className='text-red-600'>{msg}</span>}
+                                                        </ErrorMessage>
+                                                    }
+                                                />
+                                            </Grid>
                                         </Grid>
                                     </Grid>
+                                    <Grid item xs={12}>
+                                        <Field
+                                            as={TextField}
+                                            name='city'
+                                            label='City'
+                                            fullWidth
+                                            variant='outlined'
+                                            onChange={handleChange}
+                                            defaultValue={selectedAddress?.city || ''}
+                                            error={!Boolean(ErrorMessage('city'))}
+                                            helperText={
+                                                <ErrorMessage name='city'>
+                                                    {(msg) => <span className='text-red-600'>{msg}</span>}
+                                                </ErrorMessage>
+                                            }
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <FormControl component='fieldset'>
+                                            <FormLabel component='legend'>Payment Method</FormLabel>
+                                            <Field
+                                                as={RadioGroup}
+                                                name="paymentMethod"
+                                                onChange={handleChange}
+                                                defaultValue={selectedAddress?.paymentMethod || initialValues.paymentMethod}
+                                            >
+                                                <FormControlLabel value='BY_CASH' control={<Radio />} label='By Cash' />
+                                                <FormControlLabel value='BY_CREDIT_CARD' control={<Radio />} label='By Bank' />
+                                                <FormControlLabel value='BY_VNPAY' control={<Radio />} label='By VNPay' />
+                                            </Field>
+                                        </FormControl>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Button type='submit' variant='contained' color='primary' fullWidth disabled={!otpVerified}>
+                                            Submit Order
+                                        </Button>
+                                    </Grid>
                                 </Grid>
-                                <Grid item xs={12}>
-                                    <Field
-                                        as={TextField}
-                                        name='city'
-                                        label='City'
-                                        fullWidth
-                                        variant='outlined'
-                                        error={!Boolean(ErrorMessage('city'))}
-                                        helperText={
-                                            <ErrorMessage name='city'>
-                                                {(msg) => <span className='text-red-600'>{msg}</span>}
-                                            </ErrorMessage>
-                                        }
-                                    />
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <FormControl component='fieldset'>
-                                        <FormLabel component='legend'>Payment Method</FormLabel>
-                                        <Field as={RadioGroup} name="paymentMethod">
-                                            <FormControlLabel value='BY_CASH' control={<Radio />} label='By Cash' />
-                                            <FormControlLabel value='BY_CREDIT_CARD' control={<Radio />} label='By Bank' />
-                                            <FormControlLabel value='BY_VNPAY' control={<Radio />} label='By VNPay' />
-                                        </Field>
-                                    </FormControl>
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <Button type='submit' variant='contained' color='primary' fullWidth disabled={!otpVerified}>
-                                        Submit Order
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                        </Form>
+                            </Form>
+                        )}
                     </Formik>
                     <Divider sx={{ my: 2 }} />
                     <FormControl component="fieldset" className='mb-3'>

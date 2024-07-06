@@ -213,7 +213,17 @@ public class EmailServiceImp implements EmailService {
     @Override
     public void sendOtpEmail(String email, String otp) throws MessagingException, UnsupportedEncodingException {
         String subject = "Your OTP Code";
-        String content = "<p>Your OTP code is: <b>" + otp + "</b></p>";
+        String content = "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #dcdcdc; border-radius: 10px;\">" +
+                "<h2 style=\"color: #333;\">FOOD GO</h2>" +
+                "<p>Dear Customer,</p>" +
+                "<p>Thank you for using our service. Your OTP code is:</p>" +
+                "<p style=\"font-size: 24px; font-weight: bold; color: #ff6f61;\">" + otp + "</p>" +
+                "<p>Please do not share this code with anyone. It will expire in 10 minutes.</p>" +
+                "<p>Best regards,</p>" +
+                "<p><strong>FOOD GO Team</strong></p>" +
+                "<hr style=\"border: 0; border-top: 1px solid #dcdcdc;\">" +
+                "<p style=\"font-size: 12px; color: #777;\">If you did not request this code, please ignore this email.</p>" +
+                "</div>";
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
@@ -224,5 +234,6 @@ public class EmailServiceImp implements EmailService {
 
         mailSender.send(mimeMessage);
     }
+
 
 }

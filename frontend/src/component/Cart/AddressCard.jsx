@@ -1,10 +1,12 @@
 import React from 'react'
 import HomeIcon from '@mui/icons-material/Home';
-import { Button, Card } from '@mui/material';
+import { Button, Card, Typography } from '@mui/material';
 
 
-const AddressCard = ({item, showButton, handleSelectAddress}) => {
-
+const AddressCard = ({ item, showButton, onSelectAddress, address }) => {
+  const handleSelect = () => {
+    onSelectAddress(address);
+  };
   return (
     <Card className='flex gap-5 w-64 p-5'>
       <HomeIcon />
@@ -17,14 +19,21 @@ const AddressCard = ({item, showButton, handleSelectAddress}) => {
           Home
         </h1>
         <p>
-          391A Nam Kỳ Khởi Nghĩa, Phường 8, Quận 3, TP.HCM
+          {address.streetAddress}
         </p>
+        <div className='hidden'>
+          <p>
+            {address.state}
+          </p>
+          <p>
+            {address.pinCode}
+          </p>
+          <p>
+            {address.city}
+          </p>
+        </div>
         {showButton && (
-          <Button
-            onClick={() => handleSelectAddress(item)}
-            variant='outlined'
-            fullWidth
-          >
+          <Button variant="contained" fullWidth color="primary" onClick={handleSelect}>
             Select
           </Button>
         )}
@@ -34,3 +43,4 @@ const AddressCard = ({item, showButton, handleSelectAddress}) => {
 }
 
 export default AddressCard
+

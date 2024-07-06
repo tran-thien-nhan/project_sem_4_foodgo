@@ -1,11 +1,14 @@
-import { Chip, IconButton } from '@mui/material';
+import { Chip, IconButton, Tooltip } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { useDispatch, useSelector } from 'react-redux';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { getAllCartItems, removeCartItem, updateCartItem } from '../State/Cart/Action';
+import { getAllCartItems, removeCartItem, removeIngredientFromCart, updateCartItem } from '../State/Cart/Action';
 import { useNavigate } from 'react-router-dom';
+import CloseIcon from '@mui/icons-material/Close';
+import { Bounce, toast } from "react-toastify";
+
 
 const CartItem = ({ item }) => {
     const [quantity, setQuantity] = useState(item.quantity);
@@ -17,6 +20,7 @@ const CartItem = ({ item }) => {
     const [ingredientsTotalPrice, setIngredientsTotalPrice] = useState(0);
     const [showAll, setShowAll] = useState(false);
     const maxToppingsToShow = 3;
+    const maxQuantity = 10; // Số lượng tối đa
 
     useEffect(() => {
         const selectedIngredients = item.ingredients;
@@ -31,8 +35,20 @@ const CartItem = ({ item }) => {
     const handleUpdateCartItem = (value) => {
         if (value === -1 && quantity === 1) {
             handleRemoveCartItem();
-        }
-        else {
+        } else if (value === 1 && quantity === maxQuantity) {
+            // Nếu số lượng đã đạt tối đa thì không tăng thêm nữa
+            toast.error('Cannot add more !', {
+                position: "top-center",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+            });
+            return;
+        } else {
             const newQuantity = quantity + value;
             setQuantity(newQuantity);
             const selectedIngredients = item.ingredients;
@@ -68,10 +84,11 @@ const CartItem = ({ item }) => {
         dispatch(removeCartItem({
             cartItemId: item.id,
             jwt: localStorage.getItem('jwt')
-        })).then(() => {
-            setQuantity(0);  // Cập nhật state để loại bỏ item khỏi giao diện
-            dispatch(getAllCartItems({ cartId: cart.id, token: auth.jwt || jwt }));
-        });
+        }))
+            .then(() => {
+                setQuantity(0);  // Cập nhật state để loại bỏ item khỏi giao diện
+                dispatch(getAllCartItems({ cartId: cart.id, token: auth.jwt || jwt }));
+            });
     }
 
     const toppingsToShow = showAll ? item.ingredients : item.ingredients.slice(0, maxToppingsToShow);
@@ -79,6 +96,16 @@ const CartItem = ({ item }) => {
     const handleToggle = () => {
         setShowAll(!showAll);
     };
+
+    const handleRemoveIngredient = (ingredientId) => {
+        dispatch(removeIngredientFromCart({
+            cartItemId: item.id,
+            ingredientId,
+            jwt: localStorage.getItem('jwt')
+        })).then(() => {
+            dispatch(getAllCartItems({ cartId: cart.id, token: auth.jwt || jwt }));
+        });
+    }
 
     return (
         <div className='px-5'>
@@ -108,19 +135,46 @@ const CartItem = ({ item }) => {
                             </div>
                         </div>
                     </div>
-                    <p
-                        className='text-sx font-semibold float-right mt-9 items-center justify-center'
-                    >
+                    <p className='text-sx font-semibold float-right mt-9 items-center justify-center'>
                         {totalPrice.toLocaleString('vi-VN')}đ
                     </p>
                 </div>
             </div>
-            <div className='pt-3 space-x-2'>
+            <div className='pt-3 space-x-2 flex flex-wrap'>
                 {
-                    toppingsToShow.map((i, index) => (
-                        <Chip key={index} label={i} className='my-1' />
-                    ))
+                    toppingsToShow.map((i, index) => {
+                        const ingredient = item.food.ingredients.find(ing => ing.name === i);
+                        const chipColor = ingredient && !ingredient.inStoke ? 'error' : 'default';
+                        return (
+                            <div className='relative'>
+                                <Tooltip key={index} title={ingredient && !ingredient.inStoke ? "Hết hàng" : ""}>
+                                    <Chip
+                                        label={i}
+                                        className='my-1'
+                                        color={chipColor}
+                                        style={{ marginRight: 1, position: 'relative', paddingRight: 24 }}
+                                    />
+                                    <IconButton
+                                        size='small'
+                                        sx={{
+                                            position: 'absolute',
+                                            top: 5,
+                                            right: 5,
+                                        }}
+                                        onClick={() => handleRemoveIngredient(ingredient.id)}
+                                    >
+                                        <Tooltip title="remove this imgredient" placement="top" arrow>
+                                            <CloseIcon
+                                                sx={{ fontSize: '1rem' }}
+                                            />
+                                        </Tooltip>
+                                    </IconButton>
+                                </Tooltip>
+                            </div>
+                        );
+                    })
                 }
+
                 {
                     item.ingredients.length > maxToppingsToShow && (
                         <Chip

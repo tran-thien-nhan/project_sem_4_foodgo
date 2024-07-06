@@ -7,6 +7,7 @@ import cartReducer from './Cart/Reducer';
 import { orderReducer } from './Order/Reducer';
 import { ingredientReducer } from './Ingredients/Reducer';
 import { restaurantOrderReducer } from './Restaurant Order/Reducer';
+import { ratingReducer } from './Rating/Reducer';
 
 const rootReducer = combineReducers({
     auth: authReducer,
@@ -15,7 +16,8 @@ const rootReducer = combineReducers({
     cart: cartReducer,
     order: orderReducer,
     restaurantOrder: restaurantOrderReducer,
-    ingredients: ingredientReducer
+    ingredients: ingredientReducer,
+    rating: ratingReducer
 });
 
 export const store = legacy_createStore(rootReducer, applyMiddleware(thunk)); // tạo ra một store với rootReducer và middleware là thunk
