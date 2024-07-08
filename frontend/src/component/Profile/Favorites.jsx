@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import RestaurantCard from '../Restaurant/RestaurantCard'
 import { useDispatch, useSelector } from 'react-redux'
 import { getAllRestaurantsAction } from '../State/Restaurant/Action'
+import { getUser } from '../State/Authentication/Action'
 
 const Favorites = () => {
   const { auth } = useSelector(store => store)
@@ -11,6 +12,7 @@ const Favorites = () => {
 
   useEffect(() => {
     dispatch(getAllRestaurantsAction(jwt))
+    dispatch(getUser(jwt));
   }, [])
   return (
     <div>

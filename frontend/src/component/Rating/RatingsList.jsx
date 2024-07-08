@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getRatings } from '../State/Rating/Action';
+import { getRatingsVisible } from '../State/Rating/Action';
 import Rating from '@mui/material/Rating';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -8,6 +8,8 @@ import Divider from '@mui/material/Divider';
 import Avatar from '@mui/material/Avatar';
 import { pink } from '@mui/material/colors';
 import Pagination from '@mui/material/Pagination';
+import PaginationItem from '@mui/material/PaginationItem';
+import { ArrowBack, ArrowForward } from '@mui/icons-material';
 
 const RatingsList = ({ restaurantId }) => {
     const dispatch = useDispatch();
@@ -16,22 +18,20 @@ const RatingsList = ({ restaurantId }) => {
     const ratingsPerPage = 3;
 
     useEffect(() => {
-        dispatch(getRatings({ restaurantId }));
+        dispatch(getRatingsVisible(restaurantId));
     }, [dispatch, restaurantId]);
 
     const handleChangePage = (event, value) => {
         setCurrentPage(value);
     };
 
+    const visibleRatings = ratings.filter(rating => rating.visible);
     const indexOfLastRating = currentPage * ratingsPerPage;
     const indexOfFirstRating = indexOfLastRating - ratingsPerPage;
-    const currentRatings = ratings.slice(indexOfFirstRating, indexOfLastRating);
+    const currentRatings = visibleRatings.slice(indexOfFirstRating, indexOfLastRating);
 
     return (
         <Box className="p-4 shadow rounded-lg">
-            <Typography variant="h5" className="mb-4 font-semibold text-gray-50">
-                Customer Reviews
-            </Typography>
             <Divider className="mb-4" />
             {currentRatings.map(rating => (
                 <Box key={rating.id} className="mb-4 p-4 border border-gray-950 rounded-lg">
@@ -58,6 +58,17 @@ const RatingsList = ({ restaurantId }) => {
                 onChange={handleChangePage}
                 color="primary"
                 className="mt-4"
+                variant="outlined"
+                renderItem={(item) => (
+                    <PaginationItem
+                        components={{
+                            previous: ArrowBack,
+                            next: ArrowForward
+                        }}
+                        {...item}
+                        sx={{ display: item.type === 'page' ? 'none' : 'flex' }}
+                    />
+                )}
             />
         </Box>
     );

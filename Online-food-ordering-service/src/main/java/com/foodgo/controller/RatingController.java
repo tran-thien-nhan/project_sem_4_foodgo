@@ -70,4 +70,15 @@ public class RatingController {
         ratingService.deleteRating(ratingId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @PutMapping("/{ratingId}/visibility")
+    public ResponseEntity<Rating> updateVisibility(@PathVariable Long ratingId,
+                                                   @RequestHeader("Authorization") String jwt) throws Exception {
+        User user = userService.findUserByJwtToken(jwt);
+        if (user == null) {
+            throw new Exception("User not found");
+        }
+        Rating updatedRating = ratingService.updateVisibility(ratingId);
+        return new ResponseEntity<>(updatedRating, HttpStatus.OK);
+    }
 }

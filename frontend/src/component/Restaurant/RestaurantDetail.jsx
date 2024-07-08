@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Divider, FormControl, Grid, Radio, RadioGroup, Typography, FormControlLabel, Modal, Box, Button } from '@mui/material';
+import { Divider, FormControl, Grid, Radio, RadioGroup, Typography, FormControlLabel, Modal, Box, Button, IconButton } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import MenuCard from './MenuCard';
@@ -11,6 +11,7 @@ import NotFound from '../pages/NotFound';
 import RatingsList from '../../component/Rating/RatingsList';
 import RatingForm from '../../component/Rating/RatingForm';
 import { getRatings } from '../State/Rating/Action';
+import ReviewsIcon from '@mui/icons-material/Reviews';
 
 const foodTypes = [
     { label: "All", value: "all" },
@@ -136,10 +137,9 @@ const RestaurantDetail = () => {
                                         ))
                                     }
                                 </RadioGroup>
-
                             </FormControl>
                         </div>
-                        <Divider/>
+                        <Divider />
                         <div>
                             <Typography variant='h5' sx={{ paddingBottom: '1rem' }}>
                                 Food Category
@@ -159,6 +159,19 @@ const RestaurantDetail = () => {
                                 </RadioGroup>
                             </FormControl>
                         </div>
+                        <Divider />
+                        <div>
+                            <Typography variant='h5' sx={{ paddingBottom: '1rem' }}>
+                                Reviews
+                            </Typography>
+                            <RatingsList restaurantId={id} />
+                            <Button variant="contained" color="primary" onClick={handleOpenRatingFormModal} className='flex'>
+                                <IconButton variant="contained">
+                                    <ReviewsIcon />
+                                </IconButton>
+                                <p>Add Rating</p>
+                            </Button>
+                        </div>
                     </div>
                 </div>
                 <div className='space-y-10 lg:w-[80%] lg:pl-10'>
@@ -173,13 +186,6 @@ const RestaurantDetail = () => {
             </section>
             <Divider className='py-3' /> {/* Thêm Divider để tách phần review */}
             <section className='pt-[2rem]'>
-                <Typography variant='h5' sx={{ paddingBottom: '1rem' }}>
-                    Reviews
-                </Typography>
-                <RatingsList restaurantId={id} />
-                <Button variant="contained" color="primary" onClick={handleOpenRatingFormModal}>
-                    Add Rating
-                </Button>
                 <Modal
                     open={showRatingFormModal}
                     onClose={handleCloseRatingFormModal}

@@ -33,7 +33,7 @@ const AddressCard = ({ item, showButton, onSelectAddress, address }) => {
           </p>
         </div>
         {showButton && (
-          <Button variant="contained" fullWidth color="primary" onClick={handleSelect}>
+          <Button variant="contained" color="primary" onClick={handleSelect}>
             Select
           </Button>
         )}

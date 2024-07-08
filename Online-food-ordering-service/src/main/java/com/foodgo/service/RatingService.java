@@ -7,6 +7,7 @@ import java.util.List;
 public interface RatingService {
     public Rating addRating(Long restaurantId, Long userId, int stars, String comment);
     public List<Rating> getRatings(Long restaurantId);
+    public List<Rating> getRatingsVisible(Long restaurantId);
 
     public List<Rating> getRatingsByUserId(Long userId);
 
@@ -26,4 +27,5 @@ public interface RatingService {
 
     public int getRatingCount(Long restaurantId);
 
+    public Rating updateVisibility(Long id);
 }

@@ -1,5 +1,7 @@
 package com.foodgo.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.foodgo.model.Event;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -12,7 +14,7 @@ public class RestaurantDto {
     private String title;
 
     //@ElementCollection // Đánh dấu là một collection của các phần tử, không phải một entity riêng biệt
-    @Column(length = 1000) // Độ dài tối đa của mỗi phần tử
+    //@Column(length = 1000) // Độ dài tối đa của mỗi phần tử
     private List<String> images;
 
     private String description;
@@ -23,4 +25,5 @@ public class RestaurantDto {
 
     //city
     private String city;
+
 }

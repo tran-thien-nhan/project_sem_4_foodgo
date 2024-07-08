@@ -2,6 +2,7 @@ package com.foodgo.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.foodgo.dto.EventDto;
 import com.foodgo.dto.RestaurantDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -37,8 +38,14 @@ public class User {
     @ElementCollection //tạo bảng mới chứa thông tin favorites, không cần tạo class mới
     private List<RestaurantDto> favorites = new ArrayList(); //mảng chứa thông tin các nhà hàng yêu thích
 
-    //@JsonIgnore //tránh lặp vô hạn, không lấy thông tin của addresses, chỉ lấy thông tin của user
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true) //một user có thể có nhiều địa chỉ, khi xóa user thì xóa hết địa chỉ, orphanRemoval xóa địa chỉ khi không có user nào sử dụng
+    @ElementCollection
+    private List<EventDto> eventDto = new ArrayList(); //mảng chứa thông tin các sự kiện của 1 nhà hàng yêu thích
+
+    @ElementCollection
+    private List<EventDto> eventDtoFavorites = new ArrayList(); //mảng chứa thông tin các sự kiện yêu thích
+
+    @JsonIgnore //tránh lặp vô hạn, không lấy thông tin của addresses, chỉ lấy thông tin của user
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "user") //một user có thể có nhiều địa chỉ, khi xóa user thì xóa hết địa chỉ, orphanRemoval xóa địa chỉ khi không có user nào sử dụng
     private List<Address> addresses = new ArrayList<>(); //mảng chứa thông tin các địa chỉ
 
     private String resetPasswordToken;

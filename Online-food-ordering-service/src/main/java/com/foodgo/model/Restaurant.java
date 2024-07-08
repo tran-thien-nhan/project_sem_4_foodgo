@@ -1,6 +1,7 @@
 package com.foodgo.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.foodgo.dto.EventDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -54,4 +55,11 @@ public class Restaurant {
     @JsonIgnore
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Rating> ratings = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Event> events = new ArrayList<>(); // Thêm trường này vào để lưu thông tin sự kiện của nhà hàng
+
+    @ElementCollection
+    private List<EventDto> eventDto = new ArrayList(); //mảng chứa thông tin các sự kiện yêu thích
 }

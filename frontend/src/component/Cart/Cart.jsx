@@ -11,6 +11,7 @@ import { getAllCartItems, clearCartAction, findCart, removeCartItem, updateCartI
 import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
 import { createOrder, sendOtp, sendOtpViaEmail, verifyOtp, verifyOtpViaEmail } from '../State/Order/Action';
 import { Bounce, toast } from "react-toastify";
+import { getAddresses } from '../State/Address/Action';
 
 const initialValues = {
     streetAddress: '',
@@ -47,10 +48,13 @@ const Cart = () => {
     const [otpVerified, setOtpVerified] = useState(false);
     const [otpMethod, setOtpMethod] = useState('email');
     const [selectedAddress, setSelectedAddress] = useState(null);
+    const address = useSelector(state => state.address.addresses);
+    const jwt = localStorage.getItem('jwt');
 
     useEffect(() => {
         dispatch(findCart(token));
-        console.log("CART: ",cart);
+        dispatch(getAddresses(jwt));
+        console.log("CART: ", cart);
     }, [dispatch, token]);
 
     const alertSuccess = (str) => {
@@ -83,35 +87,35 @@ const Cart = () => {
         if (!cart.cart?.cartItems) {
             return;
         }
-    
+
         // Kiểm tra food không còn available
         const foodUnAvailable = cart.cart?.cartItems?.filter(cartItem => !cartItem.food?.available);
-    
+
         if (foodUnAvailable.length > 0) {
             alertFail(`There are ${foodUnAvailable.length} items that are unavailable, please try again!`);
             return false;
         }
-    
+
         // Kiểm tra nguyên liệu không còn inStoke
         for (const cartItem of cart.cart?.cartItems) {
             if (cartItem == null || cartItem.empty) {
                 continue;
             }
-    
+
             const unavailableIngredients = cartItem.ingredients.filter(ingredientName => {
                 const ingredient = cartItem.food.ingredients.find(ing => ing.name === ingredientName);
                 return ingredient && !ingredient.inStoke;
             });
-    
+
             if (unavailableIngredients.length > 0) {
                 alertFail(`There are unavailable ingredients in your cart, please try again!`);
                 return false;
             }
         }
-    
+
         return true;
     };
-    
+
 
     const validationSchema = Yup.object().shape({
         streetAddress: Yup.string().required('Street Address Is Required'),
@@ -283,15 +287,17 @@ const Cart = () => {
                     <div>
                         <h1 className='text-center font-semibold text-2xl py-10'>Choose Delivery Address</h1>
                         <div className='flex flex-wrap items-center gap-5 justify-center'>
-                            {auth.user?.addresses?.map((address, index) => (
-                                <AddressCard
-                                    key={index}
-                                    showButton={true}
-                                    address={address}
-                                    onSelectAddress={handleSelectAddress}
-                                />
+                            {address.map((address, index) => (
+                                <Card className='h-52 items-center justify-center'>
+                                    <AddressCard
+                                        key={index}
+                                        showButton={true}
+                                        address={address}
+                                        onSelectAddress={handleSelectAddress}
+                                    />
+                                </Card>
                             ))}
-                            <Card className='flex gap-5 w-64 p-5'>
+                            <Card className='flex gap-5 w-64 p-5 h-52 items-center justify-center'>
                                 <AddLocationAltIcon />
                                 <div className='space-y-3 text-gray-500'>
                                     <h1 className='font-semibold text-lg text-white'>Add New Address</h1>

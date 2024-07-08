@@ -42,6 +42,12 @@ public class OrderServiceImp implements OrderService{
     @Autowired
     private PaymentService paymentService;
 
+    @Autowired
+    private IngredientItemRepository ingredientItemRepository;
+
+    @Autowired
+    private IngredientService ingredientService;
+
     @Override
     public List<Order> createOrder(OrderRequest order, User user) throws Exception {
         Address shipAddress = order.getDeliveryAddress();
@@ -93,6 +99,16 @@ public class OrderServiceImp implements OrderService{
                 OrderItem savedOrderItem = orderItemRepository.save(orderItem);
                 orderItems.add(savedOrderItem);
                 totalAmount += cartItem.getTotalPrice();
+
+                // Trừ đi số lượng nguyên liệu
+                for (String ingredient : cartItem.getIngredients()) {
+                    IngredientsItem item = ingredientService.findIngredientByName(ingredient);
+                    item.setQuantity(item.getQuantity() - cartItem.getQuantity());
+                    if (item.getQuantity() < 10) {
+                        item.setInStoke(false);
+                    }
+                    ingredientItemRepository.save(item);
+                }
             }
 
             createdOrder.setTotalItem(Long.valueOf(count));
@@ -117,11 +133,11 @@ public class OrderServiceImp implements OrderService{
         }
 
         // clear cart
-        //cartService.clearCart(cart.getId());
         cartService.clearCart(user.getId());
 
         return createdOrders;
     }
+
     @Override
     public Long getTotalPrice(User user) throws Exception {
         Cart cart = cartService.findCartByUserId(user.getId());

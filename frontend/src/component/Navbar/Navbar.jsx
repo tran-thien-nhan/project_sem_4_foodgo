@@ -9,12 +9,13 @@ import { useSelector, useDispatch } from 'react-redux';
 import { pink } from '@mui/material/colors';
 import { getAllCartItems } from '../State/Cart/Action';
 import { SignedIn, SignedOut, UserButton, useAuth, useClerk, useUser } from '@clerk/clerk-react';
-import { logOut, registerUser } from '../State/Authentication/Action';
+import { getUser, logOut, registerUser } from '../State/Authentication/Action';
 import axios from 'axios';
 import { API_URL } from '../Config/api';
+import { getFavoritesEvents } from '../State/Event/Action';
 
 export const Navbar = () => {
-    const { auth, cart } = useSelector(store => store);
+    const { auth, cart, event } = useSelector(store => store);
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const token = localStorage.getItem('jwt');
@@ -24,10 +25,18 @@ export const Navbar = () => {
     const { user } = useUser();
     const [isGoogleRegistered, setIsGoogleRegistered] = useState(false);
     const { userId, getToken } = useAuth();
+    const count = event.favorites.length;
 
     if (token && cart.id) {
         dispatch(getAllCartItems({ cartId: cart.id, token }));
     }
+
+    useEffect(() => {
+        if (token) {
+            dispatch(getUser(token));
+            dispatch(getFavoritesEvents(token)); // Dispatch hành động để lấy sự kiện yêu thích
+        }
+    }, [dispatch, token]);
 
     useEffect(() => {
         const fetchAccessToken = async () => {
@@ -35,7 +44,7 @@ export const Navbar = () => {
                 try {
                     const token = await getToken();
                     console.log(token);
-                    console.log("USER: ",user);
+                    console.log("USER: ", user);
                     dispatch(registerUser({
                         userData: {
                             fullName: user.fullName || "",
@@ -55,42 +64,6 @@ export const Navbar = () => {
 
         fetchAccessToken();
     }, [userId]);
-
-    // useEffect(() => {
-    //     const fetchAccessToken = async () => {
-    //         if (userId) {
-    //             try {
-    //                 const tokenResponse = await axios.post(`${API_URL}/auth/get-oauth-token`, {
-    //                     token: await getToken(),
-    //                     email: user.emailAddresses[0]?.emailAddress,
-    //                     fullName: user.fullName,
-    //                     provider: 'GOOGLE',
-    //                     role: "ROLE_CUSTOMER",
-    //                 });
-    //                 console.log("JWT Token: ",jwt);
-    //                 const jwt = tokenResponse.data;
-
-    //                 localStorage.setItem('jwt', jwt);
-
-    //                 dispatch(registerUser({
-    //                     userData: {
-    //                         fullName: user.fullName || "",
-    //                         email: user.emailAddresses[0]?.emailAddress || "",
-    //                         password: "123", // Bạn không có quyền truy cập vào mật khẩu từ OAuth sign-up
-    //                         role: "ROLE_CUSTOMER", // Default role hoặc điều chỉnh theo logic của bạn
-    //                         provider: "GOOGLE", // Chỉ định provider ở đây
-    //                     },
-    //                     navigate,
-    //                 }));
-    //             } catch (error) {
-    //                 console.error('Failed to fetch OAuth access token:', error);
-    //             }
-    //         }
-    //     };
-
-    //     fetchAccessToken();
-    // }, [userId]);
-
 
     const handleAvatarClick = () => {
         if (auth.user?.role === 'ROLE_CUSTOMER') {
@@ -138,14 +111,16 @@ export const Navbar = () => {
                                     auth.user
                                     &&
                                     (
-                                        <Avatar
-                                            sx={{ bgcolor: "white", color: pink.A400 }}
-                                            onClick={handleAvatarClick}
-                                            className='cursor-pointer'
-                                            src={(auth.user || userLoggedIn) ? user?.imageUrl : ""}
-                                        >
-                                            {auth.user?.fullName[0].toUpperCase()}
-                                        </Avatar>
+                                        <Badge badgeContent={count} color="secondary">
+                                            <Avatar
+                                                sx={{ bgcolor: "white", color: pink.A400 }}
+                                                onClick={handleAvatarClick}
+                                                className='cursor-pointer'
+                                                src={(auth.user || userLoggedIn) ? user?.imageUrl : ""}
+                                            >
+                                                {auth.user?.fullName[0].toUpperCase()}
+                                            </Avatar>
+                                        </Badge>
                                     )
                                 }
                                 {

@@ -1,11 +1,10 @@
 package com.foodgo.service;
 
 import com.foodgo.config.JwtProvider;
-import com.foodgo.model.Cart;
-import com.foodgo.model.PROVIDER;
-import com.foodgo.model.USER_ROLE;
-import com.foodgo.model.User;
+import com.foodgo.dto.EventDto;
+import com.foodgo.model.*;
 import com.foodgo.repository.CartRepository;
+import com.foodgo.repository.EventRepository;
 import com.foodgo.repository.UserRepository;
 import com.foodgo.request.GoogleLoginRequest;
 import com.foodgo.response.AuthResponse;
@@ -27,6 +26,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImp implements UserService {
@@ -46,12 +46,14 @@ public class UserServiceImp implements UserService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private EventRepository eventRepository;
+
     @Autowired //tự động tìm kiếm và inject PasswordEncoder vào AuthController để sử dụng
     private PasswordEncoder passwordEncoder;
 
     @Override
     public User findUserByJwtToken(String jwtToken) throws Exception {
-        // Kiểm tra xem jwtProvider đã được khởi tạo chưa
         if (jwtProvider == null) {
             throw new Exception("JwtProvider is not initialized");
         }
@@ -59,6 +61,32 @@ public class UserServiceImp implements UserService {
         String email = jwtProvider.getEmailFromJwtToken(jwtToken);
         PROVIDER provider = jwtProvider.getProviderFromJwtToken(jwtToken);
         User user = userRepository.findByEmailAndProvider(email, provider).get(0);
+
+        // Lấy danh sách nhà hàng yêu thích của user
+        List<Long> favoriteRestaurantIds = user.getFavorites().stream()
+                .map(fav -> fav.getId())
+                .collect(Collectors.toList());
+
+        // Lấy các sự kiện của những nhà hàng nằm trong danh sách yêu thích
+        List<Event> favoriteEvents = eventRepository.findByRestaurantIdIn(favoriteRestaurantIds);
+
+        // Chuyển đổi danh sách Event thành danh sách EventDto
+        List<EventDto> favoriteEventDtos = favoriteEvents.stream().map(event -> {
+            EventDto eventDto = new EventDto();
+            eventDto.setId(event.getId());
+            eventDto.setName(event.getName());
+            eventDto.setLocation(event.getLocation());
+            eventDto.setDescription(event.getDescription());
+            eventDto.setStartedAt(event.getStartedAt());
+            eventDto.setEndsAt(event.getEndsAt());
+            eventDto.setImages(event.getImages());
+            eventDto.setOfRestaurant(event.getRestaurant().getName());
+            return eventDto;
+        }).collect(Collectors.toList());
+
+        // Gán danh sách EventDto vào user
+        user.setEventDto(favoriteEventDtos);
+
         return user;
     }
 

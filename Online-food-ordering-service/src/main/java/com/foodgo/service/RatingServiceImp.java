@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class RatingServiceImp implements RatingService{
@@ -26,8 +27,14 @@ public class RatingServiceImp implements RatingService{
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private BadWordService badWordService;
     @Override
     public Rating addRating(Long restaurantId, Long userId, int stars, String comment) {
+        if (badWordService.containsBadWords(comment)) {
+            throw new RuntimeException("Comment contains inappropriate language.");
+        }
         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(() -> new RuntimeException("Restaurant not found"));
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -37,23 +44,38 @@ public class RatingServiceImp implements RatingService{
         rating.setStars(stars);
         rating.setComment(comment);
         rating.setCreatedAt(LocalDateTime.now());
+        rating.setVisible(stars > 2);
 
         return ratingRepository.save(rating);
     }
 
     @Override
     public List<Rating> getRatings(Long restaurantId) {
+
         return ratingRepository.findByRestaurantId(restaurantId);
     }
 
     @Override
+    public List<Rating> getRatingsVisible(Long restaurantId) {
+        return ratingRepository.findByRestaurantId(restaurantId).stream()
+                .filter(Rating::isVisible)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<Rating> getRatingsByUserId(Long userId) {
-        return ratingRepository.findByUserId(userId);
+        return ratingRepository.findByUserId(userId).stream()
+                .filter(Rating::isVisible)
+                .collect(Collectors.toList());
     }
 
     @Override
     public Rating getRating(Long ratingId) {
-        return ratingRepository.findById(ratingId).orElseThrow(() -> new RuntimeException("Rating not found"));
+        Rating rating = ratingRepository.findById(ratingId).orElseThrow(() -> new RuntimeException("Rating not found"));
+        if (!rating.isVisible()) {
+            throw new RuntimeException("Rating is not visible");
+        }
+        return rating;
     }
 
     @Override
@@ -105,5 +127,15 @@ public class RatingServiceImp implements RatingService{
     public int getRatingCount(Long restaurantId) {
         List<Rating> ratings = ratingRepository.findByRestaurantId(restaurantId);
         return ratings.size();
+    }
+
+    @Override
+    public Rating updateVisibility(Long id) {
+        Rating rating = ratingRepository.findById(id).orElse(null);
+        if (rating == null) {
+            throw new RuntimeException("Rating not found");
+        }
+        rating.setVisible(!rating.isVisible());
+        return ratingRepository.save(rating);
     }
 }

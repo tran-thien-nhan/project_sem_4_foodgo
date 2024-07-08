@@ -2,6 +2,7 @@ import { ADD_TO_FAVORITE_FAILURE, ADD_TO_FAVORITE_REQUEST, ADD_TO_FAVORITE_SUCCE
 import { API_URL, api } from "../../Config/api";
 import axios from "axios";
 import { Bounce, toast } from "react-toastify";
+import { getEventsByRestaurant, getFavoritesEvents } from "../Event/Action";
 
 export const registerUser = (reqData) => async (dispatch) => {
     dispatch({ type: REGISTER_REQUEST });
@@ -89,6 +90,7 @@ export const getUser = (jwt) => async (dispatch) => {
         });
 
         dispatch({ type: GET_USER_SUCCESS, payload: data });
+        dispatch(getFavoritesEvents({ jwt }))
 
     } catch (error) {
         dispatch({ type: GET_USER_FAILURE, payload: error });
@@ -107,6 +109,8 @@ export const addToFavorite = ({ jwt, restaurantId }) => async (dispatch) => {
         });
 
         dispatch({ type: ADD_TO_FAVORITE_SUCCESS, payload: data });
+        dispatch(getUser(jwt));
+        dispatch(getFavoritesEvents(jwt));
         console.log("ADD TO FAVORITE: ", data);
 
     } catch (error) {
@@ -159,10 +163,10 @@ export const forgotPassword = (email) => async (dispatch) => {
 };
 
 export const resetPassword = ({ token, newPassword, navigate }) => async dispatch => {
-    dispatch({type:CHANGE_PASSWORD_REQUEST})
+    dispatch({ type: CHANGE_PASSWORD_REQUEST })
     try {
         await axios.post(`${API_URL}/auth/reset-password`, { token, newPassword });
-        dispatch({type:CHANGE_PASSWORD_SUCCESS});
+        dispatch({ type: CHANGE_PASSWORD_SUCCESS });
         toast.success('Password has been reset successfully!', {
             position: "top-center",
             autoClose: 5000,
@@ -176,7 +180,7 @@ export const resetPassword = ({ token, newPassword, navigate }) => async dispatc
         navigate('/');
         // alert('Password has been reset successfully');
     } catch (error) {
-        dispatch({type:CHANGE_PASSWORD_FAILURE, payload: error});
+        dispatch({ type: CHANGE_PASSWORD_FAILURE, payload: error });
         console.error('There was an error resetting the password!', error);
         // alert('Failed to reset password');
         toast.error(error.message, {
@@ -191,3 +195,4 @@ export const resetPassword = ({ token, newPassword, navigate }) => async dispatc
         });
     }
 };
+

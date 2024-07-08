@@ -99,8 +99,14 @@ public class IngredientServiceImp implements IngredientService {
         return opt.orElse(null); // trả về ingredient item hoặc null nếu không tìm thấy
     }
 
-    private IngredientsItem findIngredientByName(String name) {
-        return ingredientItemRepository.findByName(name)
-                .orElseThrow(() -> new RuntimeException("Ingredient not found: " + name));
+    @Override
+    public IngredientsItem findIngredientByName(String name) {
+        return ingredientItemRepository.findByName(name) // tìm ingredient item theo tên
+                .orElseThrow(() -> new RuntimeException("Ingredient not found: " + name)); // ném ra lỗi nếu không tìm thấy
     }
+
+//    private IngredientsItem findIngredientByName(String name) {
+//        return ingredientItemRepository.findByName(name)
+//                .orElseThrow(() -> new RuntimeException("Ingredient not found: " + name));
+//    }
 }

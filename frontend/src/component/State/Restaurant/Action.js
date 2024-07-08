@@ -63,7 +63,7 @@ export const getAllRestaurantsAction = (token) => {
                 }
             );
             dispatch({ type: GET_ALL_RESTAURANTS_SUCCESS, payload: data });
-            //console.log("GET ALL RESTAURANTS: ", data);
+            console.log("GET ALL RESTAURANTS: ", data);
         } catch (error) {
             dispatch({ type: GET_ALL_RESTAURANTS_FAILURE, payload: error });
             console.log("ERROR: ", error);
@@ -77,7 +77,7 @@ export const getAllRestaurantsPublicAction = () => {
         try {
             const { data } = await api.get('/api/public/restaurants');
             dispatch({ type: GET_ALL_RESTAURANTS_PUBLIC_SUCCESS, payload: data });
-            //console.log("GET ALL RESTAURANTS PUBLIC: ", data);
+            console.log("GET ALL RESTAURANTS PUBLIC: ", data);
         } catch (error) {
             dispatch({ type: GET_ALL_RESTAURANTS_PUBLIC_FAILURE, payload: error });
             console.log("ERROR: ", error);
@@ -208,23 +208,23 @@ export const updateRestaurantStatus = ({ restaurantId, jwt }) => {
     }
 }
 
-export const createEventAction = ({ data, jwt, restaurantId }) => {
-    return async (dispatch) => {
-        dispatch({ type: CREATE_EVENTS_REQUEST });
-        try {
-            const res = await api.post(`/api/admin/restaurants/${restaurantId}`, data, {
-                headers: {
-                    Authorization: `Bearer ${jwt}`,
-                },
-            });
-            dispatch({ type: CREATE_EVENTS_SUCCESS, payload: res.data });
-            console.log("CREATE EVENT: ", res.data);
-        } catch (error) {
-            dispatch({ type: CREATE_EVENTS_FAILURE, payload: error });
-            console.log("ERROR: ", error);
-        }
-    }
-}
+// export const createEventAction = ({ data, jwt, restaurantId }) => {
+//     return async (dispatch) => {
+//         dispatch({ type: CREATE_EVENTS_REQUEST });
+//         try {
+//             const res = await api.post(`/api/events/restaurant/${restaurantId}`, data, {
+//                 headers: {
+//                     Authorization: `Bearer ${jwt}`,
+//                 },
+//             });
+//             dispatch({ type: CREATE_EVENTS_SUCCESS, payload: res.data });
+//             console.log("CREATE EVENT: ", res.data);
+//         } catch (error) {
+//             dispatch({ type: CREATE_EVENTS_FAILURE, payload: error });
+//             console.log("ERROR: ", error);
+//         }
+//     }
+// }
 
 export const getAllEvents = ({ jwt }) => {
     return async (dispatch) => {

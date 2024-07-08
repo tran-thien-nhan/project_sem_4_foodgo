@@ -7,3 +7,13 @@ export const isPresentInFavorite = (favoties, restaurant) => {
     }
     return false;
 }
+
+//isPresentEventInEventDtoFavorites
+export const isPresentInEventDtoFavorites = (favorites, event) => {
+    for (let item of favorites) {
+        if (event.id === item.id) {
+            return true;
+        }
+    }
+    return false;
+}

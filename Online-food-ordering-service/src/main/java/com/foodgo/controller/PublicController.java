@@ -55,9 +55,9 @@ public class PublicController {
         return new ResponseEntity<>(foods, HttpStatus.OK);
     }
 
-    @GetMapping("/ratings/{restaurantId}")
+    @GetMapping("/ratings/visible/{restaurantId}")
     public ResponseEntity<List<Rating>> getRatings(@PathVariable Long restaurantId) throws Exception {
-        List<Rating> ratings = ratingService.getRatings(restaurantId);
+        List<Rating> ratings = ratingService.getRatingsVisible(restaurantId);
         return new ResponseEntity<>(ratings, HttpStatus.OK);
     }
 }

@@ -1,10 +1,13 @@
 package com.foodgo.service;
 
+import com.foodgo.dto.EventDto;
 import com.foodgo.dto.RestaurantDto;
 import com.foodgo.model.Address;
+import com.foodgo.model.Event;
 import com.foodgo.model.Restaurant;
 import com.foodgo.model.User;
 import com.foodgo.repository.AddressRepository;
+import com.foodgo.repository.EventRepository;
 import com.foodgo.repository.RestaurantRepository;
 import com.foodgo.repository.UserRepository;
 import com.foodgo.request.CreateRestaurantRequest;
@@ -14,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class RestaurantServiceImp implements RestaurantService{
@@ -25,6 +29,9 @@ public class RestaurantServiceImp implements RestaurantService{
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private EventRepository eventRepository;
     @Override
     public Restaurant createRestaurant(CreateRestaurantRequest req, User user) {
         Address address = addressRepository.save(req.getAddress()); // lưu địa chỉ vào database
@@ -90,13 +97,29 @@ public class RestaurantServiceImp implements RestaurantService{
 
     @Override
     public Restaurant findRestaurantById(Long id) throws Exception {
-        Optional<Restaurant> opt = restaurantRepository.findById(id); // tìm nhà hàng theo id
-        // ấy cả địa chỉ theo bảng address (chứa id địa chỉ, city, do mỗi restaurant có 1 address)
-        opt.ifPresent(restaurant -> restaurant.setAddress(addressRepository.findById(restaurant.getAddress().getId()).get())); // lấy địa chỉ theo id
-        if (opt.isEmpty()){
-            throw new Exception("Restaurant not found with id: " + id); // nếu không tìm thấy nhà hàng thì báo lỗi
+        Optional<Restaurant> opt = restaurantRepository.findById(id);
+        opt.ifPresent(restaurant -> {
+            restaurant.setAddress(addressRepository.findById(restaurant.getAddress().getId()).get());
+
+            List<Event> events = eventRepository.findByRestaurantId(restaurant.getId());
+            List<EventDto> eventDtos = events.stream().map(event -> {
+                EventDto eventDto = new EventDto();
+                eventDto.setId(event.getId());
+                eventDto.setName(event.getName());
+                eventDto.setLocation(event.getLocation());
+                eventDto.setDescription(event.getDescription());
+                eventDto.setStartedAt(event.getStartedAt());
+                eventDto.setEndsAt(event.getEndsAt());
+                eventDto.setImages(event.getImages());
+                return eventDto;
+            }).collect(Collectors.toList());
+
+            restaurant.setEventDto(eventDtos);
+        });
+        if (opt.isEmpty()) {
+            throw new Exception("Restaurant not found with id: " + id);
         }
-        return opt.get(); // trả về nhà hàng
+        return opt.get();
     }
 
     @Override
@@ -134,6 +157,10 @@ public class RestaurantServiceImp implements RestaurantService{
 
         if (isFavorite) { // nếu nhà hàng chưa được thêm vào danh sách yêu thích
             favorites.removeIf(favorite -> favorite.getId().equals(restaurantId)); // xóa nhà hàng khỏi danh sách yêu thích của người dùng
+
+            // xóa các sự kiện liên quan đến nhà hàng này khỏi eventDto và eventDtoFavorites
+            user.getEventDto().removeIf(eventDto -> eventDto.getOfRestaurant().equals(restaurant.getName()));
+            user.getEventDtoFavorites().removeIf(eventDtoFavorite -> eventDtoFavorite.getOfRestaurant().equals(restaurant.getName()));
         } else { // nếu nhà hàng đã được thêm vào danh sách yêu thích
             favorites.add(dto); // thêm nhà hàng vào danh sách yêu thích của người dùng
         }

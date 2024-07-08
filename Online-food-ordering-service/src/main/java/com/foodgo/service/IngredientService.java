@@ -18,4 +18,10 @@ public interface IngredientService {
     public long calculateTotalPrice(List<String> ingredients);
 
     public IngredientsItem findIngredientById(Long id);
+
+    //findIngredientByName
+    public IngredientsItem findIngredientByName(String name);
+
+    //findByFoodIdAndIngredientName
+    //public IngredientsItem findByFoodIdAndIngredientName(Long foodId, String ingredientName);
 }

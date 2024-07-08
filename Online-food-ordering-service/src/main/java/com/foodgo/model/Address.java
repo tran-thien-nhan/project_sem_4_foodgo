@@ -23,4 +23,8 @@ public class Address {
     private String pinCode;
 
     private String country;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 }

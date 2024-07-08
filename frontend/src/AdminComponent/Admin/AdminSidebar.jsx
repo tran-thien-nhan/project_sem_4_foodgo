@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { logOut } from '../../component/State/Authentication/Action';
 import { useClerk } from '@clerk/clerk-react';
+import StarIcon from '@mui/icons-material/Star';
 
 const menu = [
     { title: 'Dashboard', icon: <Dashboard />, path: '/' },
@@ -20,6 +21,7 @@ const menu = [
     { title: 'Ingredients', icon: <FastfoodIcon />, path: '/ingredients' },
     { title: 'Events', icon: <EventIcon />, path: '/event' },
     { title: 'Restaurant Details', icon: <AdminPanelSettingsIcon />, path: '/details' },
+    { title: 'Ratings', icon: <StarIcon />, path: '/ratings' },
     { title: 'Log out', icon: <LogoutIcon />, path: '/' },
 ]
 

@@ -24,4 +24,6 @@ public class Rating {
     private String comment;
 
     private LocalDateTime createdAt;
+
+    private boolean isVisible;
 }

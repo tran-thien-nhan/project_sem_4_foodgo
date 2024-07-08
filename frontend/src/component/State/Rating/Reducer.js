@@ -13,6 +13,12 @@ import {
     DELETE_RATING_REQUEST,
     DELETE_RATING_SUCCESS,
     DELETE_RATING_FAILURE,
+    UPDATE_VISIBILITY_RATING_REQUEST,
+    UPDATE_VISIBILITY_RATING_SUCCESS,
+    UPDATE_VISIBILITY_RATING_FAILURE,
+    GET_RATINGS_PUBLIC_SUCCESS,
+    GET_RATINGS_PUBLIC_REQUEST,
+    GET_RATINGS_PUBLIC_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -27,6 +33,8 @@ export const ratingReducer = (state = initialState, action) => {
         case GET_RATINGS_REQUEST:
         case UPDATE_RATING_REQUEST:
         case DELETE_RATING_REQUEST:
+        case UPDATE_VISIBILITY_RATING_REQUEST:
+        case GET_RATINGS_PUBLIC_REQUEST:
             return {
                 ...state,
                 isLoading: true,
@@ -39,6 +47,7 @@ export const ratingReducer = (state = initialState, action) => {
                 isLoading: false,
             };
         case GET_RATINGS_SUCCESS:
+        case GET_RATINGS_PUBLIC_SUCCESS:
             return {
                 ...state,
                 ratings: action.payload,
@@ -52,6 +61,14 @@ export const ratingReducer = (state = initialState, action) => {
                 ),
                 isLoading: false,
             };
+        case UPDATE_VISIBILITY_RATING_SUCCESS:
+            return {
+               ...state,
+                ratings: state.ratings.map((rating) =>
+                    rating.id === action.payload.id? action.payload : rating
+                ),
+                isLoading: false,
+            };
         case DELETE_RATING_SUCCESS:
             return {
                 ...state,
@@ -62,6 +79,8 @@ export const ratingReducer = (state = initialState, action) => {
         case GET_RATINGS_FAILURE:
         case UPDATE_RATING_FAILURE:
         case DELETE_RATING_FAILURE:
+        case UPDATE_VISIBILITY_RATING_FAILURE:
+        case GET_RATINGS_PUBLIC_FAILURE:
             return {
                 ...state,
                 isLoading: false,

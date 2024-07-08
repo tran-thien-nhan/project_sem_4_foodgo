@@ -45,7 +45,7 @@ const menu = [
     }
 ]
 
-const ProfileNavigation = ({ open, handleClose, setOpen }) => {
+const ProfileNavigation = ({ open, handleClose, setOpen, count }) => {
     const isSmallScreen = useMediaQuery('(max-width:900px)');
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -100,7 +100,25 @@ const ProfileNavigation = ({ open, handleClose, setOpen }) => {
                                     key={i}
                                 >
                                     {item.icon}
-                                    <span style={{ marginLeft: 10 }}>{item.title}</span>
+                                    <span style={{ marginLeft: 10 }}>
+                                        {
+                                            (item.title == 'Notification')
+                                                ?
+                                                <>
+                                                    <span className='flex gap-1'>
+                                                        <p>{item.title}</p>
+                                                        <p className='font-semibold text-pink-300'>
+                                                            {
+                                                                count > 0
+                                                                    ? <span>({count})</span>
+                                                                    : ''
+                                                            }
+                                                        </p>
+                                                    </span>
+                                                </>
+                                                : item.title
+                                        }
+                                    </span>
                                 </MenuItem>
                             ))}
                         </Box>
@@ -125,7 +143,25 @@ const ProfileNavigation = ({ open, handleClose, setOpen }) => {
                                     className="px-5 flex items-center space-x-5 cursor-pointer"
                                 >
                                     {item.icon}
-                                    <span>{item.title}</span>
+                                    <span style={{ marginLeft: 10 }}>
+                                        {
+                                            (item.title == 'Notification')
+                                                ?
+                                                <>
+                                                    <span className='flex gap-1'>
+                                                        <p>{item.title}</p>
+                                                        <p className='font-semibold text-pink-300'>
+                                                            {
+                                                                count > 0
+                                                                    ? <span>({count})</span>
+                                                                    : ''
+                                                            }
+                                                        </p>
+                                                    </span>
+                                                </>
+                                                : item.title
+                                        }
+                                    </span>
                                 </div>
                                 {
                                     i !== menu.length - 1 && <Divider />

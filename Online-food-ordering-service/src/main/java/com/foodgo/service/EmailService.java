@@ -6,9 +6,9 @@ import jakarta.mail.MessagingException;
 import java.io.UnsupportedEncodingException;
 
 public interface EmailService {
-    public void sendMailWelcomeOwner(String email, String fullname) throws MessagingException, UnsupportedEncodingException;
+    public void sendMailWelcomeOwner(String email, String fullname) throws MessagingException,UnsupportedEncodingException;
 
-    public void sendMailWelcomeCustomer(String email, String fullname) throws MessagingException, UnsupportedEncodingException;
+    public void sendMailWelcomeCustomer(String email, String fullname) throws  MessagingException,UnsupportedEncodingException;
 
     public void sendPasswordResetEmail(String email, String token) throws MessagingException, UnsupportedEncodingException;
 
