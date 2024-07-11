@@ -21,8 +21,15 @@ import {
     ADD_EVENT_TO_FAVORITE_FAILURE,
     GET_EVENT_FAVORITED_BY_ID_REQUEST,
     GET_EVENT_FAVORITED_BY_ID_SUCCESS,
-    GET_EVENT_FAVORITED_BY_ID_FAILURE
+    GET_EVENT_FAVORITED_BY_ID_FAILURE,
+    TOGGLE_AVAILABLE_REQUEST,
+    TOGGLE_AVAILABLE_SUCCESS,
+    TOGGLE_AVAILABLE_FAILURE,
+    ALL_EVENTS_OF_FAVORITED_RESTAURANTS_REQUEST,
+    ALL_EVENTS_OF_FAVORITED_RESTAURANTS_SUCCESS,
+    ALL_EVENTS_OF_FAVORITED_RESTAURANTS_FAILURE
 } from "./ActionType";
+import { Bounce, toast } from "react-toastify";
 
 export const createEvent = ({ restaurantId, eventData, jwt }) => {
     return async (dispatch) => {
@@ -44,6 +51,7 @@ export const updateEvent = ({ eventId, eventData, jwt }) => {
     return async (dispatch) => {
         dispatch({ type: UPDATE_EVENT_REQUEST });
         try {
+            console.log("eventdata: ", eventData);
             const { data } = await api.put(`/api/events/${eventId}`, eventData, {
                 headers: {
                     Authorization: `Bearer ${jwt}`,
@@ -118,10 +126,22 @@ export const addEventToFavorite = ({ eventId, jwt }) => {
             dispatch({ type: ADD_EVENT_TO_FAVORITE_SUCCESS, payload: data });
             dispatch(getUser(jwt));
             dispatch(getFavoritesEvents(jwt))
+            dispatch(getAllFavoritedRestaurantsEvents(jwt));
             console.log("Added event to favorites: ", data);
         } catch (error) {
             dispatch({ type: ADD_EVENT_TO_FAVORITE_FAILURE, payload: error });
             console.log("Error: ", error);
+            toast.error(error.response.data.message, {
+                position: "top-center",
+                autoClose: 1000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+            });
         }
     };
 }
@@ -138,6 +158,45 @@ export const getFavoritesEvents = (jwt) => {
             dispatch({ type: GET_EVENT_FAVORITED_BY_ID_SUCCESS, payload: data });
         } catch (error) {
             dispatch({ type: GET_EVENT_FAVORITED_BY_ID_FAILURE, payload: error });
+            console.log("Error: ", error);
+        }
+    };
+}
+
+export const toggleAvailable = ({ eventId, jwt }) => {
+    return async (dispatch) => {
+        dispatch({ type: TOGGLE_AVAILABLE_REQUEST });
+        try {
+            const { data } = await api.put(`/api/events/${eventId}/toggle-available`, {}, {
+                headers: {
+                    Authorization: `Bearer ${jwt}`,
+                },
+            });
+            dispatch({ type: TOGGLE_AVAILABLE_SUCCESS, payload: data });
+            dispatch(getUser(jwt));
+            dispatch(getEventsByRestaurant({ restaurantId: data.restaurantId, jwt }));
+            // dispatch(getAllFavoritedRestaurantsEvents(jwt));
+            console.log("Toggled event available: ", data);
+        } catch (error) {
+            dispatch({ type: TOGGLE_AVAILABLE_FAILURE, payload: error });
+            console.log("Error: ", error);
+        }
+    }
+}
+
+export const getAllFavoritedRestaurantsEvents = (jwt) => {
+    return async (dispatch) => {
+        dispatch({ type: ALL_EVENTS_OF_FAVORITED_RESTAURANTS_REQUEST });
+        try {
+            const { data } = await api.get(`/api/events/favorites-of-restaurants`, {
+                headers: {
+                    Authorization: `Bearer ${jwt}`,
+                },
+            });
+            dispatch({ type: ALL_EVENTS_OF_FAVORITED_RESTAURANTS_SUCCESS, payload: data });
+            console.log("All events of favorited restaurants: ", data);
+        } catch (error) {
+            dispatch({ type: ALL_EVENTS_OF_FAVORITED_RESTAURANTS_FAILURE, payload: error });
             console.log("Error: ", error);
         }
     };

@@ -25,13 +25,27 @@ const RatingsList = ({ restaurantId }) => {
         setCurrentPage(value);
     };
 
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        const day = date.getDate();
+        const month = date.getMonth() + 1; // Tháng trong JavaScript bắt đầu từ 0
+        const year = date.getFullYear();
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const formattedHours = hours % 12 || 12; // Chuyển đổi 0 thành 12
+        const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+
+        return `${day}/${month}/${year} ${formattedHours}:${formattedMinutes} ${ampm}`;
+    };
+
     const visibleRatings = ratings.filter(rating => rating.visible);
     const indexOfLastRating = currentPage * ratingsPerPage;
     const indexOfFirstRating = indexOfLastRating - ratingsPerPage;
     const currentRatings = visibleRatings.slice(indexOfFirstRating, indexOfLastRating);
 
     return (
-        <Box className="p-4 shadow rounded-lg">
+        <Box className="py-4 shadow rounded-lg">
             <Divider className="mb-4" />
             {currentRatings.map(rating => (
                 <Box key={rating.id} className="mb-4 p-4 border border-gray-950 rounded-lg">
@@ -45,6 +59,9 @@ const RatingsList = ({ restaurantId }) => {
                         </div>
                         <div>
                             <Rating value={rating.stars} readOnly className="mb-2" />
+                            <Typography variant="p" className="text-gray-600">
+                                {formatDate(rating.createdAt)}
+                            </Typography>
                             <Typography variant="body1" className="text-gray-50">
                                 {rating.comment}
                             </Typography>

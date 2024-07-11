@@ -30,6 +30,8 @@ const RestaurantDetail = () => {
     const { auth, restaurant, menu } = useSelector(store => store);
     const { id, city } = useParams();
     const [selectedCategory, setSelectedCategory] = useState("");
+    let ratings = useSelector(state => state.rating.ratings);
+    let ratingCount = ratings.filter(rating => rating.visible).length;
 
     const handleFilter = (e) => {
         setFoodType(e.target.value);
@@ -162,7 +164,7 @@ const RestaurantDetail = () => {
                         <Divider />
                         <div>
                             <Typography variant='h5' sx={{ paddingBottom: '1rem' }}>
-                                Reviews
+                                Reviews ({ratingCount})
                             </Typography>
                             <RatingsList restaurantId={id} />
                             <Button variant="contained" color="primary" onClick={handleOpenRatingFormModal} className='flex'>

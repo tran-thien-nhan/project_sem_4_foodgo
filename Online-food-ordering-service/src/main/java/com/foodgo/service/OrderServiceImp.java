@@ -48,94 +48,107 @@ public class OrderServiceImp implements OrderService{
     @Autowired
     private IngredientService ingredientService;
 
+    @Autowired
+    private FoodRepository foodRepository;
+
     @Override
     public List<Order> createOrder(OrderRequest order, User user) throws Exception {
-        Address shipAddress = order.getDeliveryAddress();
+        try{
+            Address shipAddress = order.getDeliveryAddress();
 
-        Address savedAddress = addressService.findByStreetAddressAndCityAndStateAndPinCode(
-                shipAddress.getStreetAddress(),
-                shipAddress.getCity(),
-                shipAddress.getState(),
-                shipAddress.getPinCode(),
-                user.getId()
-        );
+            Address savedAddress = addressService.findByStreetAddressAndCityAndStateAndPinCode(
+                    shipAddress.getStreetAddress(),
+                    shipAddress.getCity(),
+                    shipAddress.getState(),
+                    shipAddress.getPinCode(),
+                    user.getId()
+            );
 
-        if (savedAddress == null) {
-            savedAddress = addressRepository.save(shipAddress);
-            user.getAddresses().add(savedAddress);
-            userRepository.save(user);
-        }
+            if (savedAddress == null) {
+                savedAddress = addressRepository.save(shipAddress);
+                user.getAddresses().add(savedAddress);
+                userRepository.save(user);
+            }
 
-        Cart cart = cartService.findCartByUserId(user.getId());
+            Cart cart = cartService.findCartByUserId(user.getId());
 
-        // Nhóm các món ăn theo nhà hàng
-        Map<Restaurant, List<CartItem>> itemsGroupedByRestaurant = cart.getCartItems().stream()
-                .collect(Collectors.groupingBy(cartItem -> cartItem.getFood().getRestaurant()));
+            // Nhóm các món ăn theo nhà hàng
+            Map<Restaurant, List<CartItem>> itemsGroupedByRestaurant = cart.getCartItems().stream()
+                    .collect(Collectors.groupingBy(cartItem -> cartItem.getFood().getRestaurant()));
 
-        List<Order> createdOrders = new ArrayList<>();
+            List<Order> createdOrders = new ArrayList<>();
 
-        for (Map.Entry<Restaurant, List<CartItem>> entry : itemsGroupedByRestaurant.entrySet()) {
-            Restaurant restaurant = entry.getKey();
-            List<CartItem> cartItems = entry.getValue();
+            for (Map.Entry<Restaurant, List<CartItem>> entry : itemsGroupedByRestaurant.entrySet()) {
+                Restaurant restaurant = entry.getKey();
+                List<CartItem> cartItems = entry.getValue();
 
-            Order createdOrder = new Order();
-            createdOrder.setCustomer(user);
-            createdOrder.setCreatedAt(new Date());
-            createdOrder.setOrderStatus("PENDING");
-            createdOrder.setDeliveryAddress(savedAddress);
-            createdOrder.setRestaurant(restaurant);
+                Order createdOrder = new Order();
+                createdOrder.setCustomer(user);
+                createdOrder.setCreatedAt(new Date());
+                createdOrder.setOrderStatus("PENDING");
+                createdOrder.setDeliveryAddress(savedAddress);
+                createdOrder.setRestaurant(restaurant);
 
-            List<OrderItem> orderItems = new ArrayList<>();
-            int count = 0;
-            long totalAmount = 0;
+                List<OrderItem> orderItems = new ArrayList<>();
+                int count = 0;
+                long totalAmount = 0;
 
-            for (CartItem cartItem : cartItems) {
-                OrderItem orderItem = new OrderItem();
-                orderItem.setFood(cartItem.getFood());
-                orderItem.setIngredients(cartItem.getIngredients());
-                orderItem.setQuantity(cartItem.getQuantity());
-                count += cartItem.getQuantity();
-                orderItem.setTotalPrice(cartItem.getTotalPrice());
-                OrderItem savedOrderItem = orderItemRepository.save(orderItem);
-                orderItems.add(savedOrderItem);
-                totalAmount += cartItem.getTotalPrice();
+                for (CartItem cartItem : cartItems) { // Duyệt qua từng món ăn trong giỏ hàng
+                    OrderItem orderItem = new OrderItem();
+                    orderItem.setFood(cartItem.getFood());
+                    orderItem.setIngredients(cartItem.getIngredients());
+                    orderItem.setQuantity(cartItem.getQuantity());
+                    count += cartItem.getQuantity();
+                    orderItem.setTotalPrice(cartItem.getTotalPrice());
+                    OrderItem savedOrderItem = orderItemRepository.save(orderItem);
+                    orderItems.add(savedOrderItem);
+                    totalAmount += cartItem.getTotalPrice();
 
-                // Trừ đi số lượng nguyên liệu
-                for (String ingredient : cartItem.getIngredients()) {
-                    IngredientsItem item = ingredientService.findIngredientByName(ingredient);
-                    item.setQuantity(item.getQuantity() - cartItem.getQuantity());
-                    if (item.getQuantity() < 10) {
-                        item.setInStoke(false);
+                    // Trừ đi số lượng nguyên liệu
+                    for (String ingredient : cartItem.getIngredients()) {
+                        IngredientsItem item = ingredientService.findIngredientByName(ingredient);
+                        item.setQuantity(item.getQuantity() - cartItem.getQuantity());
+                        if (item.getQuantity() < 10) {
+                            item.setInStoke(false);
+                        }
+                        ingredientItemRepository.save(item);
                     }
-                    ingredientItemRepository.save(item);
+
+                    // tìm food
+                Food food = foodRepository.findById(cartItem.getFood().getId()).get();
+                food.setTotalBought(food.getTotalBought() + cartItem.getQuantity());
+                foodRepository.save(food);
                 }
+
+                createdOrder.setTotalItem(Long.valueOf(count));
+                createdOrder.setTotalAmount(totalAmount);
+
+                long totalPrice = totalAmount + 18000; // delivery charge
+                createdOrder.setItems(orderItems);
+                createdOrder.setTotalPrice(totalPrice);
+                createdOrder.setPaymentMethod(order.getPaymentMethod());
+
+                if (order.getPaymentMethod().contains("BY_CASH")) {
+                    createdOrder.setIsPaid(true);
+                }
+
+                Order savedOrder = orderRepository.save(createdOrder);
+
+                if (createdOrder.getIsPaid()) {
+                    restaurant.getOrders().add(savedOrder);
+                }
+
+                createdOrders.add(savedOrder);
             }
 
-            createdOrder.setTotalItem(Long.valueOf(count));
-            createdOrder.setTotalAmount(totalAmount);
+            // clear cart
+            cartService.clearCart(user.getId());
 
-            long totalPrice = totalAmount + 18000; // delivery charge
-            createdOrder.setItems(orderItems);
-            createdOrder.setTotalPrice(totalPrice);
-            createdOrder.setPaymentMethod(order.getPaymentMethod());
-
-            if (order.getPaymentMethod().contains("BY_CASH")) {
-                createdOrder.setIsPaid(true);
-            }
-
-            Order savedOrder = orderRepository.save(createdOrder);
-
-            if (createdOrder.getIsPaid()) {
-                restaurant.getOrders().add(savedOrder);
-            }
-
-            createdOrders.add(savedOrder);
+            return createdOrders;
         }
-
-        // clear cart
-        cartService.clearCart(user.getId());
-
-        return createdOrders;
+        catch (Exception e){
+            throw new Exception("Error creating order: " + e.getMessage());
+        }
     }
 
     @Override
@@ -149,16 +162,16 @@ public class OrderServiceImp implements OrderService{
         Order order = findOrderById(orderId);
         order.setIsPaid(true);
         order.setOrderStatus("PENDING");
-        // tìm cart
-        Cart cart = cartService.findCartByUserId(order.getCustomer().getId());
-        // neu cart khong rong
-        if (cart != null) {
-            // xóa cart
-            cartService.clearCart(cart.getId());
-            // thêm order vào danh sách order của restaurant
-            Restaurant restaurant = restaurantService.findRestaurantById(order.getRestaurant().getId());
-            restaurant.getOrders().add(order);
-        }
+//        // tìm cart
+//        Cart cart = cartService.findCartByUserId(order.getCustomer().getId());
+//        // neu cart khong rong
+//        if (cart != null) {
+//            // xóa cart
+//            cartService.clearCart(cart.getId());
+//            // thêm order vào danh sách order của restaurant
+//            Restaurant restaurant = restaurantService.findRestaurantById(order.getRestaurant().getId());
+//            restaurant.getOrders().add(order);
+//        }
 
         return orderRepository.save(order);
     }

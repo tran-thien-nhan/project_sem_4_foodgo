@@ -21,6 +21,12 @@ public class EventDto {
 
     private String ofRestaurant;
 
+    private Integer eventLimit = 0;
+
+    private Boolean isFull = false;
+
+    private Boolean isAvailable = true;
+
     @JsonFormat(pattern = "dd/MM/yyyy hh:mm a")
     private LocalDateTime startedAt;
 

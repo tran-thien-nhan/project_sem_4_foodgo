@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addEventToFavorite, getFavoritesEvents } from '../State/Event/Action';
+import { addEventToFavorite, getAllFavoritedRestaurantsEvents, getFavoritesEvents } from '../State/Event/Action';
 import EventCard from './EventCard';
 import { getUser } from '../State/Authentication/Action';
 
@@ -9,11 +9,14 @@ const Notification = () => {
     const dispatch = useDispatch();
     const jwt = localStorage.getItem('jwt');
     const [show, setShow] = useState(false);
+    const [filteredEvents, setFilteredEvents] = useState([]);
 
     useEffect(() => {
         if (jwt) {
+            console.log("EVENTS: ",event);
             dispatch(getUser(jwt));
             dispatch(getFavoritesEvents(jwt)); // Dispatch hành động để lấy sự kiện yêu thích
+            dispatch(getAllFavoritedRestaurantsEvents(jwt));
         }
     }, [dispatch, jwt]);
 

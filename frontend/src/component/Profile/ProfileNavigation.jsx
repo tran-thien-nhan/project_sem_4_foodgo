@@ -45,7 +45,7 @@ const menu = [
     }
 ]
 
-const ProfileNavigation = ({ open, handleClose, setOpen, count }) => {
+const ProfileNavigation = ({ open, handleClose, setOpen, count, orderCount }) => {
     const isSmallScreen = useMediaQuery('(max-width:900px)');
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -75,6 +75,31 @@ const ProfileNavigation = ({ open, handleClose, setOpen, count }) => {
         }
     };
 
+    const renderTitle = (title) => {
+        switch (title) {
+            case 'Notification':
+                return (
+                    <span className='flex gap-1'>
+                        <p>{title}</p>
+                        <p className='font-semibold text-pink-300'>
+                            {count > 0 ? <span>({count})</span> : ''}
+                        </p>
+                    </span>
+                );
+            case 'Orders':
+                return (
+                    <span className='flex gap-1'>
+                        <p>{title}</p>
+                        <p className='font-semibold text-pink-300'>
+                            {orderCount > 0 ? <span>({orderCount})</span> : ''}
+                        </p>
+                    </span>
+                );
+            default:
+                return title;
+        }
+    };
+
     return (
         <div>
             {isSmallScreen ? (
@@ -101,23 +126,7 @@ const ProfileNavigation = ({ open, handleClose, setOpen, count }) => {
                                 >
                                     {item.icon}
                                     <span style={{ marginLeft: 10 }}>
-                                        {
-                                            (item.title == 'Notification')
-                                                ?
-                                                <>
-                                                    <span className='flex gap-1'>
-                                                        <p>{item.title}</p>
-                                                        <p className='font-semibold text-pink-300'>
-                                                            {
-                                                                count > 0
-                                                                    ? <span>({count})</span>
-                                                                    : ''
-                                                            }
-                                                        </p>
-                                                    </span>
-                                                </>
-                                                : item.title
-                                        }
+                                        {renderTitle(item.title)}
                                     </span>
                                 </MenuItem>
                             ))}
@@ -144,23 +153,7 @@ const ProfileNavigation = ({ open, handleClose, setOpen, count }) => {
                                 >
                                     {item.icon}
                                     <span style={{ marginLeft: 10 }}>
-                                        {
-                                            (item.title == 'Notification')
-                                                ?
-                                                <>
-                                                    <span className='flex gap-1'>
-                                                        <p>{item.title}</p>
-                                                        <p className='font-semibold text-pink-300'>
-                                                            {
-                                                                count > 0
-                                                                    ? <span>({count})</span>
-                                                                    : ''
-                                                            }
-                                                        </p>
-                                                    </span>
-                                                </>
-                                                : item.title
-                                        }
+                                        {renderTitle(item.title)}
                                     </span>
                                 </div>
                                 {
@@ -176,5 +169,3 @@ const ProfileNavigation = ({ open, handleClose, setOpen, count }) => {
 }
 
 export default ProfileNavigation;
-
-

@@ -3,6 +3,7 @@ import { API_URL, api } from "../../Config/api";
 import axios from "axios";
 import { Bounce, toast } from "react-toastify";
 import { getEventsByRestaurant, getFavoritesEvents } from "../Event/Action";
+import { getAllRestaurantsPublicAction } from "../Restaurant/Action";
 
 export const registerUser = (reqData) => async (dispatch) => {
     dispatch({ type: REGISTER_REQUEST });
@@ -30,7 +31,7 @@ export const registerUser = (reqData) => async (dispatch) => {
                 });
             }
 
-            reqData.navigate("/");
+            // reqData.navigate("/");
         }
 
         dispatch({ type: REGISTER_SUCCESS, payload: data.jwt });
@@ -111,6 +112,7 @@ export const addToFavorite = ({ jwt, restaurantId }) => async (dispatch) => {
         dispatch({ type: ADD_TO_FAVORITE_SUCCESS, payload: data });
         dispatch(getUser(jwt));
         dispatch(getFavoritesEvents(jwt));
+        dispatch(getAllRestaurantsPublicAction())
         console.log("ADD TO FAVORITE: ", data);
 
     } catch (error) {

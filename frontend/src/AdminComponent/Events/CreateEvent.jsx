@@ -29,6 +29,7 @@ const initialValues = {
   description: '',
   startedAt: null,
   endsAt: null,
+  eventLimit: 0,
 };
 
 const CreateEvent = () => {
@@ -63,6 +64,7 @@ const CreateEvent = () => {
         startedAt: values.startedAt,
         endsAt: values.endsAt,
         images: values.images,
+        eventLimit: values.eventLimit
       }
       console.log("data:  ", data)
       dispatch(createEvent({
@@ -211,6 +213,17 @@ const CreateEvent = () => {
                     variant='outlined'
                     fullWidth
                     value={formik.values.description}
+                    onChange={formik.handleChange}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    name='eventLimit'
+                    label='Event Limit'
+                    variant='outlined'
+                    fullWidth
+                    value={formik.values.eventLimit}
                     onChange={formik.handleChange}
                   />
                 </Grid>

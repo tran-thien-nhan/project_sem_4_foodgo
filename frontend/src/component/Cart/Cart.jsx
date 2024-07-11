@@ -18,7 +18,7 @@ const initialValues = {
     state: '',
     pinCode: '',
     city: '',
-    paymentMethod: 'BY_CASH',
+    paymentMethod: '',
 };
 
 export const style = {
@@ -126,10 +126,11 @@ const Cart = () => {
     });
 
     const handleSubmitOrder = (values) => {
-        if (!otpVerified) {
-            alertFail("You need to verify the OTP before placing the order.");
-            return;
-        }
+        // console.log("Payment Method:", values.paymentMethod);
+        // if (!otpVerified) {
+        //     alertFail("You need to verify the OTP before placing the order.");
+        //     return;
+        // }
 
         const data = {
             jwt: localStorage.getItem('jwt'),
@@ -195,7 +196,7 @@ const Cart = () => {
                 return;
             }
 
-            if (!isCartValid.valid) {
+            if (!isCartValid) {
                 return;
             }
 
@@ -414,7 +415,13 @@ const Cart = () => {
                                         </FormControl>
                                     </Grid>
                                     <Grid item xs={12}>
-                                        <Button type='submit' variant='contained' color='primary' fullWidth disabled={!otpVerified}>
+                                        <Button
+                                            type='submit'
+                                            variant='contained'
+                                            color='primary'
+                                            fullWidth
+                                        // disabled={!otpVerified}
+                                        >
                                             Submit Order
                                         </Button>
                                     </Grid>
@@ -423,50 +430,52 @@ const Cart = () => {
                         )}
                     </Formik>
                     <Divider sx={{ my: 2 }} />
-                    <FormControl component="fieldset" className='mb-3'>
-                        <FormLabel component="legend">Choose OTP method</FormLabel>
-                        <RadioGroup
-                            aria-label="otp-method"
-                            name="otpMethod"
-                            value={otpMethod}
-                            onChange={(e) => setOtpMethod(e.target.value)}
-                        >
-                            <div className='flex'>
-                                <FormControlLabel value="email" control={<Radio />} label="Email" />
-                                <FormControlLabel value="sms" control={<Radio />} label="SMS" />
-                            </div>
-                        </RadioGroup>
-                    </FormControl>
+                    <div className='hidden'>
+                        <FormControl component="fieldset" className='mb-3'>
+                            <FormLabel component="legend">Choose OTP method</FormLabel>
+                            <RadioGroup
+                                aria-label="otp-method"
+                                name="otpMethod"
+                                value={otpMethod}
+                                onChange={(e) => setOtpMethod(e.target.value)}
+                            >
+                                <div className='flex'>
+                                    <FormControlLabel value="email" control={<Radio />} label="Email" />
+                                    <FormControlLabel value="sms" control={<Radio />} label="SMS" />
+                                </div>
+                            </RadioGroup>
+                        </FormControl>
 
-                    {verifying ? (
-                        <>
-                            <TextField
-                                label='Enter OTP'
-                                value={otp}
-                                onChange={(e) => setOtp(e.target.value)}
-                                fullWidth
-                            />
-                            <Button onClick={handleVerifyOtp} variant='contained' color='success' fullWidth sx={{ mt: 2 }}>
-                                Verify OTP
-                            </Button>
-                        </>
-                    ) : (
-                        <>
-                            <TextField
-                                label={otpMethod === 'email' ? 'Email' : 'Phone Number'}
-                                value={otpMethod === 'email' ? mail : phone}
-                                onChange={
-                                    otpMethod === 'email'
-                                        ? (e) => setMail(e.target.value)
-                                        : (e) => setPhone(e.target.value)
-                                }
-                                fullWidth
-                            />
-                            <Button onClick={handleSendOtp} variant='contained' color='primary' fullWidth sx={{ mt: 2 }}>
-                                Send OTP
-                            </Button>
-                        </>
-                    )}
+                        {verifying ? (
+                            <>
+                                <TextField
+                                    label='Enter OTP'
+                                    value={otp}
+                                    onChange={(e) => setOtp(e.target.value)}
+                                    fullWidth
+                                />
+                                <Button onClick={handleVerifyOtp} variant='contained' color='success' fullWidth sx={{ mt: 2 }}>
+                                    Verify OTP
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <TextField
+                                    label={otpMethod === 'email' ? 'Email' : 'Phone Number'}
+                                    value={otpMethod === 'email' ? mail : phone}
+                                    onChange={
+                                        otpMethod === 'email'
+                                            ? (e) => setMail(e.target.value)
+                                            : (e) => setPhone(e.target.value)
+                                    }
+                                    fullWidth
+                                />
+                                <Button onClick={handleSendOtp} variant='contained' color='primary' fullWidth sx={{ mt: 2 }}>
+                                    Send OTP
+                                </Button>
+                            </>
+                        )}
+                    </div>
                 </Box>
             </Modal>
         </>

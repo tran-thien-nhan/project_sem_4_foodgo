@@ -214,29 +214,21 @@ export const createOrder = (reqData) => {
                 }
             });
 
-            if (data) {
-                //window.location.href = data.payment_url;
+            data.forEach(paymentResponse => {
+                window.open(paymentResponse.payment_url, '_blank');
+            });
 
-                //do là mảng chứa các payment_url nên sẽ dùng vòng lặp để mở 2 link này sang tab mới
-                // Mở mỗi payment_url trong tab mới
-
-                data.forEach(paymentResponse => {
-                    window.open(paymentResponse.payment_url, '_blank');
-                });
-
-                toast.success('create order successfully!', {
-                    position: "top-center",
-                    autoClose: 1000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: "colored",
-                    transition: Bounce,
-                });
-
-            }
+            toast.success('create order successfully!', {
+                position: "top-center",
+                autoClose: 1000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+            });
 
             dispatch({ type: CREATE_ORDER_SUCCESS, payload: data });
             console.log("CREATE ORDER SUCCESS: ", data);

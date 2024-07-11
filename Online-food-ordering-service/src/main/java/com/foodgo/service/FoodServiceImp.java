@@ -143,7 +143,13 @@ public class FoodServiceImp implements FoodService{
         food.setVegetarian(updatedFood.isVegetarian()); // cập nhật trạng thái chay
         food.setSeasonal(updatedFood.isSeasional()); // cập nhật trạng thái mùa
         food.setIngredients(updatedFood.getIngredients()); // cập nhật nguyên liệu món ăn
+        food.setLastUpdate(new Date()); // cập nhật ngày cập nhật món ăn
 
         return foodRepository.save(food); // lưu món ăn
+    }
+
+    @Override
+    public List<Food> getAllFoods() {
+        return foodRepository.findAll(); // lấy tất cả món ăn
     }
 }

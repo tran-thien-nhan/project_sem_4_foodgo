@@ -76,4 +76,21 @@ public class EventController {
         List<Event> events = eventService.getFavoriteEvents(user);
         return new ResponseEntity<>(events, HttpStatus.OK);
     }
+
+    //toggleAvailable(Long eventId)
+    @PutMapping("/{eventId}/toggle-available")
+    public ResponseEntity<Event> toggleAvailable(@PathVariable Long eventId,
+                                                 @RequestHeader("Authorization") String jwt) throws Exception {
+        User user = userService.findUserByJwtToken(jwt);
+        Event event = eventService.toggleAvailable(eventId);
+        return new ResponseEntity<>(event, HttpStatus.OK);
+    }
+
+    // getFavoriteEventsOfRestaurantsByUser
+    @GetMapping("/favorites-of-restaurants")
+    public ResponseEntity<List<Event>> getFavoriteEventsOfRestaurantsByUser(@RequestHeader("Authorization") String jwt) throws Exception {
+        User user = userService.findUserByJwtToken(jwt);
+        List<Event> events = eventService.getFavoriteEventsOfRestaurantsByUser(user);
+        return new ResponseEntity<>(events, HttpStatus.OK);
+    }
 }

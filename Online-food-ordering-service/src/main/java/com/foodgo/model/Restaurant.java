@@ -48,6 +48,8 @@ public class Restaurant {
 
     private boolean open; // Trạng thái mở cửa
 
+    private int totalFavorites = 0;
+
     @JsonIgnore // Không trả về thông tin này khi gửi response
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL) // Một nhà hàng có nhiều món ăn, mappedBy trỏ tới restaurant trong Food
     private List<Food> foods = new ArrayList<>(); // Mảng chứa thông tin các món ăn

@@ -14,6 +14,7 @@ import GoogleSignUp from '../component/Auth/GoogleSignUp';
 import GoogleSignUpSuccess from '../component/Auth/GoogleSignUpSuccess';
 import ResetPassword from '../component/Auth/ResetPassword';
 import ChatAssistant from '../component/ChatAssistant';
+import SearchMenu from '../component/Search/SearchMenu';
 
 const CustomerRouter = () => {
     return (
@@ -30,6 +31,7 @@ const CustomerRouter = () => {
                 <Route path='/my-profile/*' element={<Profile />} />
                 <Route path='/payment/success/:orderId' element={<PaymentSuccess />} />
                 <Route path="/reset-password/*" element={<ResetPassword />} />
+                <Route path="/search" element={<SearchMenu />} />
             </Routes>
             <ChatAssistant />
             <Auth />

@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, Button, Checkbox, FormControlLabel, FormGroup, Chip, Tooltip } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Button, Checkbox, FormControlLabel, FormGroup, Chip, Tooltip, IconButton } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import React, { useState, useEffect } from 'react';
 import { categorizeIngredient } from '../util/categorizeIngredient';
@@ -7,6 +7,7 @@ import { addItemToCart, getAllCartItems } from '../State/Cart/Action';
 import { Bounce, ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 
 const MenuCard = ({ item }) => {
     const [selectedIngredients, setSelectedIngredients] = useState([]);
@@ -122,6 +123,12 @@ const MenuCard = ({ item }) => {
                             <p>
                                 <span className='text-gray-400 px-1'>total:</span> {totalPrice.toLocaleString('vi-VN')} VNĐ
                             </p>
+                            <div className="flex items-center space-x-1">
+                                <p className="text-lg font-medium">{item.totalBought}</p>
+                                <IconButton className="p-2 bg-blue-500 hover:bg-blue-700 text-white rounded">
+                                    <AddShoppingCartIcon />
+                                </IconButton>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -135,7 +142,7 @@ const MenuCard = ({ item }) => {
                                 <FormGroup>
                                     {
                                         categorizeIngredient(item.ingredients)[category].map((ingredient) => (
-                                            <Tooltip title={!restaurant.restaurant.open ? "this restaurant is closing" : ""} placement="bottom" arrow>
+                                            <Tooltip title={(!restaurant.restaurant.open || !item.restaurant.open) ? "this restaurant is closing" : ""} placement="bottom" arrow>
                                                 <Tooltip title={!ingredient.inStoke ? "this topping is temporarily out of stoke" : ""} placement="bottom" arrow>
                                                     <FormControlLabel
                                                         key={ingredient.ID}

@@ -11,8 +11,10 @@ const Orders = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const jwt = localStorage.getItem('jwt');
+  // const orderCount = order.orders.length;
 
-  console.log("order", order.orders);
+  // console.log("order", order.orders);
+  // console.log("Order count", orderCount);
 
   useEffect(() => {
     dispatch(getUsersOrders(jwt));

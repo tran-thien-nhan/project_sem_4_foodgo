@@ -13,9 +13,10 @@ import { getUser, logOut, registerUser } from '../State/Authentication/Action';
 import axios from 'axios';
 import { API_URL } from '../Config/api';
 import { getFavoritesEvents } from '../State/Event/Action';
+import { getUsersOrders } from '../State/Order/Action';
 
 export const Navbar = () => {
-    const { auth, cart, event } = useSelector(store => store);
+    const { auth, cart, event, order } = useSelector(store => store);
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const token = localStorage.getItem('jwt');
@@ -25,7 +26,30 @@ export const Navbar = () => {
     const { user } = useUser();
     const [isGoogleRegistered, setIsGoogleRegistered] = useState(false);
     const { userId, getToken } = useAuth();
-    const count = event.favorites.length;
+    let totalCount = 0;
+    // let count = event.favorites.length;
+    let count = event.count;
+
+    //    // Kiểm tra event.favorites là một mảng
+    //    let count = Array.isArray(event.favorites) 
+    //    ? event.favorites.filter(favorite => favorite.available).length 
+    //    : 0;
+
+    let orderCount = order.orders.filter(order =>
+        order.orderStatus !== "COMPLETED" &&
+        order.orderStatus !== "CANCELLED" &&
+        order.orderStatus !== "CANCELLED_REFUNDED" &&
+        order.isPaid == true
+    ).length;
+
+    // console.log("order count", orderCount);    
+
+    totalCount = orderCount + count;
+
+    useEffect(() => {
+        console.log("event.favorites: ", event.favorites);
+        dispatch(getUsersOrders(token));
+    }, [auth.jwt, dispatch, token]);
 
     if (token && cart.id) {
         dispatch(getAllCartItems({ cartId: cart.id, token }));
@@ -86,11 +110,18 @@ export const Navbar = () => {
         }
     };
 
+    const handleNavigateToSearch = () => {
+        window.location.href = '/search';
+    };
+
     return (
         <Box className='px-5 sticky top-0 z-50 py-[.8rem] bg-[#e91e63] lg:px-20 flex justify-between' sx={{ zIndex: 100 }}>
             <div className="flex items-center space-x-4">
                 <div className="lg:mr-10 cursor-pointer flex items-center space-x-4">
                     <ul className="flex items-center space-x-4">
+                        <li className="font-semibold text-gray-300 text-2xl w-16">
+                            <Avatar src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBFbwByBqwdCh5YmFfqR3g4uWRAVZG6lW3sg&s" onClick={() => navigate("/")}></Avatar>
+                        </li>
                         <li className="logo font-semibold text-gray-300 text-2xl">
                             <Link to="/">FoodGo</Link>
                         </li>
@@ -99,7 +130,7 @@ export const Navbar = () => {
             </div>
             <div className="flex items-center space-x-2 lg:space-x-10">
                 <div className=''>
-                    <IconButton>
+                    <IconButton onClick={handleNavigateToSearch}>
                         <SearchIcon sx={{ fontSize: "1.5rem" }} />
                     </IconButton>
                 </div>
@@ -111,7 +142,7 @@ export const Navbar = () => {
                                     auth.user
                                     &&
                                     (
-                                        <Badge badgeContent={count} color="secondary">
+                                        <Badge badgeContent={totalCount} color="secondary">
                                             <Avatar
                                                 sx={{ bgcolor: "white", color: pink.A400 }}
                                                 onClick={handleAvatarClick}

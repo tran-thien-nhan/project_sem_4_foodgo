@@ -31,6 +31,20 @@ public class Event {
     @ElementCollection
     private List<String> images;
 
+    private int totalFavorites = 0;
+
+    private int eventLimit = 0;
+
+    private boolean isFull = false;
+
+    private boolean isAvailable = true;
+
+    private boolean emailSentNewEvent;
+    private boolean emailSentEventStarted;
+    private boolean emailSentEventFull;
+    private boolean emailSentEventExpired;
+    private boolean emailSentEventCanceled;
+
     @ManyToOne
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;

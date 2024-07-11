@@ -60,4 +60,11 @@ public class PublicController {
         List<Rating> ratings = ratingService.getRatingsVisible(restaurantId);
         return new ResponseEntity<>(ratings, HttpStatus.OK);
     }
+
+    //get all food
+    @GetMapping("/foods")
+    public ResponseEntity<List<Food>> getAllFoods() throws Exception {
+        List<Food> foods = foodService.getAllFoods();
+        return new ResponseEntity<>(foods, HttpStatus.OK);
+    }
 }

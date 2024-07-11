@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -111,6 +112,11 @@ public class RestaurantServiceImp implements RestaurantService{
                 eventDto.setStartedAt(event.getStartedAt());
                 eventDto.setEndsAt(event.getEndsAt());
                 eventDto.setImages(event.getImages());
+                eventDto.setOfRestaurant(event.getRestaurant().getName());
+                eventDto.setEventLimit(event.getEventLimit());
+                eventDto.setIsAvailable(event.isAvailable());
+                eventDto.setIsFull(event.isFull());
+
                 return eventDto;
             }).collect(Collectors.toList());
 
@@ -141,6 +147,7 @@ public class RestaurantServiceImp implements RestaurantService{
         dto.setTitle(restaurant.getName()); // set tên cho đối tượng RestaurantDto
         dto.setId(restaurant.getId()); // set id cho đối tượng RestaurantDto
         dto.setOpen(restaurant.isOpen());// set trạng thái mở/closed cho đối tượng RestaurantDto
+        dto.setTotalFavorites(restaurant.getTotalFavorites()); // set tổng số lượt yêu thích cho đối tượng RestaurantDto
 
         //lấy thêm city từ bảng address
         Address address = addressRepository.findById(restaurant.getAddress().getId()).get(); // lấy địa chỉ theo id
@@ -148,6 +155,7 @@ public class RestaurantServiceImp implements RestaurantService{
 
         boolean isFavorite = false; // khởi tạo biến isFavorite với giá trị false
         List<RestaurantDto> favorites = user.getFavorites(); // lấy danh sách nhà hàng yêu thích của người dùng
+
         for (RestaurantDto favorite : favorites ) { // duyệt qua danh sách nhà hàng yêu thích của người dùng
             if (favorite.getId().equals(restaurantId)) { // nếu id của nhà hàng yêu thích trùng với id của nhà hàng
                 isFavorite = true; // set isFavorite thành true
@@ -155,14 +163,32 @@ public class RestaurantServiceImp implements RestaurantService{
             }
         }
 
-        if (isFavorite) { // nếu nhà hàng chưa được thêm vào danh sách yêu thích
-            favorites.removeIf(favorite -> favorite.getId().equals(restaurantId)); // xóa nhà hàng khỏi danh sách yêu thích của người dùng
+        if (isFavorite) { // nếu nhà hàng đã được thêm vào danh sách yêu thích
+            boolean removed = favorites.removeIf(favorite -> favorite.getId().equals(restaurantId)); // xóa nhà hàng khỏi danh sách yêu thích của người dùng
+            if(removed){ // nếu nhà hàng đã được xóa khỏi danh sách yêu thích
+                if(restaurant.getTotalFavorites() > 0){
+                    restaurant.setTotalFavorites(restaurant.getTotalFavorites() - 1); // giảm số lượng yêu thích của nhà hàng xuống 1 nếu nhà hàng thực sự bị xóa
+                    dto.setTotalFavorites(restaurant.getTotalFavorites()); // cập nhật lại số lượng yêu thích của nhà hàng
+                    favorites.removeIf(favorite -> favorite.getId().equals(restaurantId)); // xóa nhà hàng khỏi danh sách yêu thích của người dùng
+                    user.getEventDto().removeIf(eventDto -> eventDto.getOfRestaurant().equals(restaurant.getName())); // xóa sự kiện của nhà hàng khỏi danh sách sự kiện yêu thích của người dùng
+                    user.getEventDtoFavorites().removeIf(eventDtoFavorite -> eventDtoFavorite.getOfRestaurant().equals(restaurant.getName())); // xóa sự kiện yêu thích của nhà hàng khỏi danh sách sự kiện yêu thích của người dùng
+                    // update lại các truong isFull và isAvailable của sự kiện
+                    List<Event> events = eventRepository.findByRestaurantId(restaurant.getId());
+                    for (Event event : events) {
+                        event.setFull(false);
+                        event.setAvailable(true);
+                        event.setTotalFavorites(event.getTotalFavorites() - 1);
+                        eventRepository.save(event);
+                    }
+                }
+                else{
+                    restaurant.setTotalFavorites(0); // set số lượng yêu thích của nhà hàng thành 0
+                }
+            }
 
-            // xóa các sự kiện liên quan đến nhà hàng này khỏi eventDto và eventDtoFavorites
-            user.getEventDto().removeIf(eventDto -> eventDto.getOfRestaurant().equals(restaurant.getName()));
-            user.getEventDtoFavorites().removeIf(eventDtoFavorite -> eventDtoFavorite.getOfRestaurant().equals(restaurant.getName()));
-        } else { // nếu nhà hàng đã được thêm vào danh sách yêu thích
+        } else { // nếu nhà hàng chưa được thêm vào danh sách yêu thích
             favorites.add(dto); // thêm nhà hàng vào danh sách yêu thích của người dùng
+            restaurant.setTotalFavorites(restaurant.getTotalFavorites() + 1); // tăng số lượng yêu thích của nhà hàng lên 1
         }
 
         userRepository.save(user); // lưu thông tin người dùng vào database
@@ -174,5 +200,22 @@ public class RestaurantServiceImp implements RestaurantService{
         Restaurant restaurant = findRestaurantById(id); // tìm nhà hàng theo id
         restaurant.setOpen(!restaurant.isOpen()); // cập nhật trạng thái mở/closed của nhà hàng
         return restaurantRepository.save(restaurant); // lưu nhà hàng vào database
+    }
+
+    @Override
+    public List<Restaurant> getFavoriteRestaurants(User user) throws Exception {
+        List<RestaurantDto> favorites = user.getFavorites(); // lấy danh sách nhà hàng yêu thích của người dùng
+        List<Restaurant> restaurants = restaurantRepository.findAll(); // lấy tất cả nhà hàng từ database
+        List<Restaurant> favoritesRestaurants = new ArrayList<>();
+
+        for (Restaurant restaurant : restaurants) { // duyệt qua danh sách nhà hàng
+            for (RestaurantDto favorite : favorites) { // duyệt qua danh sách nhà hàng yêu thích của người dùng
+                if (restaurant.getId().equals(favorite.getId())) { // nếu id của nhà hàng trùng với id của nhà hàng yêu thích
+                    favoritesRestaurants.add(restaurant); // thêm nhà hàng vào danh sách nhà hàng yêu thích
+                }
+            }
+        }
+
+        return favoritesRestaurants; // trả về danh sách nhà hàng yêu thích
     }
 }

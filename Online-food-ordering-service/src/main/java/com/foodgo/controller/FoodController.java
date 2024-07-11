@@ -47,4 +47,12 @@ public class FoodController {
         return new ResponseEntity<>(foods, HttpStatus.OK);
     }
 
+    // get all
+    @GetMapping("/all")
+    public ResponseEntity<List<Food>> getAllFoods(@RequestHeader("Authorization") String jwt) throws Exception {
+        User user = userService.findUserByJwtToken(jwt);
+        List<Food> foods = foodService.getAllFoods();
+        return new ResponseEntity<>(foods, HttpStatus.OK);
+    }
+
 }

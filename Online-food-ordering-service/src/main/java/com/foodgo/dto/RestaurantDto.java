@@ -26,4 +26,6 @@ public class RestaurantDto {
     //city
     private String city;
 
+    private Integer totalFavorites = 0;
+
 }
