@@ -27,13 +27,18 @@ public class Restaurant {
 
     private String cuisineType;
 
-    @OneToOne // Một nhà hàng chỉ có một địa chỉ
+    private String phone;
+
+    @OneToOne(cascade = CascadeType.ALL) // Một nhà hàng chỉ có một địa chỉ, cascade để thực hiện các thao tác CRUD trên Address
     private Address address; // Một nhà hàng chỉ có một địa chỉ
 
     @Embedded // Đánh dấu là một phần của entity khác, không phải một entity riêng biệt
     private ContactInformation contactInformation; // Thông tin liên hệ của nhà hàng
 
     private String openingHours; // Giờ mở cửa
+
+    private Double latitude; // Vĩ độ
+    private Double longitude; // Kinh độ
 
     @JsonIgnore
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true) // Một nhà hàng có nhiều order, mappedBy trỏ tới restaurant trong Order

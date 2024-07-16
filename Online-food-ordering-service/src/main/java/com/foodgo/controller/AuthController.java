@@ -3,6 +3,7 @@ package com.foodgo.controller;
 import com.foodgo.config.JwtProvider;
 import com.foodgo.model.*;
 import com.foodgo.repository.CartRepository;
+import com.foodgo.repository.DriverRepository;
 import com.foodgo.repository.UserRepository;
 import com.foodgo.request.GoogleLoginRequest;
 import com.foodgo.request.LoginRequest;
@@ -48,21 +49,23 @@ public class AuthController {
     private UserService userService;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private DriverRepository driverRepository;
 
     @PostMapping("/signup") //đánh dấu phương thức createUserHandler là phương thức xử lý request POST tới /auth/signup
     public ResponseEntity<AuthResponse> createUserHandler(@RequestBody User user) throws Exception {
 
         // AuthResponse là một class chứa thông tin về token và message
-
-        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+        if (user.getPassword() == null || user.getPassword().isEmpty()) { //nếu password của user là null hoặc rỗng
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        //User isEmailExist = userRepository.findByEmail(user.getEmail()); //kiểm tra xem email đã tồn tại trong database chưa
-        //User isEmailExist = userRepository.findByEmailAndProvider(user.getEmail(), user.getProvider()).get(0); // kiểm tra xem email và provider đã tồn tại trong database chưa
+//        if(!userService.checkPhone(user.getPhone())){
+//            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+//        }
+
         List<User> existingUsers = userRepository.findByEmailAndProvider(user.getEmail(), user.getProvider());
         if (!existingUsers.isEmpty()) { //nếu email đã tồn tại
-
             // chuyển sang sign in
             LoginRequest req = new LoginRequest();
             req.setEmail(user.getEmail());
@@ -75,6 +78,7 @@ public class AuthController {
         User createdUser = new User(); //tạo một user mới
         createdUser.setEmail(user.getEmail()); //set email cho user mới
         createdUser.setFullName(user.getFullName()); //set fullName cho user mới
+        createdUser.setPhone(user.getPhone()); //set phone cho user mới
         createdUser.setRole(user.getRole()); //set role cho user mới
 
         if(user.getPassword() != null && !user.getPassword().isEmpty()){
@@ -103,6 +107,9 @@ public class AuthController {
         else if (user.getRole().equals(USER_ROLE.ROLE_CUSTOMER)) {
             emailService.sendMailWelcomeCustomer(user.getEmail(), user.getFullName());
         }
+        else if (user.getRole().equals(USER_ROLE.ROLE_SHIPPER)) {
+            emailService.sendMailWelcomeShipper(user.getEmail(), user.getFullName());
+        }
 
         return new ResponseEntity<>(authResponse, HttpStatus.CREATED); //trả về AuthResponse và status code 200 (OK)
     }
@@ -119,13 +126,14 @@ public class AuthController {
             return googleSignIn(googleLoginRequest);
         }
 
-        String username = req.getEmail(); //lấy email từ request
         String email = req.getEmail(); //lấy email từ request
         String password = req.getPassword(); //lấy password từ request
         PROVIDER provider = req.getProvider(); //lấy provider từ request
 
-        //User user = findUserByEmailAndProvider(email, provider); //tìm user theo email và provider (google hoặc normal
-        User user = userRepository.findByEmailAndProvider(email, provider).get(0);
+        User user = userService.findByEmailAndProvider(email, password, provider);
+//        if (user == null || passwordEncoder.matches(password, user.getPassword())) {
+//            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+//        }
 
         Authentication authentication = authenticateByEmailAndProvider(email, password, provider); //xác thực user
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities(); //lấy danh sách các quyền của user
@@ -136,6 +144,7 @@ public class AuthController {
         authResponse.setJwt(jwt); //set jwt cho AuthResponse
         authResponse.setMessage("Sign In successfully"); //set message cho AuthResponse
         authResponse.setRole(USER_ROLE.valueOf(role)); //set role cho AuthResponse
+        authResponse.setUser(user);
 
         return new ResponseEntity(authResponse, HttpStatus.OK); //trả về AuthResponse và status code 200 (OK), authResponse chứa thông tin user và token
     }
@@ -208,10 +217,14 @@ public class AuthController {
         return new ResponseEntity(authResponse, HttpStatus.OK);
     }
 
-    private Authentication authenticateByEmailAndProvider(String email,String password, PROVIDER provider) {
-        UserDetails userDetails = customerUserDetailsService.loadUserByEmailAndProvider(email,password,provider);
+    private Authentication authenticateByEmailAndProvider(String email, String password, PROVIDER provider) {
+        UserDetails userDetails = customerUserDetailsService.loadUserByEmailAndProvider(email, provider);
         if (userDetails == null) {
-            throw new BadCredentialsException("Invalid account");
+            throw new BadCredentialsException("Invalid email or provider");
+        }
+
+        if (!passwordEncoder.matches(password, userDetails.getPassword())) {
+            throw new BadCredentialsException("Invalid password");
         }
 
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
@@ -239,13 +252,14 @@ public class AuthController {
 
         Authentication authentication = authenticateByEmailAndProvider(user.getEmail(), req.getPassword(), req.getProvider());
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-        String role = authorities.isEmpty() ? null : authorities.iterator().next().getAuthority();
+        String role = authorities.isEmpty() ? null : authorities.iterator().next().getAuthority(); //lấy quyền của user
         String jwt = jwtProvider.generateToken(authentication, req.getProvider());
 
         AuthResponse authResponse = new AuthResponse();
         authResponse.setJwt(jwt);
         authResponse.setMessage("Sign In successfully");
         authResponse.setRole(user.getRole());
+        authResponse.setUser(user);
 
         return new ResponseEntity<>(authResponse, HttpStatus.OK);
     }

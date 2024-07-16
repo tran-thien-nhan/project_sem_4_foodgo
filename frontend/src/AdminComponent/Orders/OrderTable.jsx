@@ -26,6 +26,7 @@ import {
     Divider,
     FormControlLabel,
     Switch,
+    Grid,
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchRestaurantsAllOrder, updateOrderStatus } from '../../component/State/Restaurant Order/Action';
@@ -34,8 +35,12 @@ import { refundOrder } from '../../component/State/Order/Action';
 import PrintIcon from '@mui/icons-material/Print';
 import DoneIcon from '@mui/icons-material/Done';
 import CancelIcon from '@mui/icons-material/Cancel';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import Fade from '@mui/material/Fade';
 import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import UndoIcon from '@mui/icons-material/Undo';
 
 const style = {
     position: 'absolute',
@@ -83,6 +88,10 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [localRestaurantOrder, setLocalRestaurantOrder] = useState(restaurantOrder.orders);
     const [checked, setChecked] = useState(false);
+    const [previousStatuses, setPreviousStatuses] = useState({});
+
+    const pendingOrderss = restaurantOrder.orders.filter(order => order.orderStatus === 'PENDING' && order.isPaid).length;
+    console.log("Pending orders: ", pendingOrderss);
 
     const handleOpen = (order) => {
         setSelectedOrder(order);
@@ -130,30 +139,6 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
         setChecked((prev) => !prev);
     };
 
-    const handleUpdateOrderStatusDelivering = (orderId, currentStatus, newStatus) => {
-        const isValidTransition = (currentStatus, newStatus) => {
-            switch (currentStatus) {
-                case 'PENDING':
-                    return newStatus === 'CONFIRMED';
-                case 'CONFIRMED':
-                    return newStatus === 'DELIVERING';
-                case 'DELIVERING':
-                    return newStatus === 'COMPLETED' || newStatus === 'CANCELLED';
-                case 'CANCELLED':
-                    return newStatus === 'CANCELLED_REFUNDED';
-                default:
-                    return false;
-            }
-        };
-
-        dispatch(updateOrderStatus({
-            orderId: orderId,
-            jwt: localStorage.getItem('jwt'),
-            newStatus: newStatus,
-            restaurantId: restaurant.usersRestaurant?.id,
-        }));
-    };
-
     const handleUpdateOrderStatus = (orderId, currentStatus) => {
         let newStatus;
 
@@ -170,6 +155,12 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
             case 'CANCELLED':
                 newStatus = 'CANCELLED_REFUNDED';
                 break;
+            case 'CANCELLED_REFUNDED':
+                newStatus = 'CANCELLED';
+                break;
+            case 'COMPLETED':
+                newStatus = 'DELIVERING';
+                break;
             default:
                 return;
         }
@@ -182,6 +173,94 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
         }));
     };
 
+    const handleRevertStatus = (orderId, currentStatus) => {
+        let previousStatus;
+
+        switch (currentStatus) {
+            case 'CONFIRMED':
+                previousStatus = 'PENDING';
+                break;
+            case 'DELIVERING':
+                previousStatus = 'CONFIRMED';
+                break;
+            case 'COMPLETED':
+                previousStatus = 'DELIVERING';
+                break;
+            case 'CANCELLED':
+                previousStatus = 'DELIVERING';
+                break;
+            case 'CANCELLED_REFUNDED':
+                previousStatus = 'CANCELLED';
+                break;
+            default:
+                return;
+        }
+
+        dispatch(updateOrderStatus({
+            orderId: orderId,
+            jwt: localStorage.getItem('jwt'),
+            newStatus: previousStatus,
+            restaurantId: restaurant.usersRestaurant?.id,
+        }));
+    };
+
+    const handleUpdateOrderStatusDelivering = (orderId, currentStatus, newStatus) => {
+        const isValidTransition = (currentStatus, newStatus) => {
+            switch (currentStatus) {
+                case 'PENDING':
+                    return newStatus === 'CONFIRMED';
+                case 'CONFIRMED':
+                    return newStatus === 'DELIVERING';
+                case 'DELIVERING':
+                    return newStatus === 'COMPLETED' || newStatus === 'CANCELLED';
+                case 'CANCELLED':
+                    return newStatus === 'CANCELLED_REFUNDED';
+                case 'CANCELLED_REFUNDED':
+                    return newStatus === 'CANCELLED';
+                case 'COMPLETED':
+                    return newStatus === 'DELIVERING';
+                default:
+                    return false;
+            }
+        };
+
+        if (isValidTransition(currentStatus, newStatus)) {
+            dispatch(updateOrderStatus({
+                orderId: orderId,
+                jwt: localStorage.getItem('jwt'),
+                newStatus: newStatus,
+                restaurantId: restaurant.usersRestaurant?.id,
+            }));
+        }
+    };
+
+    const handleCancelOrder = (orderId, currentStatus) => {
+        let newStatus;
+
+        switch (currentStatus) {
+            case 'PENDING':
+                newStatus = 'CANCELLED';
+                break;
+            case 'CONFIRMED':
+                newStatus = 'CANCELLED';
+                break;
+            case 'DELIVERING':
+                newStatus = 'CANCELLED';
+                break;
+            case 'COMPLETED':
+                newStatus = 'CANCELLED';
+                break;
+            default:
+                return;
+        }
+
+        dispatch(updateOrderStatus({
+            orderId: orderId,
+            jwt: localStorage.getItem('jwt'),
+            newStatus: newStatus,
+            restaurantId: restaurant.usersRestaurant?.id,
+        }));
+    };
 
     const handleRefund = (orderId) => {
 
@@ -192,7 +271,7 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
         })).then(() => {
             setLocalRestaurantOrder(prevOrders =>
                 prevOrders.map(order =>
-                    order.id === orderId ? { ...order, orderStatus: 'CANCELLED' } : order
+                    order.id === orderId ? { ...order, orderStatus: 'CANCELLED_REFUNDED' } : order
                 )
             );
         });
@@ -236,6 +315,91 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Orders");
         XLSX.writeFile(wb, "Orders.xlsx");
+    };
+
+    const handlePrintPendingOrders = () => {
+        const doc = new jsPDF();
+
+        const pendingOrders = restaurantOrder.orders.filter(order => order.orderStatus === 'PENDING');
+
+        const convertToNonAccentVietnamese = (str) => {
+            str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+            str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+            str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+            str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+            str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+            str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+            str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+            str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+            str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+            str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+            str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+            str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+            str = str.replace(/Đ/g, "D");
+            str = str.replace(/đ/g, "d");
+            return str;
+        }
+
+        pendingOrders.forEach((order, index) => {
+            doc.setFontSize(16);
+            doc.text(`Order ID: ${order.id}`, 10, 10);
+
+            doc.autoTable({
+                startY: 20,
+                head: [['Customer', 'Total Price', 'Payment Method', 'Status', 'Delivery Address']],
+                body: [[
+                    convertToNonAccentVietnamese(order.customer?.fullName),
+                    `${order.totalPrice.toLocaleString('vi-VN')}đ`,
+                    order.paymentMethod === "BY_CASH" ? "COD" : order.paymentMethod === "BY_CREDIT_CARD" ? "BY BANK" : "BY VNPAY",
+                    order.orderStatus,
+                    convertToNonAccentVietnamese(`${order.deliveryAddress.streetAddress}, ${order.deliveryAddress.city}, ${order.deliveryAddress.state}, ${order.deliveryAddress.country}`)
+                ]],
+                theme: 'grid',
+                styles: { fontSize: 12, cellPadding: 3 },
+                columnStyles: {
+                    0: { cellWidth: 30 }, // Customer
+                    1: { cellWidth: 30 }, // Total Price
+                    2: { cellWidth: 30 }, // Payment Method
+                    3: { cellWidth: 20 }, // Status
+                    4: { cellWidth: 80 }, // Delivery Address
+                },
+                didParseCell: (data) => {
+                    if (data.column.index === 4) {
+                        data.cell.styles.cellPadding = 2;
+                        data.cell.styles.overflow = 'linebreak';
+                    }
+                }
+            });
+
+            const items = order.items.map((item, itemIndex) => [
+                itemIndex + 1,
+                convertToNonAccentVietnamese(item.food?.name),
+                item.quantity,
+                `${item.totalPrice.toLocaleString('vi-VN')}đ`,
+                item.ingredients.map(ingredient => convertToNonAccentVietnamese(ingredient)).join(', ')
+            ]);
+
+            doc.autoTable({
+                startY: doc.previousAutoTable.finalY + 10,
+                head: [['#', 'Item', 'Quantity', 'Price', 'Ingredients']],
+                body: items,
+                theme: 'grid',
+                styles: { fontSize: 10 },
+                columnStyles: {
+                    0: { cellWidth: 10 }, // #
+                    1: { cellWidth: 50 }, // Item
+                    2: { cellWidth: 20 }, // Quantity
+                    3: { cellWidth: 30 }, // Price
+                    4: { cellWidth: 70 }, // Ingredients
+                }
+            });
+
+            if (index < pendingOrders.length - 1) {
+                doc.addPage();
+            }
+        });
+
+        doc.save('PendingOrders.pdf');
     };
 
     const handleReset = () => {
@@ -294,6 +458,14 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
                             Reset
                         </Button>
                         <Button
+                            variant="contained"
+                            startIcon={<PrintIcon />}
+                            onClick={handlePrintPendingOrders}
+                            sx={{ mt: 2 }}
+                        >
+                            EXPORT ORDER PENDING
+                        </Button>
+                        <Button
                             onClick={handleExportExcel}
                             variant="contained"
                             color="primary"
@@ -315,10 +487,10 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
                                 <TableCell align="right">Customer</TableCell>
                                 <TableCell align="right">Price</TableCell>
                                 <TableCell align="right">Name</TableCell>
-                                <TableCell align="right">Ingredients</TableCell>
+                                {/* <TableCell align="right">Ingredients</TableCell> */}
                                 <TableCell align="right">Method</TableCell>
                                 <TableCell align="right">Status</TableCell>
-                                <TableCell align="right">Detail</TableCell>
+                                {/* <TableCell align="right">Detail</TableCell> */}
                                 <TableCell align="right">Actions</TableCell>
                             </TableRow>
                         </TableHead>
@@ -345,26 +517,10 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
                                         <TableCell align="right">
                                             {order.items[0]?.food?.name}
                                         </TableCell>
-                                        <TableCell align="right">
-                                            {order.items[0]?.ingredients.slice(0, showAll[order.id] ? order.items[0]?.ingredients.length : 2).map((ingredient, index) => (
-                                                <Chip
-                                                    key={index}
-                                                    label={ingredient}
-                                                    className='m-1'
-                                                />
-                                            ))}
-                                            {order.items[0]?.ingredients.length > 2 && (
-                                                <Chip
-                                                    label={showAll[order.id] ? 'Ẩn bớt' : '...'}
-                                                    onClick={() => handleToggle(order.id)}
-                                                    style={{ cursor: 'pointer', margin: '3px' }}
-                                                />
-                                            )}
-                                        </TableCell>
                                         <TableCell align="right" rowSpan={order.items.length}>
                                             {order.paymentMethod === "BY_CASH" ? "COD" : (
                                                 order.paymentMethod === "BY_CREDIT_CARD"
-                                                ? 'BANK CARD' : 'VN PAY'
+                                                    ? 'BANK CARD' : 'VN PAY'
                                             )}
                                         </TableCell>
                                         <TableCell align="right" rowSpan={order.items.length}>
@@ -376,59 +532,30 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
                                                 {order.orderStatus}
                                             </Button>
                                         </TableCell>
-                                        <TableCell align="right" rowSpan={order.items.length}>
-                                            <IconButton aria-label="view" onClick={() => handleOpen(order)}>
+                                        <TableCell align="center" rowSpan={order.items.length}>
+                                            <IconButton onClick={() => handleOpen(order)}>
                                                 <VisibilityIcon />
                                             </IconButton>
-                                        </TableCell>
-                                        <TableCell align="right" rowSpan={order.items.length}>
+                                            <IconButton onClick={() => handleUpdateOrderStatus(order.id, order.orderStatus)}>
+                                                <DoneIcon />
+                                            </IconButton>
                                             {
-                                                order.orderStatus === "PENDING" && (
-                                                    <Button
-                                                        //variant="contained"
-                                                        color="error"
-                                                        onClick={() => handleOpen(order)}
-                                                    >
-                                                        <IconButton aria-label="view">
-                                                            <PrintIcon />
+                                                (order.orderStatus === "CANCELLED")
+                                                    ? (
+                                                        <IconButton onClick={() => handleRefund(order.id)}>
+                                                            <HighlightOffIcon />
                                                         </IconButton>
-                                                    </Button>
-                                                )
-                                            }
-                                            {
-                                                order.orderStatus === "CANCELLED" && (
-                                                    <Button
-                                                        variant="contained"
-                                                        color="error"
-                                                        onClick={() => handleRefund(order.id)}
-                                                    >
-                                                        Refund
-                                                    </Button>
-                                                )
-                                            }
-                                            {order.orderStatus === "DELIVERING" && (
-                                                <Box display="flex" flexDirection="column" alignItems="center">
-                                                    <Button
-                                                        //variant="contained"
-                                                        color="primary"
-                                                        onClick={() => handleUpdateOrderStatusDelivering(order.id, order.orderStatus, "COMPLETED")}
-                                                        sx={{ mb: 1 }}
-                                                    >
-                                                        <IconButton aria-label="view">
-                                                            <DoneIcon />
-                                                        </IconButton>
-                                                    </Button>
-                                                    <Button
-                                                        //variant="contained"
-                                                        color="secondary"
-                                                        onClick={() => handleUpdateOrderStatusDelivering(order.id, order.orderStatus, "CANCELLED")}
-                                                    >
-                                                        <IconButton aria-label="view">
+                                                    )
+                                                    : (
+                                                        <IconButton onClick={() => handleCancelOrder(order.id, order.orderStatus)}>
                                                             <CancelIcon />
                                                         </IconButton>
-                                                    </Button>
-                                                </Box>
-                                            )}
+                                                    )
+                                            }
+
+                                            <IconButton onClick={() => handleRevertStatus(order.id, order.orderStatus)}>
+                                                <UndoIcon />
+                                            </IconButton>
                                         </TableCell>
                                     </TableRow>
                                     {order.items.slice(1).map((item, index) => (
@@ -436,7 +563,7 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
                                             <TableCell align="right">
                                                 {item.food?.name}
                                             </TableCell>
-                                            <TableCell align="right">
+                                            {/* <TableCell align="right">
                                                 {item.ingredients.slice(0, showAll[order.id] ? item.ingredients.length : 2).map((ingredient, idx) => (
                                                     <Chip
                                                         key={idx}
@@ -451,7 +578,7 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
                                                         style={{ cursor: 'pointer', margin: '3px' }}
                                                     />
                                                 )}
-                                            </TableCell>
+                                            </TableCell> */}
                                         </TableRow>
                                     ))}
                                 </React.Fragment>

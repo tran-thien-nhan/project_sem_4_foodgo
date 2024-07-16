@@ -25,7 +25,7 @@ const LoginForm = () => {
     };
 
     const handleForgotPassword = () => {
-        dispatch(forgotPassword(email));
+        dispatch(forgotPassword({email: email}));
         setShowForgotPassword(false);
     };
 

@@ -3,6 +3,7 @@ package com.foodgo.service;
 import com.foodgo.dto.EventDto;
 import com.foodgo.model.Event;
 import com.foodgo.model.Restaurant;
+import com.foodgo.model.USER_ROLE;
 import com.foodgo.model.User;
 import com.foodgo.repository.EventRepository;
 import com.foodgo.repository.RestaurantRepository;
@@ -117,6 +118,9 @@ public class EventServiceImp implements EventService{
 
     @Override
     public EventDto addEventToFavorites(Long eventId, User user) throws Exception {
+        if(!user.getRole().equals(USER_ROLE.ROLE_CUSTOMER)){
+            throw new Exception("Only customer can add to favorites");
+        }
         Event event = getEventById(eventId); // Lấy event theo id
 
         EventDto eventDto = new EventDto(); // Tạo đối tượng EventDto

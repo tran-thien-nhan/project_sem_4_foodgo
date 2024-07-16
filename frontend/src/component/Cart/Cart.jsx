@@ -19,6 +19,8 @@ const initialValues = {
     pinCode: '',
     city: '',
     paymentMethod: '',
+    phone: '',
+    comment: 'no comment',
 };
 
 export const style = {
@@ -142,17 +144,19 @@ const Cart = () => {
                     city: values.city,
                     state: values.state,
                     pinCode: values.pinCode,
-                    country: "vietnam"
+                    country: "vietnam",
+                    phone: values.phone,
                 },
                 paymentMethod: values.paymentMethod,
+                comment: values.comment
             }
         }
         console.log("DATA:", data);
         dispatch(createOrder(data));
 
-        if (values.paymentMethod === 'BY_CASH') {
-            window.location.href = '/';
-        }
+        // if (values.paymentMethod === 'BY_CASH') {
+        //     window.location.href = '/';
+        // }
     };
 
     const handleOpen = () => setOpen(true);
@@ -241,7 +245,7 @@ const Cart = () => {
     return (
         <>
             <main className='lg:flex justify-between'>
-                <section className='lg:w-[30%] space-y-6 lg:min-h-screen pt-10'>
+                <section className='lg:w-[40%] space-y-6 lg:min-h-screen pt-10'>
                     {cart.cart?.cartItems?.map((item) => (
                         <CartItem key={item.id} item={item} />
                     ))}
@@ -284,7 +288,7 @@ const Cart = () => {
                     </div>
                 </section>
                 <Divider orientation='vertical' flexItem />
-                <section className='lg:w-[70%] flex justify-center px-5 pb-10 lg:pb-0'>
+                <section className='lg:w-[60%] flex justify-center px-5 pb-10 lg:pb-0'>
                     <div>
                         <h1 className='text-center font-semibold text-2xl py-10'>Choose Delivery Address</h1>
                         <div className='flex flex-wrap items-center gap-5 justify-center'>
@@ -394,6 +398,40 @@ const Cart = () => {
                                             error={!Boolean(ErrorMessage('city'))}
                                             helperText={
                                                 <ErrorMessage name='city'>
+                                                    {(msg) => <span className='text-red-600'>{msg}</span>}
+                                                </ErrorMessage>
+                                            }
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Field
+                                            as={TextField}
+                                            name='phone'
+                                            label='phone'
+                                            fullWidth
+                                            variant='outlined'
+                                            onChange={handleChange}
+                                            defaultValue={selectedAddress?.phone || ''}
+                                            error={!Boolean(ErrorMessage('phone'))}
+                                            helperText={
+                                                <ErrorMessage name='phone'>
+                                                    {(msg) => <span className='text-red-600'>{msg}</span>}
+                                                </ErrorMessage>
+                                            }
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Field
+                                            as={TextField}
+                                            name='comment'
+                                            label='comment'
+                                            fullWidth
+                                            variant='outlined'
+                                            onChange={handleChange}
+                                            defaultValue={selectedAddress?.comment || ''}
+                                            error={!Boolean(ErrorMessage('comment'))}
+                                            helperText={
+                                                <ErrorMessage name='comment'>
                                                     {(msg) => <span className='text-red-600'>{msg}</span>}
                                                 </ErrorMessage>
                                             }

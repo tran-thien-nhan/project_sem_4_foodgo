@@ -48,6 +48,7 @@ public class AddressServiceImp implements AddressService {
                         existingAddress.getState().equalsIgnoreCase(req.getState()) &&
                         existingAddress.getPinCode().equalsIgnoreCase(req.getPinCode()) &&
                         existingAddress.getCountry().equalsIgnoreCase(req.getCountry())
+//                        existingAddress.getPhone().equalsIgnoreCase(req.getPhone())
         );
 
         // Nếu địa chỉ đã tồn tại, không thêm mới
@@ -62,6 +63,9 @@ public class AddressServiceImp implements AddressService {
         address.setState(req.getState());
         address.setPinCode(req.getPinCode());
         address.setCountry(req.getCountry());
+//        address.setPhone(req.getPhone());
+//        address.setLatitude(req.getLatitude());
+//        address.setLongitude(req.getLongitude());
         address.setUser(user);  // Set the user of the address
         user.getAddresses().add(address); // Add the address to the user's list of addresses
         addressRepository.save(address);  // Save the new address to the database
@@ -80,6 +84,7 @@ public class AddressServiceImp implements AddressService {
         address.setState(req.getState());
         address.setPinCode(req.getPinCode());
         address.setCountry(req.getCountry());
+//        address.setPhone(req.getPhone());
 
         return addressRepository.save(address);  // Save the updated address to the database
     }

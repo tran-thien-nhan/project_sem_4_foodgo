@@ -31,6 +31,9 @@ const AddressCard = ({ item, showButton, onSelectAddress, address }) => {
           <p>
             {address.city}
           </p>
+          <p>
+            {address.phone}
+          </p>
         </div>
         {showButton && (
           <Button variant="contained" color="primary" onClick={handleSelect}>

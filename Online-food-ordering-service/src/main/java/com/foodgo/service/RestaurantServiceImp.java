@@ -2,10 +2,7 @@ package com.foodgo.service;
 
 import com.foodgo.dto.EventDto;
 import com.foodgo.dto.RestaurantDto;
-import com.foodgo.model.Address;
-import com.foodgo.model.Event;
-import com.foodgo.model.Restaurant;
-import com.foodgo.model.User;
+import com.foodgo.model.*;
 import com.foodgo.repository.AddressRepository;
 import com.foodgo.repository.EventRepository;
 import com.foodgo.repository.RestaurantRepository;
@@ -139,6 +136,9 @@ public class RestaurantServiceImp implements RestaurantService{
 
     @Override
     public RestaurantDto addToFavorites(Long restaurantId, User user) throws Exception {
+        if(!user.getRole().equals(USER_ROLE.ROLE_CUSTOMER)){
+            throw new Exception("Only customer can add to favorites");
+        }
         Restaurant restaurant = findRestaurantById(restaurantId); // tìm nhà hàng theo id
 
         RestaurantDto dto = new RestaurantDto(); // tạo mới một đối tượng RestaurantDto

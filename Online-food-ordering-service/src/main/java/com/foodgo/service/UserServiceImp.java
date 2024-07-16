@@ -109,13 +109,17 @@ public class UserServiceImp implements UserService {
     }
 
     public void processForgotPassword(String email) throws MessagingException, UnsupportedEncodingException {
-        try{
-            User user = userRepository.findByEmailAndProvider(email, PROVIDER.NORMAL).get(0);
-            System.out.println("user: " + user);
-
-            if(user == null) {
+        try {
+            if (email == null || email.isEmpty()) {
+                throw new BadCredentialsException("Email is null or empty");
+            }
+            List<User> users = findByEmailAndProvider(email, PROVIDER.NORMAL);
+            if (users.isEmpty()) {
                 throw new BadCredentialsException("User not found with email " + email);
             }
+
+            User user = users.get(0);
+            System.out.println("user: " + user);
 
             String token = UUID.randomUUID().toString();
             // Save token to database with expiration time
@@ -129,11 +133,19 @@ public class UserServiceImp implements UserService {
 
             // Send email with the token link
             emailService.sendPasswordResetEmail(user.getEmail(), token);
-        }
-        catch (Exception e) {
-            System.out.println("Error: " + e);
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            throw e;
         }
     }
+
+    private List<User> findByEmailAndProvider(String email, PROVIDER provider) {
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                .filter(user -> user.getEmail().equals(email) && user.getProvider().equals(provider))
+                .collect(Collectors.toList());
+    }
+
 
     public ResetpasswordResponse updatePassword(String token, String newPassword) {
         try {
@@ -158,6 +170,24 @@ public class UserServiceImp implements UserService {
             return response;
         }
     }
+
+    @Override
+    public User findByEmailAndProvider(String email, String password, PROVIDER provider) {
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                .filter(user -> user.getEmail().equals(email) && user.getPassword().equals(password) && user.getProvider().equals(provider))
+                .findFirst()
+                .orElse(null);
+    }
+
+//    @Override
+//    public Boolean checkPhone(String phone) throws Exception {
+//        User user = userRepository.findByPhone(phone);
+//        if (user == null) {
+//            return false;
+//        }
+//        return true;
+//    }
 
 
 }

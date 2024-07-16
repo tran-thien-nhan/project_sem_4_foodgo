@@ -15,7 +15,8 @@ const initialValues = {
   state: '',
   pinCode: '',
   city: '',
-  country: 'vietnam'
+  country: 'vietnam',
+  phone: ''
 };
 
 export const style = {
@@ -130,6 +131,8 @@ const Address = () => {
               state: Yup.string().required('State is required'),
               pinCode: Yup.string().required('Pin Code is required'),
               city: Yup.string().required('City is required'),
+              country: Yup.string().required('Country is required'),
+              phone: Yup.string().required('Phone is required'),
             })}
           >
             {({ handleChange, handleSubmit }) => (
@@ -202,6 +205,23 @@ const Address = () => {
                       error={!Boolean(ErrorMessage('city'))}
                       helperText={
                         <ErrorMessage name='city'>
+                          {(msg) => <span className='text-red-600'>{msg}</span>}
+                        </ErrorMessage>
+                      }
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Field
+                      as={TextField}
+                      name='phone'
+                      label='phone'
+                      fullWidth
+                      variant='outlined'
+                      onChange={handleChange}
+                      defaultValue={selectedAddress?.phone || ''}
+                      error={!Boolean(ErrorMessage('phone'))}
+                      helperText={
+                        <ErrorMessage name='phone'>
                           {(msg) => <span className='text-red-600'>{msg}</span>}
                         </ErrorMessage>
                       }

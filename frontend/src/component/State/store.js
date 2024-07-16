@@ -11,6 +11,7 @@ import { ratingReducer } from './Rating/Reducer';
 import { addressReducer } from './Address/Reducer';
 import eventReducer from './Event/Reducer';
 import { foodReducer } from './Food/Reducer';
+import driverReducer from './Driver/Reducer';
 
 const rootReducer = combineReducers({
     auth: authReducer,
@@ -23,7 +24,8 @@ const rootReducer = combineReducers({
     rating: ratingReducer,
     address: addressReducer,
     event: eventReducer,
-    food: foodReducer
+    food: foodReducer,
+    driver: driverReducer
 });
 
 export const store = legacy_createStore(rootReducer, applyMiddleware(thunk)); // tạo ra một store với rootReducer và middleware là thunk

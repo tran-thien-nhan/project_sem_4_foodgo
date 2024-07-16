@@ -138,6 +138,73 @@ public class EmailServiceImp implements EmailService {
                 "</html>";
     }
 
+    private String getShipperWelcomeEmailContent(String fullname) {
+        return "<!DOCTYPE html>\n" +
+                "<html lang=\"en\">\n" +
+                "<head>\n" +
+                "    <meta charset=\"UTF-8\">\n" +
+                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+                "    <title>Welcome To FoodGo - Shipper</title>\n" +
+                "    <style>\n" +
+                "        body {\n" +
+                "            font-family: Arial, sans-serif;\n" +
+                "            background-color: #f4f4f4;\n" +
+                "            margin: 0;\n" +
+                "            padding: 0;\n" +
+                "        }\n" +
+                "        .container {\n" +
+                "            background-color: #fff;\n" +
+                "            margin: 50px auto;\n" +
+                "            padding: 20px;\n" +
+                "            border-radius: 8px;\n" +
+                "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
+                "            max-width: 600px;\n" +
+                "        }\n" +
+                "        .header {\n" +
+                "            background-color: #FF5733;\n" +
+                "            color: white;\n" +
+                "            padding: 10px 0;\n" +
+                "            text-align: center;\n" +
+                "            border-radius: 8px 8px 0 0;\n" +
+                "        }\n" +
+                "        .content {\n" +
+                "            padding: 20px;\n" +
+                "        }\n" +
+                "        .content h1 {\n" +
+                "            color: #333;\n" +
+                "        }\n" +
+                "        .content p {\n" +
+                "            color: #555;\n" +
+                "            line-height: 1.6;\n" +
+                "        }\n" +
+                "        .footer {\n" +
+                "            text-align: center;\n" +
+                "            padding: 10px;\n" +
+                "            font-size: 12px;\n" +
+                "            color: #777;\n" +
+                "        }\n" +
+                "    </style>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "    <div class=\"container\">\n" +
+                "        <div class=\"header\">\n" +
+                "            <h1>Welcome To FoodGo!</h1>\n" +
+                "        </div>\n" +
+                "        <div class=\"content\">\n" +
+                "            <h1>Hi " + fullname + ",</h1>\n" +
+                "            <p>We are thrilled to welcome you to Food Go as a shipper. Your role is crucial in ensuring our customers receive their orders promptly and with great service.</p>\n" +
+                "            <p>We believe that Food Go will provide you with numerous opportunities to grow and excel in your career. If you have any questions or need support, please do not hesitate to contact us.</p>\n" +
+                "            <p>We wish you all the best and great success with Food Go!</p>\n" +
+                "            <p>Sincerely,<br/>The Food Go Team</p>\n" +
+                "        </div>\n" +
+                "        <div class=\"footer\">\n" +
+                "            © 2024 Food Go. All rights reserved.\n" +
+                "        </div>\n" +
+                "    </div>\n" +
+                "</body>\n" +
+                "</html>";
+    }
+
     private String getCustomerWelcomeEmailContent(String fullname) {
         return "<!DOCTYPE html>\n" +
                 "<html lang=\"en\">\n" +
@@ -214,6 +281,12 @@ public class EmailServiceImp implements EmailService {
                 + "<p>Ignore this email if you do remember your password, "
                 + "or you have not made the request.</p>";
         sendEmail(email, "Password Reset Request", content);
+    }
+
+    @Override
+    public void sendMailWelcomeShipper(String email, String fullname) throws MessagingException, UnsupportedEncodingException {
+        sendEmail(email, "Welcome To FOOD GO", getShipperWelcomeEmailContent(fullname));
+        saveMailToDatabase(email, "Welcome To FOOD GO", getShipperWelcomeEmailContent(fullname));
     }
 
     @Override

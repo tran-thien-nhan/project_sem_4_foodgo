@@ -1,24 +1,28 @@
 import { Card, CardActions, CardContent, CardMedia, Chip, Grid, IconButton, Typography, CircularProgress } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { isPresentInEventDtoFavorites } from '../Config/logic';
 import PersonIcon from '@mui/icons-material/Person';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import { useSelector } from 'react-redux';
 
 const EventCard = ({ event, onAddEventToFavorites, eventsFavorites, onShow, onEdit, showEdit, onUpdateAvailability }) => {
-    const [loading, setLoading] = useState(false);
+    const [isEventLoading, setIsEventLoading] = useState(false);
+    const isLoading = useSelector(state => state.event.loading);
+    
+    useEffect(() => {
+        if (!isLoading) {
+            setIsEventLoading(false);
+        }
+    }, [isLoading]);
 
     const handleUpdateAvailability = async (event) => {
-        setLoading(true);
-        try {
-            await onUpdateAvailability(event);
-        } catch (error) {
-            console.error("Error updating availability:", error);
-        } finally {
-            setLoading(false);
-        }
+        setIsEventLoading(true);
+        await onUpdateAvailability(event);
     };
 
     return (
@@ -81,23 +85,6 @@ const EventCard = ({ event, onAddEventToFavorites, eventsFavorites, onShow, onEd
                                     }
 
                                 </Grid>
-                                {
-                                    (onShow === true)
-                                    &&
-                                    <>
-                                        <Grid item xs={3}>
-                                            <CardActions className='flex justify-between'>
-                                                <IconButton onClick={() => onAddEventToFavorites(event)}>
-                                                    {
-                                                        isPresentInEventDtoFavorites(eventsFavorites || [], event)
-                                                            ? <FavoriteIcon className='text-red-500' />
-                                                            : <FavoriteBorderIcon />
-                                                    }
-                                                </IconButton>
-                                            </CardActions>
-                                        </Grid>
-                                    </>
-                                }
                             </Grid>
 
                         </Grid>
@@ -121,13 +108,30 @@ const EventCard = ({ event, onAddEventToFavorites, eventsFavorites, onShow, onEd
                                 showEdit &&
                                 <IconButton onClick={() => handleUpdateAvailability(event)}>
                                     {
-                                        loading
+                                        isEventLoading
                                             ? <CircularProgress size={24} />
                                             : event.available
                                                 ? <VisibilityIcon />
                                                 : <VisibilityOffIcon />
                                     }
                                 </IconButton>
+                            }
+                            {
+                                (onShow === true)
+                                &&
+                                <>
+                                    <Grid item xs={3}>
+                                        <CardActions className='flex justify-between'>
+                                            <IconButton onClick={() => onAddEventToFavorites(event)}>
+                                                {
+                                                    isPresentInEventDtoFavorites(eventsFavorites || [], event)
+                                                        ? <AddCircleIcon className='text-red-500' />
+                                                        : <AddCircleOutlineIcon />
+                                                }
+                                            </IconButton>
+                                        </CardActions>
+                                    </Grid>
+                                </>
                             }
                         </Grid>
                     </Grid>

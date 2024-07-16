@@ -6,18 +6,44 @@ import { useDispatch, useSelector } from 'react-redux'
 import { getAllRestaurantsAction, getAllRestaurantsPublicAction } from '../State/Restaurant/Action'
 import { useNavigate } from 'react-router-dom'
 import { findCart } from '../State/Cart/Action'
+import { addEventToFavorite, getAllPubLicEvents } from '../State/Event/Action'
+import EventCard from '../Profile/EventCard'
+import Slider from 'react-slick'
+import { Grid } from '@mui/material'
+
 const Home = () => {
     const dispatch = useDispatch()
     const jwt = localStorage.getItem('jwt')
-    const {restaurant} = useSelector(store => store)
+    const { auth, restaurant, event } = useSelector(store => store)
     const navigate = useNavigate()
-
-    //console.log("restaurant", restaurant);
 
     useEffect(() => {
         dispatch(getAllRestaurantsAction(jwt))
         dispatch(getAllRestaurantsPublicAction())
-    },[])
+        dispatch(getAllPubLicEvents())
+    }, [])
+
+    const handleAddEventToFavorites = (event) => {
+        if (jwt) {
+            dispatch(addEventToFavorite({
+                eventId: event.id,
+                jwt: jwt
+            }));
+        }
+        else {
+            navigate('/account/login')
+        }
+    };
+
+    const settings = {
+        dots: true,
+        infinite: true,
+        speed: 500,
+        slidesToShow: 3,
+        slidesToScroll: 1,
+        autoplay: true,
+        autoplaySpeed: 2000,
+    }
 
     return (
         <div className='pb-10'>
@@ -46,6 +72,23 @@ const Home = () => {
                         restaurant.restaurants?.map((item, index) => <RestaurantCard item={item} />)
                     }
                 </div>
+            </section>
+            <section className='p-5 lg:px-20'>
+                <h1 className='text-2xl font-semibold text-gray-400 py-3 pb-5'>Our Events</h1>
+                <Slider {...settings} className='px-10'>
+                    {
+                        event.publicEvents.filter(e => e.available).map((e) => (
+                            <div key={e.id} className='px-10'>
+                                <EventCard
+                                    event={e}
+                                    onShow={true}
+                                    onAddEventToFavorites={handleAddEventToFavorites}
+                                    eventsFavorites={auth.user?.eventDtoFavorites}
+                                />
+                            </div>
+                        ))
+                    }
+                </Slider>
             </section>
         </div>
     )

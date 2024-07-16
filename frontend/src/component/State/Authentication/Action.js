@@ -16,6 +16,9 @@ export const registerUser = (reqData) => async (dispatch) => {
         if (data.role === "ROLE_RESTAURANT_OWNER") {
             reqData.navigate("/admin/restaurants");
         }
+        else if (data.role === "ROLE_SHIPPER") {
+            reqData.navigate("/admin/shippers");
+        }
         else {
             if (data.message != "Sign In successfully") {
                 toast.success('register successfully! Please Check Your Email', {
@@ -35,6 +38,7 @@ export const registerUser = (reqData) => async (dispatch) => {
         }
 
         dispatch({ type: REGISTER_SUCCESS, payload: data.jwt });
+        // dispatch(getUser(data.jwt));
         console.log("REGISTER SUCCESS: ", data);
 
     } catch (error) {
@@ -67,11 +71,15 @@ export const loginUser = (reqData) => async (dispatch) => {
         if (data.role === "ROLE_RESTAURANT_OWNER") {
             reqData.navigate("/admin/restaurants");
         }
+        else if (data.role === "ROLE_SHIPPER"){
+            reqData.navigate("/admin/shippers");
+        }
         else {
             reqData.navigate("/");
         }
 
         dispatch({ type: LOGIN_SUCCESS, payload: data.jwt });
+        // dispatch(getUser(data.jwt));
         console.log("LOGIN SUCCESS: ", data);
 
     } catch (error) {
@@ -91,7 +99,7 @@ export const getUser = (jwt) => async (dispatch) => {
         });
 
         dispatch({ type: GET_USER_SUCCESS, payload: data });
-        dispatch(getFavoritesEvents({ jwt }))
+        // dispatch(getFavoritesEvents(jwt))
 
     } catch (error) {
         dispatch({ type: GET_USER_FAILURE, payload: error });
@@ -118,7 +126,17 @@ export const addToFavorite = ({ jwt, restaurantId }) => async (dispatch) => {
     } catch (error) {
         dispatch({ type: ADD_TO_FAVORITE_FAILURE, payload: error });
         console.log("ERROR: ", error);
-
+        toast.error(error.response.data.message, {
+            position: "top-center",
+            autoClose: 1000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+            transition: Bounce,
+        });
     }
 }
 
@@ -134,10 +152,10 @@ export const logOut = () => async (dispatch) => {
     }
 }
 
-export const forgotPassword = (email) => async (dispatch) => {
+export const forgotPassword = ({email: email}) => async (dispatch) => {
     dispatch({ type: RESET_PASSWORD_REQUEST });
     try {
-        await axios.post(`${API_URL}/auth/forgot-password`, { email });
+        await axios.post(`${API_URL}/api/public/forgot-password`, {email});
         dispatch({ type: RESET_PASSWORD_SUCCESS });
         toast.success('Password reset email sent!', {
             position: "top-center",
@@ -151,7 +169,8 @@ export const forgotPassword = (email) => async (dispatch) => {
         });
     } catch (error) {
         dispatch({ type: RESET_PASSWORD_FAILURE, payload: error });
-        toast.error('Failed to send password reset email!', {
+        console.log("ERROR SEND EMAIL FORGOT PASSWORD: ", error.response ? error.response.data : error);
+        toast.error(error.response ? error.response.data.message : error.message, {
             position: "top-center",
             autoClose: 5000,
             hideProgressBar: false,
@@ -167,7 +186,7 @@ export const forgotPassword = (email) => async (dispatch) => {
 export const resetPassword = ({ token, newPassword, navigate }) => async dispatch => {
     dispatch({ type: CHANGE_PASSWORD_REQUEST })
     try {
-        await axios.post(`${API_URL}/auth/reset-password`, { token, newPassword });
+        await axios.post(`${API_URL}/api/public/reset-password`, { token, newPassword });
         dispatch({ type: CHANGE_PASSWORD_SUCCESS });
         toast.success('Password has been reset successfully!', {
             position: "top-center",

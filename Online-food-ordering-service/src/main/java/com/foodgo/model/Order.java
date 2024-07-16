@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.*;
 
@@ -19,6 +20,7 @@ public class Order {
     private Long id;
 
     @ManyToOne
+    @ToString.Exclude
     private User customer;
 
     @JsonIgnore //tránh lặp vô hạn, không lấy thông tin của restaurant, chỉ lấy thông tin của order
@@ -42,9 +44,15 @@ public class Order {
 
     private Long totalPrice;
 
+    private String comment;
+
     private String PaymentMethod;
 
     private Boolean isPaid = false;
 
     private String paymentIntentId;
+
+    @ManyToOne
+    @JoinColumn(name = "ride_id")
+    private Ride ride; // Thêm thuộc tính ride để xác định mối quan hệ
 }

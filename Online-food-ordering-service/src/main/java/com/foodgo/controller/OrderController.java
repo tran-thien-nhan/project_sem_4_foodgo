@@ -70,38 +70,6 @@ public class OrderController {
         catch (Exception e){
             throw new Exception(e);
         }
-
-//        if(req.getPaymentMethod().contains(PAYMENT_METHOD.BY_CASH.toString())){
-//            return new ResponseEntity<>(HttpStatus.OK);
-//        }
-//
-//        if(req.getPaymentMethod().contains(PAYMENT_METHOD.BY_CREDIT_CARD.toString())){
-//            List<PaymentResponse> paymentResponses = orders.stream()
-//                    .map(order -> {
-//                        try {
-//                            return paymentService.createPaymentLink(order);
-//                        } catch (Exception e) {
-//                            throw new RuntimeException(e);
-//                        }
-//                    })
-//                    .collect(Collectors.toList());
-//            return new ResponseEntity<>(paymentResponses, HttpStatus.OK);
-//        }
-//
-//        if(req.getPaymentMethod().contains(PAYMENT_METHOD.BY_VNPAY.toString())){
-//            List<PaymentResponse> paymentResponses = orders.stream()
-//                    .map(order -> {
-//                        try {
-//                            return paymentService.createPaymentUrlVnPay(order);
-//                        } catch (Exception e) {
-//                            throw new RuntimeException(e);
-//                        }
-//                    })
-//                    .collect(Collectors.toList());
-//            return new ResponseEntity<>(paymentResponses, HttpStatus.OK);
-//        }
-//
-//        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     @PutMapping("/order/toggle-payment-status/{orderId}")

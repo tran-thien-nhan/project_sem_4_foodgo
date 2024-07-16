@@ -19,7 +19,7 @@ export const Navbar = () => {
     const { auth, cart, event, order } = useSelector(store => store);
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const token = localStorage.getItem('jwt');
+    const jwt = localStorage.getItem('jwt');
     const cartCount = cart.cart?.cartItems?.length || 0;
     const { signOut } = useClerk();
     const userLoggedIn = localStorage.getItem('clerk_telemetry_throttler');
@@ -28,12 +28,7 @@ export const Navbar = () => {
     const { userId, getToken } = useAuth();
     let totalCount = 0;
     // let count = event.favorites.length;
-    let count = event.count;
-
-    //    // Kiểm tra event.favorites là một mảng
-    //    let count = Array.isArray(event.favorites) 
-    //    ? event.favorites.filter(favorite => favorite.available).length 
-    //    : 0;
+    let count = event.count || 0;
 
     let orderCount = order.orders.filter(order =>
         order.orderStatus !== "COMPLETED" &&
@@ -42,25 +37,22 @@ export const Navbar = () => {
         order.isPaid == true
     ).length;
 
-    // console.log("order count", orderCount);    
-
     totalCount = orderCount + count;
 
     useEffect(() => {
-        console.log("event.favorites: ", event.favorites);
-        dispatch(getUsersOrders(token));
-    }, [auth.jwt, dispatch, token]);
+        dispatch(getUsersOrders(jwt));
+    }, [auth.jwt, dispatch, jwt]);
 
-    if (token && cart.id) {
-        dispatch(getAllCartItems({ cartId: cart.id, token }));
+    if (jwt && cart.id) {
+        dispatch(getAllCartItems({ cartId: cart.id, jwt }));
     }
 
     useEffect(() => {
-        if (token) {
-            dispatch(getUser(token));
-            dispatch(getFavoritesEvents(token)); // Dispatch hành động để lấy sự kiện yêu thích
+        if (jwt) {
+            dispatch(getUser(jwt));
+            dispatch(getFavoritesEvents(jwt)); 
         }
-    }, [dispatch, token]);
+    }, [dispatch, jwt]);
 
     useEffect(() => {
         const fetchAccessToken = async () => {
@@ -73,9 +65,9 @@ export const Navbar = () => {
                         userData: {
                             fullName: user.fullName || "",
                             email: user.emailAddresses[0]?.emailAddress || "",
-                            password: "123", // You might not have access to password from OAuth sign-up
-                            role: "ROLE_CUSTOMER", // Default role or adjust based on your logic
-                            provider: "GOOGLE", // Indicate the provider here
+                            password: "123", 
+                            role: "ROLE_CUSTOMER", 
+                            provider: "GOOGLE", 
                         },
                         navigate,
                     }))
@@ -90,10 +82,15 @@ export const Navbar = () => {
     }, [userId]);
 
     const handleAvatarClick = () => {
-        if (auth.user?.role === 'ROLE_CUSTOMER') {
-            navigate('/my-profile');
-        } else {
-            navigate('/admin/restaurants');
+        switch (auth.user?.role) {
+            case 'ROLE_ADMIN_RESTAURANT':
+                navigate('/admin/restaurants');
+                break;
+            case 'ROLE_SHIPPER':
+                navigate('/admin/shippers');
+                break;
+            default:
+                navigate('/my-profile');
         }
     };
 

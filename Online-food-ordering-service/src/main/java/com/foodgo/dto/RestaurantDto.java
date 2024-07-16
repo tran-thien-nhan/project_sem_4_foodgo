@@ -1,6 +1,7 @@
 package com.foodgo.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.foodgo.model.Address;
 import com.foodgo.model.Event;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -10,6 +11,7 @@ import java.util.*;
 @Data // Tự động tạo getter, setter, toString, equals, hashCode
 @Embeddable // Đánh dấu là một phần của entity khác, không phải một entity riêng biệt, không có id
 public class RestaurantDto {
+    private Long id;
 
     private String title;
 
@@ -19,9 +21,11 @@ public class RestaurantDto {
 
     private String description;
 
-    private Long id;
+//    private String phone;
 
     private Boolean open;
+
+//    private Address address;
 
     //city
     private String city;

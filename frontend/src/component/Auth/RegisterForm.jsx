@@ -14,6 +14,7 @@ const initialValues = {
     email: "",
     password: "",
     role: "ROLE_CUSTOMER",
+    phone: "",
 };
 
 const RegisterForm = () => {
@@ -22,6 +23,7 @@ const RegisterForm = () => {
     const { signUp } = useSignUp();
     const { user } = useUser();
     const [roleUser, setRoleUser] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleGoogleSignUp = async () => {
         try {
@@ -34,12 +36,17 @@ const RegisterForm = () => {
         }
     };
 
-    const handleSubmit = (values) => {
-        if (!values.fullName || !values.email || !values.password || !values.role) {
+    const handleSubmit = async (values) => {
+        if (!values.fullName || !values.email || !values.password || !values.phone || !values.role) {
             alert("All fields are required");
             return;
         }
-        dispatch(registerUser({ userData: values, navigate }));
+        setIsLoading(true);
+        try {
+            await dispatch(registerUser({ userData: values, navigate }));
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return user ? (
@@ -76,6 +83,14 @@ const RegisterForm = () => {
                         margin='normal'
                         type='password'
                     />
+                    <Field
+                        as={TextField}
+                        name='phone'
+                        label='Phone'
+                        fullWidth
+                        variant='outlined'
+                        margin='normal'
+                    />
                     <FormControl fullWidth margin='normal'>
                         <InputLabel id="role-simple-select-label">Role</InputLabel>
                         <Field
@@ -87,6 +102,7 @@ const RegisterForm = () => {
                         >
                             <MenuItem value={"ROLE_CUSTOMER"}>Customer</MenuItem>
                             <MenuItem value={"ROLE_RESTAURANT_OWNER"}>Restaurant Owner</MenuItem>
+                            <MenuItem value={"ROLE_SHIPPER"}>Shipper</MenuItem>
                         </Field>
                     </FormControl>
                     <Field type='hidden' name='provider' />
@@ -96,8 +112,9 @@ const RegisterForm = () => {
                         color='primary'
                         fullWidth
                         sx={{ mt: 2, padding: '1rem' }}
+                        disabled={isLoading}
                     >
-                        Register
+                        {isLoading ? 'Registering...' : 'Register'}
                     </Button>
                 </Form>
             </Formik>
@@ -110,7 +127,7 @@ const RegisterForm = () => {
                         color='primary'
                         fullWidth
                         sx={{ mt: 2 }}
-                        //onClick={handleGoogleSignUp}
+                    //onClick={handleGoogleSignUp}
                     >
                         <div className='flex'>
                             <span>

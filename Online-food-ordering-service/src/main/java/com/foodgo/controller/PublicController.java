@@ -1,16 +1,18 @@
 package com.foodgo.controller;
 
 import com.foodgo.model.*;
-import com.foodgo.service.CategoryService;
-import com.foodgo.service.FoodService;
-import com.foodgo.service.RatingService;
-import com.foodgo.service.RestaurantService;
+import com.foodgo.repository.EventRepository;
+import com.foodgo.service.*;
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/public")
@@ -26,6 +28,12 @@ public class PublicController {
 
     @Autowired
     private RatingService ratingService;
+
+    @Autowired
+    private EventRepository eventRepository;
+
+    @Autowired
+    private UserService userService;
 
     @GetMapping("/restaurants")
     public ResponseEntity<List<Restaurant>> getAllRestaurant() throws Exception {
@@ -66,5 +74,34 @@ public class PublicController {
     public ResponseEntity<List<Food>> getAllFoods() throws Exception {
         List<Food> foods = foodService.getAllFoods();
         return new ResponseEntity<>(foods, HttpStatus.OK);
+    }
+
+    //get all events
+    @GetMapping("/events")
+    public ResponseEntity<List<Event>> getAllEvents() throws Exception {
+        List<Event> events = eventRepository.findAll();
+        return new ResponseEntity<>(events, HttpStatus.OK);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody Map<String, String> request) throws MessagingException, UnsupportedEncodingException {
+        try{
+            String email = request.get("email");
+            userService.processForgotPassword(email);
+            return new ResponseEntity<>("Password reset email sent.", HttpStatus.OK);
+        } catch (BadCredentialsException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            e.printStackTrace();  // Ghi lại stack trace để dễ dàng gỡ lỗi
+            return new ResponseEntity<>("Internal server error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> request) throws Exception {
+        String token = request.get("token");
+        String newPassword = request.get("newPassword");
+        userService.updatePassword(token, newPassword);
+        return new ResponseEntity<>("Password has been reset.", HttpStatus.OK);
     }
 }

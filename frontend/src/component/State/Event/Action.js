@@ -27,7 +27,10 @@ import {
     TOGGLE_AVAILABLE_FAILURE,
     ALL_EVENTS_OF_FAVORITED_RESTAURANTS_REQUEST,
     ALL_EVENTS_OF_FAVORITED_RESTAURANTS_SUCCESS,
-    ALL_EVENTS_OF_FAVORITED_RESTAURANTS_FAILURE
+    ALL_EVENTS_OF_FAVORITED_RESTAURANTS_FAILURE,
+    GET_ALL_PUBLIC_EVENTS_REQUEST,
+    GET_ALL_PUBLIC_EVENTS_SUCCESS,
+    GET_ALL_PUBLIC_EVENTS_FAILURE
 } from "./ActionType";
 import { Bounce, toast } from "react-toastify";
 
@@ -197,6 +200,20 @@ export const getAllFavoritedRestaurantsEvents = (jwt) => {
             console.log("All events of favorited restaurants: ", data);
         } catch (error) {
             dispatch({ type: ALL_EVENTS_OF_FAVORITED_RESTAURANTS_FAILURE, payload: error });
+            console.log("Error: ", error);
+        }
+    };
+}
+
+export const getAllPubLicEvents = () => {
+    return async (dispatch) => {
+        dispatch({ type: GET_ALL_PUBLIC_EVENTS_REQUEST });
+        try {
+            const { data } = await api.get(`/api/public/events`);
+            dispatch({ type: GET_ALL_PUBLIC_EVENTS_SUCCESS, payload: data });
+            console.log("All public events: ", data);
+        } catch (error) {
+            dispatch({ type: GET_ALL_PUBLIC_EVENTS_FAILURE, payload: error });
             console.log("Error: ", error);
         }
     };

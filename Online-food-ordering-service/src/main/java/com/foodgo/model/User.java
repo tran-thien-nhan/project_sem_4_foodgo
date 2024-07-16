@@ -8,6 +8,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+
 import java.util.*;
 
 @Entity //nghĩa là class này sẽ tương tác với database
@@ -23,6 +25,8 @@ public class User {
 
     private String email;
 
+    private String phone;
+
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) //chỉ cho phép ghi, không cho phép đọc
     @Column(nullable = true) //cho phép null
     private String password;
@@ -33,6 +37,7 @@ public class User {
 
     @JsonIgnore //tránh lặp vô hạn, không lấy thông tin của orders, chỉ lấy thông tin của user
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "customer") //một user có thể có nhiều order, khi xóa user thì xóa hết order, mappedBy trỏ tới customer trong Order
+    @ToString.Exclude
     private List<Order> orders = new ArrayList<>(); //mảng chứa thông tin các order
 
     @ElementCollection //tạo bảng mới chứa thông tin favorites, không cần tạo class mới
@@ -50,4 +55,6 @@ public class User {
 
     private String resetPasswordToken;
     private Date resetPasswordExpires;
+
+    private Boolean shipperInfoFilled = false;
 }

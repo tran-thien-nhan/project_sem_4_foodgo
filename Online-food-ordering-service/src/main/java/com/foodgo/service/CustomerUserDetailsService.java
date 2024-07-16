@@ -36,9 +36,9 @@ public class CustomerUserDetailsService implements UserDetailsService {
     }
 
     // loadUserByEmailAndProvider
-    public UserDetails loadUserByEmailAndProvider(String email,String password, PROVIDER provider) throws UsernameNotFoundException { //loadUserByUsername nghĩa là load user theo username
+    public UserDetails loadUserByEmailAndProvider(String email, PROVIDER provider) throws UsernameNotFoundException { //loadUserByUsername nghĩa là load user theo username
         User user = userRepository.findByEmailAndProvider(email, provider).get(0); // tìm user theo email, nếu không tìm thấy thì trả về null
-        if (user == null) { // nếu không tìm thấy user
+        if (user == null) { // nếu không tìm thấy user với email và passwordEncode
             throw new UsernameNotFoundException("User not found with email " + email); // nếu không tìm thấy user thì trả về thông báo "User not found"
         }
         USER_ROLE role = user.getRole(); // lấy role của user

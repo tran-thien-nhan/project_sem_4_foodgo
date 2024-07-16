@@ -7,6 +7,7 @@ const initialState = {
     loading: false,
     error: null,
     count: 0,
+    publicEvents: []
 };
 
 export const eventReducer = (state = initialState, action) => {
@@ -20,6 +21,7 @@ export const eventReducer = (state = initialState, action) => {
         case actionTypes.GET_EVENT_FAVORITED_BY_ID_REQUEST:
         case actionTypes.TOGGLE_AVAILABLE_REQUEST:
         case actionTypes.ALL_EVENTS_OF_FAVORITED_RESTAURANTS_REQUEST:
+        case actionTypes.GET_ALL_PUBLIC_EVENTS_REQUEST:
             return {
                 ...state,
                 loading: true,
@@ -84,6 +86,13 @@ export const eventReducer = (state = initialState, action) => {
                 loading: false,
                 events: action.payload,
             };
+        case actionTypes.GET_ALL_PUBLIC_EVENTS_SUCCESS:
+            return {
+                ...state,
+                loading: false,
+                publicEvents: action.payload
+            };
+        case actionTypes.CREATE_EVENT_FAILURE:
         case actionTypes.TOGGLE_AVAILABLE_FAILURE:
         case actionTypes.GET_EVENT_FAVORITED_BY_ID_FAILURE:
         case actionTypes.ADD_EVENT_TO_FAVORITE_FAILURE:

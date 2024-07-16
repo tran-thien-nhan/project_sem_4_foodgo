@@ -3,6 +3,7 @@ package com.foodgo.service;
 import com.foodgo.model.*;
 import com.foodgo.repository.*;
 import com.foodgo.request.OrderRequest;
+import com.foodgo.request.RideRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,6 +52,12 @@ public class OrderServiceImp implements OrderService{
     @Autowired
     private FoodRepository foodRepository;
 
+    @Autowired
+    private RideService rideService;
+
+    @Autowired
+    private RideRepository rideRepository;
+
     @Override
     public List<Order> createOrder(OrderRequest order, User user) throws Exception {
         try{
@@ -88,6 +95,7 @@ public class OrderServiceImp implements OrderService{
                 createdOrder.setOrderStatus("PENDING");
                 createdOrder.setDeliveryAddress(savedAddress);
                 createdOrder.setRestaurant(restaurant);
+//                createdOrder.setComment(order.getComment());
 
                 List<OrderItem> orderItems = new ArrayList<>();
                 int count = 0;
@@ -144,6 +152,31 @@ public class OrderServiceImp implements OrderService{
             // clear cart
             cartService.clearCart(user.getId());
 
+            // tạo 1 cuốc xe giao hàng
+            RideRequest rideRequest = new RideRequest();
+            rideRequest.setUserId(user.getId());
+            rideRequest.setRestaurantId(createdOrders.get(0).getRestaurant().getId());
+            rideRequest.setOrderId(createdOrders.get(0).getId());
+            rideRequest.setRestaurantLatitude(createdOrders.get(0).getRestaurant().getLatitude());
+            rideRequest.setRestaurantLongitude(createdOrders.get(0).getRestaurant().getLongitude());
+            rideRequest.setDestinationLatitude(order.getUserLatitude());
+            rideRequest.setDestinationLongitude(order.getUserLongitude());
+
+            // tạo cuốc xe
+            Ride ride = rideService.requestRide(rideRequest);
+            if (ride != null) {
+                ride.setOrders(createdOrders);
+                rideRepository.save(ride);
+            }
+            else{
+                //set ispaid = false
+                for (Order createdOrder : createdOrders) {
+                    createdOrder.setIsPaid(false);
+                    orderRepository.save(createdOrder);
+                }
+                throw new Exception("Error creating ride");
+            }
+
             return createdOrders;
         }
         catch (Exception e){
@@ -162,17 +195,6 @@ public class OrderServiceImp implements OrderService{
         Order order = findOrderById(orderId);
         order.setIsPaid(true);
         order.setOrderStatus("PENDING");
-//        // tìm cart
-//        Cart cart = cartService.findCartByUserId(order.getCustomer().getId());
-//        // neu cart khong rong
-//        if (cart != null) {
-//            // xóa cart
-//            cartService.clearCart(cart.getId());
-//            // thêm order vào danh sách order của restaurant
-//            Restaurant restaurant = restaurantService.findRestaurantById(order.getRestaurant().getId());
-//            restaurant.getOrders().add(order);
-//        }
-
         return orderRepository.save(order);
     }
     @Override
