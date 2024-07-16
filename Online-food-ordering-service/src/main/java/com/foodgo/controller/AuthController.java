@@ -1,12 +1,14 @@
 package com.foodgo.controller;
 
 import com.foodgo.config.JwtProvider;
+import com.foodgo.dto.ChangePasswordRequest;
 import com.foodgo.model.*;
 import com.foodgo.repository.CartRepository;
 import com.foodgo.repository.UserRepository;
 import com.foodgo.request.GoogleLoginRequest;
 import com.foodgo.request.LoginRequest;
 import com.foodgo.response.AuthResponse;
+import com.foodgo.service.ChangePasswordService;
 import com.foodgo.service.CustomerUserDetailsService;
 import com.foodgo.service.EmailService;
 import com.foodgo.service.UserService;
@@ -21,15 +23,13 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -48,6 +48,8 @@ public class AuthController {
     private UserService userService;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private ChangePasswordService changePasswordService;
 
     @PostMapping("/signup") //đánh dấu phương thức createUserHandler là phương thức xử lý request POST tới /auth/signup
     public ResponseEntity<AuthResponse> createUserHandler(@RequestBody User user) throws Exception {
@@ -265,6 +267,50 @@ public class AuthController {
         return new ResponseEntity<>("Password has been reset.", HttpStatus.OK);
     }
 
+    @PostMapping("/request-token")
+    public ResponseEntity<String> requestToken(@RequestParam Long userId) {
+        try {
+            changePasswordService.sendChangePasswordToken(userId);
+            return ResponseEntity.ok("Password reset token sent successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to send password reset token");
+        }
+    }
 
+@PostMapping("/change")
+public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest request) {
+    try {
+        // Fetch user from database
+        Optional<User> userOpt = userRepository.findById(request.getUserId());
+        if (!userOpt.isPresent()) {
+            return ResponseEntity.badRequest().body("User not found.");
+        }
+        User user = userOpt.get();
 
+        // Verify current password (if necessary)
+        String currentEncodedPassword = user.getPassword(); // Assuming user.getPassword() returns the hashed password
+
+        // Compare current password
+        if (!passwordEncoder.matches(request.getCurrentPassword(), currentEncodedPassword)) {
+            return ResponseEntity.badRequest().body("Current password is incorrect.");
+        }
+
+        // Validate new password and confirm password
+        String newPassword = request.getNewPassword();
+        String confirmPassword = request.getConfirmPassword();
+        if (!newPassword.equals(confirmPassword)) {
+            return ResponseEntity.badRequest().body("New password and confirm password do not match.");
+        }
+
+        // Encode and set new password
+        String encodedNewPassword = passwordEncoder.encode(newPassword);
+        user.setPassword(encodedNewPassword);
+        userRepository.save(user);
+
+        return ResponseEntity.ok("Password changed successfully");
+
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to change password.");
+    }
+}
 }

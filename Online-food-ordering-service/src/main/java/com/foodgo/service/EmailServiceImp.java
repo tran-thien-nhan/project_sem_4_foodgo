@@ -2,8 +2,10 @@ package com.foodgo.service;
 
 import com.foodgo.model.Event;
 import com.foodgo.model.Mail;
+import com.foodgo.model.User;
 import com.foodgo.repository.EventRepository;
 import com.foodgo.repository.MailRepository;
+import com.foodgo.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -16,6 +18,8 @@ import org.springframework.stereotype.Service;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class EmailServiceImp implements EmailService {
@@ -31,6 +35,8 @@ public class EmailServiceImp implements EmailService {
 
     @Value("${spring.mail.username}")
     private String sender;
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public void sendMailWelcomeOwner(String mail, String fullname) throws MessagingException, UnsupportedEncodingException {
@@ -382,7 +388,5 @@ public class EmailServiceImp implements EmailService {
             saveMailToDatabase(email, subject, content);
         }
     }
-
-
 
 }

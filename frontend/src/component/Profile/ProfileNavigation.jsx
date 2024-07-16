@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import Lock from '@mui/icons-material/Lock';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import HomeIcon from '@mui/icons-material/Home';
@@ -15,6 +16,10 @@ import { logOut } from '../State/Authentication/Action';
 import { useClerk } from '@clerk/clerk-react';
 
 const menu = [
+    {
+        title: "Change Password",
+        icon: <Lock/>,
+    },
     {
         title: "Orders",
         icon: <ShoppingBagIcon />,
@@ -70,7 +75,9 @@ const ProfileNavigation = ({ open, handleClose, setOpen, count, orderCount }) =>
             dispatch(logOut());
             signOut();
             navigate("/");
-        } else {
+        } else if (item.title === "Change Password"){
+            navigate("/my-profile/ChangePassword");
+        }else{
             navigate(`/my-profile/${item.title.toLowerCase()}`);
         }
     };

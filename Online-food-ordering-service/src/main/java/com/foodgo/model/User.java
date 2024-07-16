@@ -50,4 +50,7 @@ public class User {
 
     private String resetPasswordToken;
     private Date resetPasswordExpires;
+
+    @ElementCollection
+    private List<String> previousPassword;
 }
