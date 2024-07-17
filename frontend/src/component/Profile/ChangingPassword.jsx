@@ -1,60 +1,47 @@
 import React, { useEffect, useState } from 'react';
-import { TextField, Button, Typography } from '@mui/material';
-import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { requestPasswordChangingToken, changePassword } from '../State/Authentication/Action';
+import { TextField, Button, Typography, Grid } from '@mui/material';
 
 const ChangingPassword = () => {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [error, setError] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
+    const [token, setToken] = useState('');
     const [tokenRequested, setTokenRequested] = useState(false);
+    const [timer, setTimer] = useState(60);
+    const { auth } = useSelector(store => store);
+    const dispatch = useDispatch();
 
-    const handleTokenRequest = async () => {
-        try {
-            const userId = localStorage.getItem('userId');
-            await axios.post('/auth/request-token', { userId });
-            setTokenRequested(true);
-            setSuccessMessage('Change password token sent to your email.');
-        } catch (error) {
-            setError('Failed to send code. Please try again after 15 mins.');
+    useEffect(() => {
+        let interval;
+        if (tokenRequested && timer > 0) {
+            interval = setInterval(() => {
+                setTimer((prevTimer) => prevTimer - 1);
+            }, 1000);
+        } else if (timer === 0) {
+            setTokenRequested(false);
+            setTimer(60); 
         }
+
+        return () => clearInterval(interval);
+    }, [timer, tokenRequested]);
+
+    const handleTokenRequest = () => {
+        dispatch(requestPasswordChangingToken(auth.user?.id));
+        setTokenRequested(true);
+        setTimer(60); 
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-
-        if (!currentPassword || !newPassword || !confirmPassword) {
-            setError('Please fill all fields.');
-            return;
-        }
-
-        if (newPassword !== confirmPassword) {
-            setError('Passwords do not match.');
-            return;
-        }
-
-        try {
-            const response = await axios.post('/auth/change', {
-                userId: localStorage.getItem('userId'),
-                currentPassword,
-                newPassword,
-                confirmPassword,
-            });
-
-            setSuccessMessage(response.data);
-            setError('');
-            setCurrentPassword('');
-            setNewPassword('');
-            setConfirmPassword('');
-            setTokenRequested(false);
-        } catch (error) {
-            if (error.response && error.response.data) {
-                setError(error.response.data);
-            } else {
-                setError('Failed to change password. Please try again later.');
-            }
-        }
+        dispatch(changePassword({
+            userId: auth.user?.id,
+            currentPassword,
+            newPassword,
+            confirmPassword,
+            token,
+        }));
     };
 
     return (
@@ -62,23 +49,6 @@ const ChangingPassword = () => {
             <Typography variant="h6" gutterBottom>
                 Change Password
             </Typography>
-            {successMessage && <Typography color="success">{successMessage}</Typography>}
-            {error && <Typography color="error">{error}</Typography>}
-            {!tokenRequested ? (
-                <Button
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    onClick={handleTokenRequest}
-                    style={{ marginBottom: '1rem' }}
-                >
-                    Request Password Reset Token
-                </Button>
-            ) : (
-                <Typography variant="body2" gutterBottom>
-                    Please check your email for the password reset token.
-                </Typography>
-            )}
             <form onSubmit={handleSubmit}>
                 <TextField
                     fullWidth
@@ -107,6 +77,45 @@ const ChangingPassword = () => {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                 />
+                <Grid container spacing={2} alignItems="center">
+                    {!tokenRequested ? (
+                        <Grid item xs={12} md={5}>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                fullWidth
+                                onClick={handleTokenRequest}
+                                style={{ marginTop: '1rem' }}
+                            >
+                                Get Code
+                            </Button>
+                        </Grid>
+                    ) : (
+                        <Grid item xs={12} md={5}>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                fullWidth
+                                disabled
+                                style={{ marginTop: '1rem' }}
+                            >
+                                {timer > 0 ? `Resend in ${timer} sec` : 'Get Code'}
+                            </Button>
+                        </Grid>
+                    )}
+                    <Grid item xs={10} md={7}>
+                        <TextField
+                            fullWidth
+                            type="text"
+                            label="Code"
+                            variant="outlined"
+                            margin="normal"
+                            value={token}
+                            onChange={(e) => setToken(e.target.value)}
+                            style={{ marginTop: '1rem' }}
+                        />
+                    </Grid>
+                </Grid>
                 <Button
                     type="submit"
                     variant="contained"

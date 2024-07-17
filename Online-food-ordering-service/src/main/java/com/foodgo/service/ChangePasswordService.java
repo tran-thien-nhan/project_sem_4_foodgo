@@ -1,13 +1,16 @@
 package com.foodgo.service;
 
+import com.foodgo.model.ChangePasswordResult;
 import com.foodgo.model.ChangePasswordToken;
 import com.foodgo.model.User;
 import com.foodgo.repository.ChangePasswordRepository;
 import com.foodgo.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -30,6 +33,9 @@ public class ChangePasswordService {
 
     @Autowired
     private JavaMailSender mailSender;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public void sendChangePasswordToken(Long userId){
         String token = generateRandomNumbericToken();
@@ -61,42 +67,47 @@ public class ChangePasswordService {
         mailSender.send(message);
     }
 
-    public boolean validateToken(String token){
-        Optional<ChangePasswordToken> tokenOpt = tokenRepository.findByToken(token);
+    public boolean validateToken(Long userId, String token){
+        Optional<ChangePasswordToken> tokenOpt = tokenRepository.findByUserIdAndToken(userId,token);
         return tokenOpt.isPresent() && tokenOpt.get().getExpiryDate().isAfter(LocalDateTime.now());
     }
 
-    public boolean ChangePassword(Long userId,String currentPassword,String newPassword,String confirmPassword,String token){
-        if(!validateToken(token)){
-            return false;
+    @Transactional
+    public ChangePasswordResult ChangingPassword(Long userId,String currentPassword,String newPassword,String confirmPassword,String token){
+        if(!validateToken(userId,token)){
+            return new ChangePasswordResult(false,"Invalid or expired token");
         }
 
         if(!newPassword.equals(confirmPassword)){
-            return false;
+            return new ChangePasswordResult(false,"Passwords do not match.");
         }
 
         Optional<User> userOpt = userRepository.findById(userId);
         if(userOpt.isPresent()){
             User user = userOpt.get();
-            if(!user.getPassword().equals(currentPassword)){
-                return false;
+            if(!passwordEncoder.matches(currentPassword,user.getPassword())){
+                return new ChangePasswordResult(false,"Password is incorrect.");
             }
 
-            if(user.getPreviousPassword().contains(newPassword)) {
-                return false;
+            for(String previousPassword : user.getPreviousPassword()){
+                if(passwordEncoder.matches(newPassword,previousPassword)){
+                    return new ChangePasswordResult(false,"You already used this password before.");
+                }
             }
+
             List<String> previousPassword = user.getPreviousPassword();
             if(previousPassword.size() == 5){
                 previousPassword.remove(0);
             }
             previousPassword.add(user.getPassword());
 
-            user.setPassword(newPassword);
+            user.setPassword(passwordEncoder.encode(newPassword));
+            user.setPreviousPassword(previousPassword);
             userRepository.save(user);
 
             tokenRepository.deleteByUserId(userId);
-            return true;
+            return new ChangePasswordResult(true,"Password changed successfully.");
         }
-        return false;
+        return new ChangePasswordResult(false,"User not found.");
     }
 }

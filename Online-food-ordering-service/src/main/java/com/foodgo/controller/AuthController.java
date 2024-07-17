@@ -79,7 +79,7 @@ public class AuthController {
         createdUser.setFullName(user.getFullName()); //set fullName cho user mới
         createdUser.setRole(user.getRole()); //set role cho user mới
 
-        if(user.getPassword() != null && !user.getPassword().isEmpty()){
+        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
             createdUser.setPassword(passwordEncoder.encode(user.getPassword())); //set password cho user mới, mã hóa password trước khi lưu vào database
         }
 
@@ -101,8 +101,7 @@ public class AuthController {
 
         if (user.getRole().equals(USER_ROLE.ROLE_RESTAURANT_OWNER)) {
             emailService.sendMailWelcomeOwner(user.getEmail(), user.getFullName());
-        }
-        else if (user.getRole().equals(USER_ROLE.ROLE_CUSTOMER)) {
+        } else if (user.getRole().equals(USER_ROLE.ROLE_CUSTOMER)) {
             emailService.sendMailWelcomeCustomer(user.getEmail(), user.getFullName());
         }
 
@@ -112,7 +111,7 @@ public class AuthController {
     @PostMapping("/signin") //đánh dấu phương thức signin là phương thức xử lý request POST tới /auth/signin
     public ResponseEntity<User> signin(@RequestBody LoginRequest req) {
 
-        if(req.getProvider() == PROVIDER.GOOGLE){
+        if (req.getProvider() == PROVIDER.GOOGLE) {
             GoogleLoginRequest googleLoginRequest = new GoogleLoginRequest();
             googleLoginRequest.setEmail(req.getEmail());
             googleLoginRequest.setProvider(PROVIDER.GOOGLE);
@@ -197,7 +196,7 @@ public class AuthController {
         String password = user.getPassword();
         PROVIDER provider = user.getProvider();
 
-        Authentication authentication = authenticateByEmailAndProvider(email,password,provider);
+        Authentication authentication = authenticateByEmailAndProvider(email, password, provider);
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         String role = authorities.isEmpty() ? null : authorities.iterator().next().getAuthority();
         String jwt = jwtProvider.generateToken(authentication, provider);
@@ -210,8 +209,8 @@ public class AuthController {
         return new ResponseEntity(authResponse, HttpStatus.OK);
     }
 
-    private Authentication authenticateByEmailAndProvider(String email,String password, PROVIDER provider) {
-        UserDetails userDetails = customerUserDetailsService.loadUserByEmailAndProvider(email,password,provider);
+    private Authentication authenticateByEmailAndProvider(String email, String password, PROVIDER provider) {
+        UserDetails userDetails = customerUserDetailsService.loadUserByEmailAndProvider(email, password, provider);
         if (userDetails == null) {
             throw new BadCredentialsException("Invalid account");
         }
@@ -277,40 +276,25 @@ public class AuthController {
         }
     }
 
-@PostMapping("/change")
-public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest request) {
-    try {
-        // Fetch user from database
-        Optional<User> userOpt = userRepository.findById(request.getUserId());
-        if (!userOpt.isPresent()) {
-            return ResponseEntity.badRequest().body("User not found.");
+    @PostMapping("/change")
+    public ResponseEntity<ChangePasswordResult> changePassword(@RequestBody ChangePasswordRequest request) {
+        try {
+            ChangePasswordResult result = changePasswordService.ChangingPassword(
+                    request.getUserId(),
+                    request.getCurrentPassword(),
+                    request.getNewPassword(),
+                    request.getConfirmPassword(),
+                    request.getToken()
+            );
+            if(result.isSuccess()){
+                return ResponseEntity.ok(result);
+            } else {
+                return ResponseEntity.badRequest().body(result);
+            }
+        } catch (Exception e) {
+            String errorMessage = "Failed to change password: " + e.getMessage();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ChangePasswordResult(false, errorMessage));
         }
-        User user = userOpt.get();
-
-        // Verify current password (if necessary)
-        String currentEncodedPassword = user.getPassword(); // Assuming user.getPassword() returns the hashed password
-
-        // Compare current password
-        if (!passwordEncoder.matches(request.getCurrentPassword(), currentEncodedPassword)) {
-            return ResponseEntity.badRequest().body("Current password is incorrect.");
-        }
-
-        // Validate new password and confirm password
-        String newPassword = request.getNewPassword();
-        String confirmPassword = request.getConfirmPassword();
-        if (!newPassword.equals(confirmPassword)) {
-            return ResponseEntity.badRequest().body("New password and confirm password do not match.");
-        }
-
-        // Encode and set new password
-        String encodedNewPassword = passwordEncoder.encode(newPassword);
-        user.setPassword(encodedNewPassword);
-        userRepository.save(user);
-
-        return ResponseEntity.ok("Password changed successfully");
-
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to change password.");
     }
-}
+
 }
