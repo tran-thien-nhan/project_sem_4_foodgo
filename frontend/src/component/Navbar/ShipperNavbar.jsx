@@ -5,9 +5,8 @@ import { Link } from 'react-router-dom';
 import { pink } from '@mui/material/colors';
 import { useSelector } from 'react-redux';
 
-const AdminNavBar = ({ toggleDrawer }) => {
+const ShipperNavbar = ({toggleDrawer}) => {
     const { auth } = useSelector(store => store);
-
     return (
         <Box className='px-5 sticky top-0 z-50 py-[.8rem] bg-[#e91e63] lg:px-20 flex justify-between' sx={{ zIndex: 100 }}>
             <div className="flex items-center space-x-4">
@@ -21,7 +20,7 @@ const AdminNavBar = ({ toggleDrawer }) => {
                             </Avatar>
                         </li>
                         <li className="logo font-semibold text-gray-300 text-2xl">
-                            <Link to="/admin/restaurants">FoodGo</Link>
+                            <Link to="/admin/shippers">FoodGo</Link>
                         </li>
                     </ul>
                 </div>
@@ -35,4 +34,4 @@ const AdminNavBar = ({ toggleDrawer }) => {
     )
 }
 
-export default AdminNavBar
+export default ShipperNavbar

@@ -23,6 +23,12 @@ import {
     COMPLETED_RIDES_REQUEST,
     COMPLETED_RIDES_SUCCESS,
     COMPLETED_RIDES_FAILURE,
+    UPDATE_DRIVER_REQUEST,
+    UPDATE_DRIVER_SUCCESS,
+    UPDATE_DRIVER_FAILURE,
+    DELETE_DRIVER_IMAGE_REQUEST,
+    DELETE_DRIVER_IMAGE_SUCCESS,
+    DELETE_DRIVER_IMAGE_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -43,6 +49,8 @@ const driverReducer = (state = initialState, action) => {
         case GET_ALLOCATED_RIDES_REQUEST:
         case FIND_DRIVER_BY_ID_REQUEST:
         case COMPLETED_RIDES_REQUEST:
+        case UPDATE_DRIVER_REQUEST:
+        case DELETE_DRIVER_IMAGE_REQUEST:
             return {
                 ...state,
                 loading: true,
@@ -52,7 +60,7 @@ const driverReducer = (state = initialState, action) => {
             return {
                 ...state,
                 loading: false,
-                driver: action.payload,
+                data: action.payload,
                 error: null,
             };
         case GET_AVAILABLE_DRIVERS_SUCCESS:
@@ -62,10 +70,17 @@ const driverReducer = (state = initialState, action) => {
         case GET_ALLOCATED_RIDES_SUCCESS:
         case FIND_DRIVER_BY_ID_SUCCESS:
         case COMPLETED_RIDES_SUCCESS:
+        case UPDATE_DRIVER_SUCCESS:
             return {
                 ...state,
                 loading: false,
                 data: action.payload,
+                error: null,
+            };
+        case DELETE_DRIVER_IMAGE_SUCCESS:
+            return {
+                ...state,
+                loading: false,
                 error: null,
             };
         case REGISTER_DRIVER_FAILURE:
@@ -76,6 +91,8 @@ const driverReducer = (state = initialState, action) => {
         case GET_ALLOCATED_RIDES_FAILURE:
         case FIND_DRIVER_BY_ID_FAILURE:
         case COMPLETED_RIDES_FAILURE:
+        case UPDATE_DRIVER_FAILURE:
+        case DELETE_DRIVER_IMAGE_FAILURE:
             return {
                 ...state,
                 loading: false,

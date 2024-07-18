@@ -24,17 +24,41 @@ import {
     COMPLETED_RIDES_REQUEST,
     COMPLETED_RIDES_SUCCESS,
     COMPLETED_RIDES_FAILURE,
+    UPDATE_DRIVER_REQUEST,
+    UPDATE_DRIVER_SUCCESS,
+    UPDATE_DRIVER_FAILURE,
+    DELETE_DRIVER_IMAGE_FAILURE,
+    DELETE_DRIVER_IMAGE_SUCCESS,
+    DELETE_DRIVER_IMAGE_REQUEST,
 } from "./ActionType";
+import { Bounce, toast } from "react-toastify";
 
 // Action creator for registering a driver
 export const registerDriver = (reqData) => {
     return async (dispatch) => {
         dispatch({ type: REGISTER_DRIVER_REQUEST });
         try {
-            const { data } = await api.post('/api/admin/shipper/register', reqData);
+            const { data } = await api.post('/api/admin/shipper/register', reqData.data, {
+                headers: {
+                    Authorization: `Bearer ${reqData.jwt}`,
+                },
+            });
             dispatch({ type: REGISTER_DRIVER_SUCCESS, payload: data });
+            console.log("Register driver successfully: ",data);
+            toast.success('register driver successfully!', {
+                position: "top-center",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+            });
         } catch (error) {
             dispatch({ type: REGISTER_DRIVER_FAILURE, payload: error.message });
+            console.log("ERROR: ",error);
         }
     }
 }
@@ -156,6 +180,75 @@ export const completedRides = (driverId, token) => {
             dispatch({ type: COMPLETED_RIDES_SUCCESS, payload: data });
         } catch (error) {
             dispatch({ type: COMPLETED_RIDES_FAILURE, payload: error.message });
+        }
+    }
+}
+
+export const updateDriver = (driverId, reqData) => {
+    return async (dispatch) => {
+        dispatch({ type: UPDATE_DRIVER_REQUEST });
+        try {
+            const { data } = await api.put(`/api/admin/shipper/update/${driverId}`, reqData.data, {
+                headers: {
+                    Authorization: `Bearer ${reqData.jwt}`,
+                },
+            });
+            dispatch({ type: UPDATE_DRIVER_SUCCESS, payload: data });
+            console.log("Update driver successfully: ", data);
+            toast.success('Update driver successfully!', {
+                position: "top-center",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+            });
+        } catch (error) {
+            dispatch({ type: UPDATE_DRIVER_FAILURE, payload: error.message });
+            console.log("ERROR: ", error);
+            toast.error(error.response.data.message, {
+                position: "top-center",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+            });
+        }
+    }
+}
+
+export const deleteDriverImage = (driverId, imageUrl, token) => {
+    return async (dispatch) => {
+        dispatch({ type: DELETE_DRIVER_IMAGE_REQUEST });
+        try {
+            await api.delete(`/api/admin/shipper/${driverId}/image`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                params: { imageUrl } // Chuyển imageUrl qua params thay vì data
+            });
+            dispatch({ type: DELETE_DRIVER_IMAGE_SUCCESS });
+            dispatch(getDriverProfile(token));
+            toast.success('Image deleted successfully!', {
+                position: "top-center",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+            });
+        } catch (error) {
+            dispatch({ type: DELETE_DRIVER_IMAGE_FAILURE, payload: error.message });
+            console.error("ERROR:", error);
         }
     }
 }

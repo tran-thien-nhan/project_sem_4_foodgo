@@ -56,4 +56,7 @@ public class Driver {
 
     @OneToOne // Thêm liên kết tới User
     private User driver;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    private Address address;
 }

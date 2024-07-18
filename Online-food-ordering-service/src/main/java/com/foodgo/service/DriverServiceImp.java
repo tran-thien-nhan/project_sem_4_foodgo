@@ -1,11 +1,9 @@
 package com.foodgo.service;
 
 import com.foodgo.model.*;
-import com.foodgo.repository.DriverRepository;
-import com.foodgo.repository.LicenseRepository;
-import com.foodgo.repository.RideRepository;
-import com.foodgo.repository.VehicleRepository;
+import com.foodgo.repository.*;
 import com.foodgo.request.CreateLicenseVehicleRequest;
+import com.foodgo.request.UpdateDriverInfoRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,15 +32,14 @@ public class DriverServiceImp implements DriverService{
     @Autowired
     private Calculator distanceCalculator;
 
-    @Override
-    public Driver registerDriver(CreateLicenseVehicleRequest req) throws Exception {
-        try{
-            User driver = userService.findUserByJwtToken(req.getJwt());
-            if(driver == null) {
-                throw new Exception("User not found");
-            }
+    @Autowired
+    private UserRepository userRepository;
 
-            if (!driver.getRole().equals(USER_ROLE.ROLE_SHIPPER)) {
+    @Override
+    public Driver registerDriver(CreateLicenseVehicleRequest req, User user) throws Exception {
+        try{
+
+            if (!user.getRole().equals(USER_ROLE.ROLE_SHIPPER)) {
                 throw new Exception("User is not a driver");
             }
 
@@ -50,14 +47,23 @@ public class DriverServiceImp implements DriverService{
             License license = new License();
             Vehicle vehicle = new Vehicle();
 
-            newDriver.setName(driver.getFullName());
-            newDriver.setEmail(driver.getEmail());
-            newDriver.setPhone(driver.getPhone());
-            newDriver.setPassword(driver.getPassword());
+            newDriver.setName(user.getFullName());
+            newDriver.setEmail(user.getEmail());
+            newDriver.setPhone(user.getPhone());
+            newDriver.setPassword(user.getPassword());
             newDriver.setImageOfDriver(req.getImageOfDriver());
             newDriver.setRating(0.0);
             newDriver.setLatitude(0.0);
             newDriver.setLongitude(0.0);
+            newDriver.setDriver(user);
+
+            Address address = new Address();
+            address.setCity(req.getCity());
+            address.setCountry(req.getCountry());
+            address.setStreetAddress(req.getStreetAddress());
+            address.setPinCode(req.getPinCode());
+            address.setPhone(user.getPhone());
+            address.setUser(user);
 
             license.setLicenseNumber(req.getLicenseNumber());
             license.setLicenseExpirationDate(req.getLicenseExpirationDate());
@@ -65,20 +71,23 @@ public class DriverServiceImp implements DriverService{
             license.setImageOfLicense(req.getImageOfLicense());
             license.setDriver(newDriver);
 
-            vehicle.setMake(req.getVehicleMake());
-            vehicle.setModel(req.getVehicleModel());
-            vehicle.setYear(req.getVehicleYear());
-            vehicle.setColor(req.getVehicleColor());
+            vehicle.setMake(req.getMake());
+            vehicle.setModel(req.getModel());
+            vehicle.setYear(req.getYear());
+            vehicle.setColor(req.getColor());
             vehicle.setLicensePlate(req.getVehicleLicensePlate());
-            vehicle.setCapacity(req.getVehicleCapacity());
+            vehicle.setCapacity(req.getCapacity());
             vehicle.setImageOfVehicle(req.getImageOfVehicle());
             vehicle.setDriver(newDriver);
 
-            driver.setShipperInfoFilled(true);
+            newDriver.setLicense(license);
+            newDriver.setVehicle(vehicle);
+
+            user.setShipperInfoFilled(true);
 
             driverRepository.save(newDriver);
-            licenseRepository.save(license);
-            vehicleRepository.save(vehicle);
+//            licenseRepository.save(license);
+//            vehicleRepository.save(vehicle);
 
             return newDriver;
         }
@@ -207,6 +216,97 @@ public class DriverServiceImp implements DriverService{
         }
         catch (Exception e){
             System.out.println(e.getMessage());
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    @Override
+    public Driver updateDriver(Long driverId, UpdateDriverInfoRequest req) throws Exception {
+        try {
+            Optional<Driver> driverOpt = driverRepository.findById(driverId);
+            if (!driverOpt.isPresent()) {
+                throw new Exception("Driver not found");
+            }
+
+            Driver driver = driverOpt.get();
+            User user = driver.getDriver();
+
+            // Cập nhật thông tin tài xế
+            driver.setName(req.getName());
+            driver.setPhone(req.getPhone());
+            driver.setImageOfDriver(req.getImageOfDriver());
+
+            // Cập nhật thông tin người dùng
+            user.setEmail(req.getEmail());
+            driver.setEmail(req.getEmail());
+
+            // Cập nhật địa chỉ
+            Address address = driver.getAddress();
+            if (address == null) {
+                address = new Address();
+                address.setUser(user);
+            }
+            address.setStreetAddress(req.getStreetAddress());
+            address.setCity(req.getCity());
+            address.setState(req.getState());
+            address.setPinCode(req.getPinCode());
+            address.setCountry(req.getCountry());
+            driver.setAddress(address);
+
+            // Cập nhật thông tin bằng lái
+            License license = driver.getLicense();
+            if (license == null) {
+                license = new License();
+                license.setDriver(driver);
+            }
+            license.setLicenseNumber(req.getLicenseNumber());
+            license.setLicenseState(req.getLicenseState());
+            license.setLicenseExpirationDate(req.getLicenseExpirationDate());
+            license.setImageOfLicense(req.getImageOfLicense());
+            driver.setLicense(license);
+
+            // Cập nhật thông tin xe
+            Vehicle vehicle = driver.getVehicle();
+            if (vehicle == null) {
+                vehicle = new Vehicle();
+                vehicle.setDriver(driver);
+            }
+            vehicle.setMake(req.getMake());
+            vehicle.setModel(req.getModel());
+            vehicle.setYear(req.getYear());
+            vehicle.setColor(req.getColor());
+            vehicle.setLicensePlate(req.getVehicleLicensePlate());
+            vehicle.setCapacity(req.getCapacity());
+            vehicle.setImageOfVehicle(req.getImageOfVehicle());
+            driver.setVehicle(vehicle);
+
+            // Lưu thông tin tài xế vào cơ sở dữ liệu
+            driverRepository.save(driver);
+
+            return driver;
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
+
+
+    @Override
+    public void deleteImage(Long driverId, String imageUrl) throws Exception {
+        try {
+            Optional<Driver> driverOpt = driverRepository.findById(driverId);
+            if (!driverOpt.isPresent()) {
+                throw new Exception("Driver not found");
+            }
+
+            Driver driver = driverOpt.get();
+            List<String> images = driver.getImageOfDriver();
+            if (images.remove(imageUrl)) {
+                driver.setImageOfDriver(images);
+                driverRepository.save(driver);
+            } else {
+                throw new Exception("Image not found");
+            }
+        } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
     }

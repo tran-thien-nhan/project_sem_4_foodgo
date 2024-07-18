@@ -2,11 +2,14 @@ package com.foodgo.controller;
 
 import com.foodgo.model.Driver;
 import com.foodgo.model.Ride;
+import com.foodgo.model.USER_ROLE;
 import com.foodgo.model.User;
 import com.foodgo.request.CreateLicenseVehicleRequest;
+import com.foodgo.request.UpdateDriverInfoRequest;
 import com.foodgo.service.DriverService;
 import com.foodgo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,12 +25,13 @@ public class DriverController {
     @Autowired
     private UserService userService;
 
-    @PostMapping()
-    public Driver registerDriver(@RequestBody CreateLicenseVehicleRequest req,
+    @PostMapping("/register")
+    public ResponseEntity<Driver> registerDriver(@RequestBody CreateLicenseVehicleRequest req,
                                  @RequestHeader("Authorization") String jwt) throws Exception {
         try{
             User user = userService.findUserByJwtToken(jwt);
-            return driverService.registerDriver(req);
+            Driver driver = driverService.registerDriver(req, user);
+            return new ResponseEntity<>(driver, HttpStatus.CREATED);
         }
         catch(Exception e){
             throw new Exception("Error: " + e.getMessage());
@@ -127,4 +131,35 @@ public class DriverController {
         }
     }
 
+    @PutMapping("/update/{driverId}")
+    public ResponseEntity<Driver> updateDriver(@PathVariable Long driverId,
+                                               @RequestBody UpdateDriverInfoRequest req,
+                                               @RequestHeader("Authorization") String jwt) {
+        try {
+            User user = userService.findUserByJwtToken(jwt);
+            if (user == null || !user.getRole().equals(USER_ROLE.ROLE_SHIPPER)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            Driver driver = driverService.updateDriver(driverId, req);
+            return ResponseEntity.ok(driver);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
+    @DeleteMapping("/{driverId}/image")
+    public ResponseEntity<Void> deleteImage(@PathVariable Long driverId,
+                                            @RequestParam String imageUrl,
+                                            @RequestHeader("Authorization") String jwt) {
+        try {
+            User user = userService.findUserByJwtToken(jwt);
+            if (user == null || !user.getRole().equals(USER_ROLE.ROLE_SHIPPER)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            driverService.deleteImage(driverId, imageUrl);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
 }
