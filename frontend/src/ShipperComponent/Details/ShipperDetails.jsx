@@ -13,6 +13,10 @@ import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import CloseIcon from '@mui/icons-material/Close';
 import { uploadImageToCloudinary } from '../../AdminComponent/util/UploadToCloudinary';
 import { Bounce, toast } from "react-toastify";
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const ShipperDetails = () => {
     const dispatch = useDispatch();
@@ -60,7 +64,7 @@ const ShipperDetails = () => {
                     alertError(error);
                 }
                 break;
-            
+
             default:
                 break;
         }
@@ -227,7 +231,7 @@ const ShipperDetails = () => {
                                             name="phone"
                                             value={updatedDriverInfo.phone}
                                             onChange={handleInputChange}
-                                            inputProps={{ maxLength: 10, minLength: 10}}
+                                            inputProps={{ maxLength: 10, minLength: 10 }}
                                         />
                                     ) : (
                                         <p className='text-gray-400'><span className='pr-5'>-</span>{driverProfile.phone}</p>
@@ -505,162 +509,182 @@ const ShipperDetails = () => {
 
                 <Grid item xs={12} lg={12}>
                     <Card className="bg-gray-800 text-white">
-                        <CardHeader title="License, paper Images" />
-                        <CardContent>
-                            {
-                                !editMode
-                                &&
-                                <ImageList variant="masonry" cols={3} gap={8}>
-                                    {driverProfile.license.imageOfLicense?.map((item, index) => (
-                                        <ImageListItem key={index}>
-                                            <img
-                                                srcSet={`${item}?w=100&fit=crop&auto=format&dpr=2 2x`}
-                                                src={`${item}?w=100&fit=crop&auto=format`}
-                                                loading="lazy"
-                                                alt="driver"
-                                                className='cursor-pointer'
-                                                onClick={() => handleImageClick(item)}
-                                            />
-                                            {editMode && (
-                                                <IconButton
-                                                    aria-label="delete"
-                                                    onClick={() => handleDeleteImage('license.imageOfLicense', index)}
-                                                >
-                                                    <DeleteIcon />
-                                                </IconButton>
-                                            )}
-                                        </ImageListItem>
-                                    ))}
-                                </ImageList>
-                            }
+                        <Accordion>
+                            <AccordionSummary
+                                expandIcon={<ExpandMoreIcon />}
+                                aria-controls="panel1-content"
+                                id="panel1-header"
+                            >
+                                <CardHeader title="License, paper Images" />
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <CardContent>
+                                    {
+                                        !editMode
+                                        &&
+                                        <ImageList variant="masonry" cols={3} gap={8}>
+                                            {driverProfile.license.imageOfLicense?.map((item, index) => (
+                                                <ImageListItem key={index}>
+                                                    <img
+                                                        srcSet={`${item}?w=100&fit=crop&auto=format&dpr=2 2x`}
+                                                        src={`${item}?w=100&fit=crop&auto=format`}
+                                                        loading="lazy"
+                                                        alt="driver"
+                                                        className='cursor-pointer'
+                                                        onClick={() => handleImageClick(item)}
+                                                    />
+                                                    {editMode && (
+                                                        <IconButton
+                                                            aria-label="delete"
+                                                            onClick={() => handleDeleteImage('license.imageOfLicense', index)}
+                                                        >
+                                                            <DeleteIcon />
+                                                        </IconButton>
+                                                    )}
+                                                </ImageListItem>
+                                            ))}
+                                        </ImageList>
+                                    }
 
-                            {editMode && (
-                                <div className='flex flex-wrap gap-5'>
-                                    <input
-                                        accept='image/*'
-                                        id='imageOfLicense'
-                                        style={{ display: 'none' }}
-                                        onChange={(e) => handleImageChange(e, 'imageOfLicense')}
-                                        type='file'
-                                        multiple
-                                    />
-                                    <label htmlFor='imageOfLicense' className='relative'>
-                                        <span className='w-24 h-24 cursor-pointer flex items-center justify-center p-3 border rounded-md border-gray-600'>
-                                            <Tooltip title='Add license image' placement='bottom' arrow>
-                                                <AddPhotoAlternateIcon />
-                                            </Tooltip>
-                                        </span>
-                                        {uploading.imageOfLicense && (
-                                            <div className='absolute left-0 right-0 top-0 bottom-0 w-24 h-24 flex justify-center items-center'>
-                                                <CircularProgress />
-                                            </div>
-                                        )}
-                                    </label>
-                                    <ImageList variant="masonry" cols={3} gap={8}>
-                                        {updatedDriverInfo.imageOfLicense.map((image, index) => (
-                                            <ImageListItem key={index}>
-                                                <img
-                                                    srcSet={`${image}?w=100&fit=crop&auto=format&dpr=2 2x`}
-                                                    src={`${image}?w=100&fit=crop&auto=format`}
-                                                    loading="lazy"
-                                                    alt={`Driver ${index + 1}`}
-                                                    className='w-24 h-24 object-cover'
-                                                />
-                                                <IconButton
-                                                    onClick={() => handleRemoveImage('imageOfLicense', index)}
-                                                    size='small'
-                                                    sx={{ position: 'absolute', top: 0, right: 0 }}
-                                                >
-                                                    <Tooltip title='Remove license image' placement='bottom' arrow>
-                                                        <CloseIcon sx={{ fontSize: '1rem' }} />
+                                    {editMode && (
+                                        <div className='flex flex-wrap gap-5'>
+                                            <input
+                                                accept='image/*'
+                                                id='imageOfLicense'
+                                                style={{ display: 'none' }}
+                                                onChange={(e) => handleImageChange(e, 'imageOfLicense')}
+                                                type='file'
+                                                multiple
+                                            />
+                                            <label htmlFor='imageOfLicense' className='relative'>
+                                                <span className='w-24 h-24 cursor-pointer flex items-center justify-center p-3 border rounded-md border-gray-600'>
+                                                    <Tooltip title='Add license image' placement='bottom' arrow>
+                                                        <AddPhotoAlternateIcon />
                                                     </Tooltip>
-                                                </IconButton>
-                                            </ImageListItem>
-                                        ))}
-                                    </ImageList>
-                                </div>
-                            )}
-                        </CardContent>
+                                                </span>
+                                                {uploading.imageOfLicense && (
+                                                    <div className='absolute left-0 right-0 top-0 bottom-0 w-24 h-24 flex justify-center items-center'>
+                                                        <CircularProgress />
+                                                    </div>
+                                                )}
+                                            </label>
+                                            <ImageList variant="masonry" cols={3} gap={8}>
+                                                {updatedDriverInfo.imageOfLicense.map((image, index) => (
+                                                    <ImageListItem key={index}>
+                                                        <img
+                                                            srcSet={`${image}?w=100&fit=crop&auto=format&dpr=2 2x`}
+                                                            src={`${image}?w=100&fit=crop&auto=format`}
+                                                            loading="lazy"
+                                                            alt={`Driver ${index + 1}`}
+                                                            className='w-24 h-24 object-cover'
+                                                        />
+                                                        <IconButton
+                                                            onClick={() => handleRemoveImage('imageOfLicense', index)}
+                                                            size='small'
+                                                            sx={{ position: 'absolute', top: 0, right: 0 }}
+                                                        >
+                                                            <Tooltip title='Remove license image' placement='bottom' arrow>
+                                                                <CloseIcon sx={{ fontSize: '1rem' }} />
+                                                            </Tooltip>
+                                                        </IconButton>
+                                                    </ImageListItem>
+                                                ))}
+                                            </ImageList>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </AccordionDetails>
+                        </Accordion>
                     </Card>
                 </Grid>
                 <Grid item xs={12} lg={12}>
                     <Card className="bg-gray-800 text-white">
-                        <CardHeader title="Vehicle Images" />
-                        <CardContent>
-                            {
-                                !editMode
-                                &&
-                                <ImageList variant="masonry" cols={3} gap={8}>
-                                    {driverProfile.vehicle.imageOfVehicle?.map((item, index) => (
-                                        <ImageListItem key={index}>
-                                            <img
-                                                srcSet={`${item}?w=100&fit=crop&auto=format&dpr=2 2x`}
-                                                src={`${item}?w=100&fit=crop&auto=format`}
-                                                loading="lazy"
-                                                alt="driver"
-                                                className='cursor-pointer'
-                                                onClick={() => handleImageClick(item)}
-                                            />
-                                            {editMode && (
-                                                <IconButton
-                                                    aria-label="delete"
-                                                    onClick={() => handleDeleteImage('vehicle.imageOfVehicle', index)}
-                                                >
-                                                    <DeleteIcon />
-                                                </IconButton>
-                                            )}
-                                        </ImageListItem>
-                                    ))}
-                                </ImageList>
-                            }
+                        <Accordion>
+                            <AccordionSummary
+                                expandIcon={<ExpandMoreIcon />}
+                                aria-controls="panel1-content"
+                                id="panel1-header"
+                            >
+                                <CardHeader title="Vehicle Images" />
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <CardContent>
+                                    {
+                                        !editMode
+                                        &&
+                                        <ImageList variant="masonry" cols={3} gap={8}>
+                                            {driverProfile.vehicle.imageOfVehicle?.map((item, index) => (
+                                                <ImageListItem key={index}>
+                                                    <img
+                                                        srcSet={`${item}?w=100&fit=crop&auto=format&dpr=2 2x`}
+                                                        src={`${item}?w=100&fit=crop&auto=format`}
+                                                        loading="lazy"
+                                                        alt="driver"
+                                                        className='cursor-pointer'
+                                                        onClick={() => handleImageClick(item)}
+                                                    />
+                                                    {editMode && (
+                                                        <IconButton
+                                                            aria-label="delete"
+                                                            onClick={() => handleDeleteImage('vehicle.imageOfVehicle', index)}
+                                                        >
+                                                            <DeleteIcon />
+                                                        </IconButton>
+                                                    )}
+                                                </ImageListItem>
+                                            ))}
+                                        </ImageList>
+                                    }
 
-                            {editMode && (
-                                <div className='flex flex-wrap gap-5'>
-                                    <input
-                                        accept='image/*'
-                                        id='imageOfVehicle'
-                                        style={{ display: 'none' }}
-                                        onChange={(e) => handleImageChange(e, 'imageOfVehicle')}
-                                        type='file'
-                                        multiple
-                                    />
-                                    <label htmlFor='imageOfVehicle' className='relative'>
-                                        <span className='w-24 h-24 cursor-pointer flex items-center justify-center p-3 border rounded-md border-gray-600'>
-                                            <Tooltip title='Add vehicle image' placement='bottom' arrow>
-                                                <AddPhotoAlternateIcon />
-                                            </Tooltip>
-                                        </span>
-                                        {uploading.imageOfVehicle && (
-                                            <div className='absolute left-0 right-0 top-0 bottom-0 w-24 h-24 flex justify-center items-center'>
-                                                <CircularProgress />
-                                            </div>
-                                        )}
-                                    </label>
-                                    <ImageList variant="masonry" cols={3} gap={8}>
-                                        {updatedDriverInfo.imageOfVehicle.map((image, index) => (
-                                            <ImageListItem key={index}>
-                                                <img
-                                                    srcSet={`${image}?w=100&fit=crop&auto=format&dpr=2 2x`}
-                                                    src={`${image}?w=100&fit=crop&auto=format`}
-                                                    loading="lazy"
-                                                    alt={`Driver ${index + 1}`}
-                                                    className='w-24 h-24 object-cover'
-                                                />
-                                                <IconButton
-                                                    onClick={() => handleRemoveImage('imageOfVehicle', index)}
-                                                    size='small'
-                                                    sx={{ position: 'absolute', top: 0, right: 0 }}
-                                                >
-                                                    <Tooltip title='Remove vehicle image' placement='bottom' arrow>
-                                                        <CloseIcon sx={{ fontSize: '1rem' }} />
+                                    {editMode && (
+                                        <div className='flex flex-wrap gap-5'>
+                                            <input
+                                                accept='image/*'
+                                                id='imageOfVehicle'
+                                                style={{ display: 'none' }}
+                                                onChange={(e) => handleImageChange(e, 'imageOfVehicle')}
+                                                type='file'
+                                                multiple
+                                            />
+                                            <label htmlFor='imageOfVehicle' className='relative'>
+                                                <span className='w-24 h-24 cursor-pointer flex items-center justify-center p-3 border rounded-md border-gray-600'>
+                                                    <Tooltip title='Add vehicle image' placement='bottom' arrow>
+                                                        <AddPhotoAlternateIcon />
                                                     </Tooltip>
-                                                </IconButton>
-                                            </ImageListItem>
-                                        ))}
-                                    </ImageList>
-                                </div>
-                            )}
-                        </CardContent>
+                                                </span>
+                                                {uploading.imageOfVehicle && (
+                                                    <div className='absolute left-0 right-0 top-0 bottom-0 w-24 h-24 flex justify-center items-center'>
+                                                        <CircularProgress />
+                                                    </div>
+                                                )}
+                                            </label>
+                                            <ImageList variant="masonry" cols={3} gap={8}>
+                                                {updatedDriverInfo.imageOfVehicle.map((image, index) => (
+                                                    <ImageListItem key={index}>
+                                                        <img
+                                                            srcSet={`${image}?w=100&fit=crop&auto=format&dpr=2 2x`}
+                                                            src={`${image}?w=100&fit=crop&auto=format`}
+                                                            loading="lazy"
+                                                            alt={`Driver ${index + 1}`}
+                                                            className='w-24 h-24 object-cover'
+                                                        />
+                                                        <IconButton
+                                                            onClick={() => handleRemoveImage('imageOfVehicle', index)}
+                                                            size='small'
+                                                            sx={{ position: 'absolute', top: 0, right: 0 }}
+                                                        >
+                                                            <Tooltip title='Remove vehicle image' placement='bottom' arrow>
+                                                                <CloseIcon sx={{ fontSize: '1rem' }} />
+                                                            </Tooltip>
+                                                        </IconButton>
+                                                    </ImageListItem>
+                                                ))}
+                                            </ImageList>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </AccordionDetails>
+                        </Accordion>
                     </Card>
                 </Grid>
             </Grid>

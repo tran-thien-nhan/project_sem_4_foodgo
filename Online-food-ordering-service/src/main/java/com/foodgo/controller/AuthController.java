@@ -1,6 +1,7 @@
 package com.foodgo.controller;
 
 import com.foodgo.config.JwtProvider;
+import com.foodgo.dto.ChangePasswordRequest;
 import com.foodgo.model.*;
 import com.foodgo.repository.CartRepository;
 import com.foodgo.repository.DriverRepository;
@@ -8,6 +9,7 @@ import com.foodgo.repository.UserRepository;
 import com.foodgo.request.GoogleLoginRequest;
 import com.foodgo.request.LoginRequest;
 import com.foodgo.response.AuthResponse;
+import com.foodgo.service.ChangePasswordService;
 import com.foodgo.service.CustomerUserDetailsService;
 import com.foodgo.service.EmailService;
 import com.foodgo.service.UserService;
@@ -22,15 +24,13 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -50,7 +50,12 @@ public class AuthController {
     @Autowired
     private EmailService emailService;
     @Autowired
+//<<<<<<< HEAD
     private DriverRepository driverRepository;
+//=======
+    @Autowired
+    private ChangePasswordService changePasswordService;
+//>>>>>>> 2db83274d9ed8ec933d2478e7e72bf4e50ba75e2
 
     @PostMapping("/signup") //đánh dấu phương thức createUserHandler là phương thức xử lý request POST tới /auth/signup
     public ResponseEntity<AuthResponse> createUserHandler(@RequestBody User user) throws Exception {
@@ -81,7 +86,7 @@ public class AuthController {
         createdUser.setPhone(user.getPhone()); //set phone cho user mới
         createdUser.setRole(user.getRole()); //set role cho user mới
 
-        if(user.getPassword() != null && !user.getPassword().isEmpty()){
+        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
             createdUser.setPassword(passwordEncoder.encode(user.getPassword())); //set password cho user mới, mã hóa password trước khi lưu vào database
         }
 
@@ -103,8 +108,7 @@ public class AuthController {
 
         if (user.getRole().equals(USER_ROLE.ROLE_RESTAURANT_OWNER)) {
             emailService.sendMailWelcomeOwner(user.getEmail(), user.getFullName());
-        }
-        else if (user.getRole().equals(USER_ROLE.ROLE_CUSTOMER)) {
+        } else if (user.getRole().equals(USER_ROLE.ROLE_CUSTOMER)) {
             emailService.sendMailWelcomeCustomer(user.getEmail(), user.getFullName());
         }
         else if (user.getRole().equals(USER_ROLE.ROLE_SHIPPER)) {
@@ -117,7 +121,7 @@ public class AuthController {
     @PostMapping("/signin") //đánh dấu phương thức signin là phương thức xử lý request POST tới /auth/signin
     public ResponseEntity<User> signin(@RequestBody LoginRequest req) {
 
-        if(req.getProvider() == PROVIDER.GOOGLE){
+        if (req.getProvider() == PROVIDER.GOOGLE) {
             GoogleLoginRequest googleLoginRequest = new GoogleLoginRequest();
             googleLoginRequest.setEmail(req.getEmail());
             googleLoginRequest.setProvider(PROVIDER.GOOGLE);
@@ -204,7 +208,7 @@ public class AuthController {
         String password = user.getPassword();
         PROVIDER provider = user.getProvider();
 
-        Authentication authentication = authenticateByEmailAndProvider(email,password,provider);
+        Authentication authentication = authenticateByEmailAndProvider(email, password, provider);
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         String role = authorities.isEmpty() ? null : authorities.iterator().next().getAuthority();
         String jwt = jwtProvider.generateToken(authentication, provider);
@@ -218,7 +222,11 @@ public class AuthController {
     }
 
     private Authentication authenticateByEmailAndProvider(String email, String password, PROVIDER provider) {
+//<<<<<<< HEAD
         UserDetails userDetails = customerUserDetailsService.loadUserByEmailAndProvider(email, provider);
+//=======
+//        UserDetails userDetails = customerUserDetailsService.loadUserByEmailAndProvider(email, password, provider);
+//>>>>>>> 2db83274d9ed8ec933d2478e7e72bf4e50ba75e2
         if (userDetails == null) {
             throw new BadCredentialsException("Invalid email or provider");
         }
@@ -240,7 +248,6 @@ public class AuthController {
             return null;
         }
     }
-
 
     private ResponseEntity<AuthResponse> signinForSignup(LoginRequest req) {
         //User user = findUserByEmailAndProvider(req.getEmail(), req.getProvider());
@@ -279,6 +286,35 @@ public class AuthController {
         return new ResponseEntity<>("Password has been reset.", HttpStatus.OK);
     }
 
+    @PostMapping("/request-token")
+    public ResponseEntity<String> requestToken(@RequestParam Long userId) {
+        try {
+            changePasswordService.sendChangePasswordToken(userId);
+            return ResponseEntity.ok("Password reset token sent successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to send password reset token");
+        }
+    }
 
+    @PostMapping("/change")
+    public ResponseEntity<ChangePasswordResult> changePassword(@RequestBody ChangePasswordRequest request) {
+        try {
+            ChangePasswordResult result = changePasswordService.ChangingPassword(
+                    request.getUserId(),
+                    request.getCurrentPassword(),
+                    request.getNewPassword(),
+                    request.getConfirmPassword(),
+                    request.getToken()
+            );
+            if(result.isSuccess()){
+                return ResponseEntity.ok(result);
+            } else {
+                return ResponseEntity.badRequest().body(result);
+            }
+        } catch (Exception e) {
+            String errorMessage = "Failed to change password: " + e.getMessage();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ChangePasswordResult(false, errorMessage));
+        }
+    }
 
 }

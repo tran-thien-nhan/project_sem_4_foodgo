@@ -14,6 +14,8 @@ public interface EmailService {
 
     public void sendPasswordResetEmail(String email, String token) throws MessagingException, UnsupportedEncodingException;
 
+    public void sendPasswordChangeEmailOtp(String email, String token) throws MessagingException, UnsupportedEncodingException;
+
     //send mail welcome shipper
     public void sendMailWelcomeShipper(String email, String fullname) throws MessagingException, UnsupportedEncodingException;
 

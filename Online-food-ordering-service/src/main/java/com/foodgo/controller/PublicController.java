@@ -2,6 +2,8 @@ package com.foodgo.controller;
 
 import com.foodgo.model.*;
 import com.foodgo.repository.EventRepository;
+import com.foodgo.request.ForgotPasswordRequest;
+import com.foodgo.response.ResetpasswordResponse;
 import com.foodgo.service.*;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,10 +86,11 @@ public class PublicController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@RequestBody Map<String, String> request) throws MessagingException, UnsupportedEncodingException {
-        try{
-            String email = request.get("email");
-            userService.processForgotPassword(email);
+    public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordRequest request) throws MessagingException, UnsupportedEncodingException {
+        try {
+            System.out.println("Received request: " + request.getEmail());
+            String email = request.getEmail();
+            userService.processForgotPassword(request.getEmail());
             return new ResponseEntity<>("Password reset email sent.", HttpStatus.OK);
         } catch (BadCredentialsException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -99,9 +102,13 @@ public class PublicController {
 
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> request) throws Exception {
-        String token = request.get("token");
-        String newPassword = request.get("newPassword");
-        userService.updatePassword(token, newPassword);
-        return new ResponseEntity<>("Password has been reset.", HttpStatus.OK);
+        try {
+            String token = request.get("token");
+            String newPassword = request.get("newPassword");
+            ResetpasswordResponse response = userService.updatePassword(token, newPassword);
+            return new ResponseEntity<>(response.getMessage(), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 }

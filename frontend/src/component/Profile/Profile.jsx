@@ -6,6 +6,7 @@ import Orders from './Orders';
 import Address from './Address';
 import Favorites from './Favorites';
 import Events from './Events';
+import ChangingPassword from './ChangingPassword';
 import { useMediaQuery, Box } from '@mui/material';
 import Notification from './Notification';
 import { useDispatch, useSelector } from 'react-redux';
@@ -54,6 +55,7 @@ const Profile = () => {
             <Box className='lg:w-[80%] w-full h-auto'>
                 <Routes>
                     <Route path='/' element={<UserProfile />} />
+                    <Route path='/ChangePassword' element={<ChangingPassword/>}/>
                     <Route path='/orders' element={<Orders />} />
                     <Route path='/address' element={<Address />} />
                     <Route path='/favorites' element={<Favorites />} />

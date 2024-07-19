@@ -18,7 +18,7 @@ const Home = () => {
     const { auth, restaurant, event } = useSelector(store => store)
     const navigate = useNavigate()
     const address1 = "big c quận 7"
-    const address2 = "chùa vĩnh nghiêm"
+    const address2 = "lotte mart quận 7"
 
     const [coords1, setCoords1] = useState(null)
     const [coords2, setCoords2] = useState(null)

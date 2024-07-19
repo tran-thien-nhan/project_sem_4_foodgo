@@ -4,9 +4,10 @@ import { Button, CircularProgress, Grid, IconButton, TextField, Tooltip } from '
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import CloseIcon from '@mui/icons-material/Close';
 import { uploadImageToCloudinary } from '../../AdminComponent/util/UploadToCloudinary';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { getDriverProfile, registerDriver } from '../../component/State/Driver/Action';
+import { logOut } from '../../component/State/Authentication/Action';
 
 const initialValues = {
   imageOfDriver: [],
@@ -81,7 +82,7 @@ const CreateShipperInFoForm = () => {
         imageOfVehicle: values.imageOfVehicle,
       };
       console.log("Form values: ", data);
-      dispatch(registerDriver({data, jwt}));
+      dispatch(registerDriver({ data, jwt }));
     }
   });
 
@@ -102,6 +103,15 @@ const CreateShipperInFoForm = () => {
     images.splice(index, 1);
     formik.setFieldValue(field, images);
   };
+
+  const handlebackHome = () => {
+    navigate("/")
+  }
+
+  const handleLogOut = () => {
+    navigate('/');
+    dispatch(logOut());
+  }
 
   return (
     <div className='py-10 lg:flex items-center justify-center min-h-screen'>
@@ -430,8 +440,35 @@ const CreateShipperInFoForm = () => {
                 </div>
               ))}
             </Grid>
+            <Grid item xs={12} lg={4}>
+              <Button
+                variant='contained'
+                color='secondary'
+                fullWidth
+                onClick={handlebackHome}
+              >
+                Back
+              </Button>
+            </Grid>
+            <Grid item xs={12} lg={4}>
+              <Button
+                type='submit'
+                variant='contained'
+                fullWidth>
+                Submit
+              </Button>
+            </Grid>
+            <Grid item xs={12} lg={4}>
+              <Button
+                variant='contained'
+                color='info'
+                fullWidth
+                onClick={handleLogOut}
+              >
+                Log out
+              </Button>
+            </Grid>
           </Grid>
-          <Button type='submit' variant='contained' fullWidth>Submit</Button>
         </form>
       </div>
     </div>

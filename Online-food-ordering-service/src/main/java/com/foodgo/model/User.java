@@ -51,10 +51,14 @@ public class User {
 
     @JsonIgnore //tránh lặp vô hạn, không lấy thông tin của addresses, chỉ lấy thông tin của user
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "user") //một user có thể có nhiều địa chỉ, khi xóa user thì xóa hết địa chỉ, orphanRemoval xóa địa chỉ khi không có user nào sử dụng
+    @ToString.Exclude
     private List<Address> addresses = new ArrayList<>(); //mảng chứa thông tin các địa chỉ
 
     private String resetPasswordToken;
     private Date resetPasswordExpires;
 
     private Boolean shipperInfoFilled = false;
+
+    @ElementCollection //tạo bảng mới chứa thông tin previousPasswords, không cần tạo class mới
+    private List<String> previousPasswords = new ArrayList<>();;
 }

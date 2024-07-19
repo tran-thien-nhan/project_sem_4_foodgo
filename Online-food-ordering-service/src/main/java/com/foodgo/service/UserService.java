@@ -5,6 +5,7 @@ import com.foodgo.model.User;
 import com.foodgo.request.GoogleLoginRequest;
 import com.foodgo.response.ResetpasswordResponse;
 import jakarta.mail.MessagingException;
+import org.springframework.http.ResponseEntity;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Map;

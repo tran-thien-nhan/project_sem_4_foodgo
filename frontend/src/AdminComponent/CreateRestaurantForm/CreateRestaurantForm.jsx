@@ -39,6 +39,11 @@ const CreateRestaurantForm = () => {
     navigate("/")
   }
 
+  const handleLogOut = () => {
+    navigate('/');
+    dispatch(logOut());
+  }
+
   const formik = useFormik({
     initialValues,
     validate: (values) => {
@@ -438,24 +443,38 @@ const CreateRestaurantForm = () => {
 
               </TextField>
             </Grid>
-
+            <Grid item xs={12} lg={4}>
+              <Button
+                variant='contained'
+                color='secondary'
+                fullWidth
+                onClick={handlebackHome}
+              >
+                Back
+              </Button>
+            </Grid>
+            <Grid item xs={12} lg={4}>
+              <Button
+                type='submit'
+                variant='contained'
+                color='primary'
+                fullWidth
+              >
+                Create Restaurant
+              </Button>
+            </Grid>
+            <Grid item xs={12} lg={4}>
+              <Button
+                variant='contained'
+                color='info'
+                fullWidth
+                onClick={handleLogOut}
+              >
+                Log out
+              </Button>
+            </Grid>
           </Grid>
-          <Button
-            type='submit'
-            variant='contained'
-            color='primary'
-            fullWidth
-          >
-            Create Restaurant
-          </Button>
-          <Button
-            variant='contained'
-            color='secondary'
-            fullWidth
-            onClick={handlebackHome}
-          >
-            Back
-          </Button>
+
         </form>
       </div>
     </div>

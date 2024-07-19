@@ -127,7 +127,7 @@ public class UserServiceImp implements UserService {
             user.setResetPasswordExpires(new Date(System.currentTimeMillis() + 3600000));
             userRepository.save(user);
 
-            if(user.getResetPasswordExpires() == null && user.getResetPasswordToken() == null) {
+            if (user.getResetPasswordExpires() == null || user.getResetPasswordToken() == null) {
                 throw new BadCredentialsException("Token not found");
             }
 
@@ -139,36 +139,43 @@ public class UserServiceImp implements UserService {
         }
     }
 
+//    private List<User> findByEmailAndProvider(String email, PROVIDER provider) {
+//        List<User> users = userRepository.findAll();
+//        return users.stream()
+//                .filter(user -> user.getEmail().equals(email) && user.getProvider().equals(provider))
+//                .collect(Collectors.toList());
+//    }
+
     private List<User> findByEmailAndProvider(String email, PROVIDER provider) {
-        List<User> users = userRepository.findAll();
-        return users.stream()
-                .filter(user -> user.getEmail().equals(email) && user.getProvider().equals(provider))
-                .collect(Collectors.toList());
+        return userRepository.findByEmailAndProvider(email, provider);
     }
 
 
-    public ResetpasswordResponse updatePassword(String token, String newPassword) {
-        try {
-            User user = userRepository.findByResetPasswordToken(token);
-            ResetpasswordResponse response = new ResetpasswordResponse();
-            if (user == null || user.getResetPasswordExpires().before(new Date())) {
-                response.setMessage("Token is invalid or expired");
-                return response;
-            }
-
-            user.setPassword(newPassword); // Bạn có thể cần mã hóa mật khẩu trước khi lưu
-            user.setResetPasswordToken(null);
-            user.setResetPasswordExpires(null);
-            userRepository.save(user);
-
-            response.setMessage("Password updated successfully");
-            return response;
-        } catch (Exception e) {
-            System.out.println("Error: " + e);
-            ResetpasswordResponse response = new ResetpasswordResponse();
-            response.setMessage("Error: " + e);
-            return response;
+    public ResetpasswordResponse updatePassword(String token, String newPassword) throws Exception {
+        User user = userRepository.findByResetPasswordToken(token);
+        if (user == null || user.getResetPasswordExpires().before(new Date())) {
+            throw new BadCredentialsException("Token is invalid or expired");
         }
+
+        // Kiểm tra nếu mật khẩu mới đã được sử dụng trong 5 lần gần nhất
+        int passwordCheckLimit = 5;
+        int checkStartIndex = Math.max(0, user.getPreviousPasswords().size() - passwordCheckLimit);
+        List<String> recentPasswords = user.getPreviousPasswords().subList(checkStartIndex, user.getPreviousPasswords().size());
+        for (String previousPassword : recentPasswords) {
+            if (passwordEncoder.matches(newPassword, previousPassword)) {
+                throw new BadCredentialsException("You have used this password before");
+            }
+        }
+        user.getPreviousPasswords().add(user.getPassword());
+
+        user.setPassword(passwordEncoder.encode(newPassword)); // Bạn có thể cần mã hóa mật khẩu trước khi lưu
+        user.setResetPasswordToken(null);
+        user.setResetPasswordExpires(null);
+        userRepository.save(user);
+
+        ResetpasswordResponse response = new ResetpasswordResponse();
+        response.setMessage("Password updated successfully");
+        return response;
     }
 
     @Override
@@ -188,6 +195,4 @@ public class UserServiceImp implements UserService {
 //        }
 //        return true;
 //    }
-
-
 }
