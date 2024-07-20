@@ -44,7 +44,16 @@ export const registerUser = (reqData) => async (dispatch) => {
     } catch (error) {
         dispatch({ type: REGISTER_FAILURE, payload: error });
         console.log("ERROR: ", error);
-
+        toast.error("sign up failed !", {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+        });
     }
 }
 

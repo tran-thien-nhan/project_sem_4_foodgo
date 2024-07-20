@@ -13,4 +13,7 @@ public class OrderRequest {
     private String comment;
     private double userLatitude;
     private double userLongitude;
+    private double distance;
+    private Long duration;
+    private Long fare;
 }

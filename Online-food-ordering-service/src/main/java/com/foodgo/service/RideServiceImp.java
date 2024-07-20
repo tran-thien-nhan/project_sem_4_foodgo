@@ -3,6 +3,7 @@ package com.foodgo.service;
 import com.foodgo.model.*;
 import com.foodgo.repository.*;
 import com.foodgo.request.RideRequest;
+import com.foodgo.request.UpdateDriverInfoRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -64,13 +65,17 @@ public class RideServiceImp implements RideService{
                     restaurantLongitude,
                     existingRide);
 
+            if(availableDrivers.size() == 0) {
+                throw new RuntimeException("No driver available");
+            }
+
             Driver nearestDriver = driverService.findNearestDriver(
                     availableDrivers,
                     restaurantLatitude,
                     restaurantLongitude);
 
             if(nearestDriver == null) {
-                throw new RuntimeException("No driver available");
+                throw new RuntimeException("No driver near restaurant");
             }
 
             Ride ride = createRideRequest(
@@ -84,13 +89,22 @@ public class RideServiceImp implements RideService{
             return ride;
         }
         catch(Exception e) {
-            throw new RuntimeException("Error in requesting ride");
+            throw new RuntimeException(e.getMessage());
         }
     }
 
     @Override
     public Ride createRideRequest(Driver nearestDriver, double restaurantLatitude, double restaurantLongitude, double destinationLatitude, double destinationLongitude, RideRequest rideRequest) {
         try {
+            System.out.println("rideRequest: " + rideRequest);
+            if (rideRequest.getUserId() == null) {
+                throw new RuntimeException("User ID must not be null");
+            } else if (rideRequest.getRestaurantId() == null) {
+                throw new RuntimeException("Restaurant ID must not be null");
+            } else if (rideRequest.getOrderId() == null) {
+                throw new RuntimeException("Order ID must not be null");
+            }
+
             User user = userService.findUserById(rideRequest.getUserId());
             Restaurant restaurant = restaurantService.findRestaurantById(rideRequest.getRestaurantId());
             Order order = orderService.findOrderById(rideRequest.getOrderId());
@@ -117,12 +131,16 @@ public class RideServiceImp implements RideService{
             ride.setDriverStopLatitude(nearestDriver.getLatitude());
             ride.setDriverStopLongitude(nearestDriver.getLongitude());
 
+            // Cập nhật thông tin tài xế
+            nearestDriver.setCurrentRide(ride);
+            driverService.updateDriver(nearestDriver.getId(), new UpdateDriverInfoRequest());
+
             rideRepository.save(ride);
 
             return ride;
         }
         catch (Exception e) {
-            throw new RuntimeException("Error in creating ride request");
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -202,22 +220,33 @@ public class RideServiceImp implements RideService{
             driver.setCurrentRide(null);
             ride.setStatus(RIDE_STATUS.COMPLETED);
             ride.setEndTime(LocalDateTime.now());
+
+            LocalDateTime startTime = ride.getStartTime();
+            LocalDateTime endTime = ride.getEndTime();
+
+            if (startTime == null || endTime == null) {
+                throw new RuntimeException("Ride start time or end time is null");
+            }
+
+            Duration duration = Duration.between(startTime, endTime);
+            Long durationInMinutes = duration.toMinutes();
+            ride.setDuration(durationInMinutes);
+
             double distance = calculator.calculateDistance(
                     ride.getRestaurantLatitude(),
                     ride.getRestaurantLongitude(),
                     ride.getDestinationLatitude(),
                     ride.getDestinationLongitude());
+
             ride.setDistance(Math.round(distance * 100.0/100.0));
-            LocalDateTime startTime = ride.getStartTime();
-            LocalDateTime endTime = ride.getEndTime();
-            Duration duration = Duration.between(startTime, endTime);
-            Long durationInMinutes = duration.toMinutes();
-            ride.setDuration(durationInMinutes);
+
             double fare = calculator.calculateFare(distance);
             ride.setFare(Math.round(fare));
+
             driver.getRides().add(ride);
             Long totalRevenue = ride.getDriver().getTotalRevenue() + Math.round(fare * 0.8);
             driver.setTotalRevenue(totalRevenue);
+
             driverRepository.save(driver);
             rideRepository.save(ride);
         }

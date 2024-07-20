@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.List;
 
@@ -55,6 +56,7 @@ public class Driver {
     private List<DeclinedDriver> declinedDrivers;
 
     @OneToOne // Thêm liên kết tới User
+    @ToString.Exclude
     private User driver;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)

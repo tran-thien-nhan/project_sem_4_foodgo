@@ -59,63 +59,75 @@ public class AuthController {
 
     @PostMapping("/signup") //đánh dấu phương thức createUserHandler là phương thức xử lý request POST tới /auth/signup
     public ResponseEntity<AuthResponse> createUserHandler(@RequestBody User user) throws Exception {
+        try{
+            // AuthResponse là một class chứa thông tin về token và message
+            if (user.getPassword() == null || user.getPassword().isEmpty()) { //nếu password của user là null hoặc rỗng
+                throw new Exception("Password is required"); //ném ra một ngoại lệ với thông báo "Password is required"
+            }
 
-        // AuthResponse là một class chứa thông tin về token và message
-        if (user.getPassword() == null || user.getPassword().isEmpty()) { //nếu password của user là null hoặc rỗng
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+//            List<User> users = userRepository.findAll();
+//            for (User u : users) {
+//                if (u.getEmail().equals(user.getEmail()) && u.getProvider().equals(PROVIDER.NORMAL)) {
+//                    throw new Exception("Email is already in use");
+//                }
+//            }
+
 
 //        if(!userService.checkPhone(user.getPhone())){
 //            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 //        }
 
-        List<User> existingUsers = userRepository.findByEmailAndProvider(user.getEmail(), user.getProvider());
-        if (!existingUsers.isEmpty()) { //nếu email đã tồn tại
-            // chuyển sang sign in
-            LoginRequest req = new LoginRequest();
-            req.setEmail(user.getEmail());
-            req.setPassword(user.getPassword());
-            req.setProvider(user.getProvider());
-            return signinForSignup(req);
+            List<User> existingUsers = userRepository.findByEmailAndProvider(user.getEmail(), user.getProvider());
+            if (!existingUsers.isEmpty()) { //nếu email đã tồn tại
+                // chuyển sang sign in
+                LoginRequest req = new LoginRequest();
+                req.setEmail(user.getEmail());
+                req.setPassword(user.getPassword());
+                req.setProvider(user.getProvider());
+                return signinForSignup(req);
+            }
+
+            // còn nếu chua co email, tạo mới
+            User createdUser = new User(); //tạo một user mới
+            createdUser.setEmail(user.getEmail()); //set email cho user mới
+            createdUser.setFullName(user.getFullName()); //set fullName cho user mới
+            createdUser.setPhone(user.getPhone()); //set phone cho user mới
+            createdUser.setRole(user.getRole()); //set role cho user mới
+
+            if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+                createdUser.setPassword(passwordEncoder.encode(user.getPassword())); //set password cho user mới, mã hóa password trước khi lưu vào database
+            }
+
+            createdUser.setProvider(user.getProvider()); // set provider cho user mới
+
+            User savedUser = userRepository.save(createdUser); //lưu user mới vào database
+
+            Cart cart = new Cart(); //tạo một cart mới
+            cart.setCustomer(savedUser); //set customer cho cart mới
+            cartRepository.save(cart); //lưu cart mới vào database
+
+            Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()); //tạo ra một đối tượng Authentication từ email và password của user
+            SecurityContextHolder.getContext().setAuthentication(authentication); //set Authentication vào SecurityContextHolder để xác thực user
+            String jwt = jwtProvider.generateToken(authentication, user.getProvider()); //tạo ra token từ thông tin user
+            AuthResponse authResponse = new AuthResponse(); //tạo ra một đối tượng AuthResponse
+            authResponse.setJwt(jwt); //set jwt cho AuthResponse
+            authResponse.setMessage("Sign Up successfully"); //set message cho AuthResponse
+            authResponse.setRole(savedUser.getRole()); //set role cho AuthResponse
+
+            if (user.getRole().equals(USER_ROLE.ROLE_RESTAURANT_OWNER)) {
+                emailService.sendMailWelcomeOwner(user.getEmail(), user.getFullName());
+            } else if (user.getRole().equals(USER_ROLE.ROLE_CUSTOMER)) {
+                emailService.sendMailWelcomeCustomer(user.getEmail(), user.getFullName());
+            }
+            else if (user.getRole().equals(USER_ROLE.ROLE_SHIPPER)) {
+                emailService.sendMailWelcomeShipper(user.getEmail(), user.getFullName());
+            }
+
+            return new ResponseEntity<>(authResponse, HttpStatus.CREATED); //trả về AuthResponse và status code 200 (OK)
         }
-
-        // còn nếu chua co email, tạo mới
-        User createdUser = new User(); //tạo một user mới
-        createdUser.setEmail(user.getEmail()); //set email cho user mới
-        createdUser.setFullName(user.getFullName()); //set fullName cho user mới
-        createdUser.setPhone(user.getPhone()); //set phone cho user mới
-        createdUser.setRole(user.getRole()); //set role cho user mới
-
-        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-            createdUser.setPassword(passwordEncoder.encode(user.getPassword())); //set password cho user mới, mã hóa password trước khi lưu vào database
+        catch(Exception e){
+            throw new Exception("Error: " + e.getMessage());
         }
-
-        createdUser.setProvider(user.getProvider()); // set provider cho user mới
-
-        User savedUser = userRepository.save(createdUser); //lưu user mới vào database
-
-        Cart cart = new Cart(); //tạo một cart mới
-        cart.setCustomer(savedUser); //set customer cho cart mới
-        cartRepository.save(cart); //lưu cart mới vào database
-
-        Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()); //tạo ra một đối tượng Authentication từ email và password của user
-        SecurityContextHolder.getContext().setAuthentication(authentication); //set Authentication vào SecurityContextHolder để xác thực user
-        String jwt = jwtProvider.generateToken(authentication, user.getProvider()); //tạo ra token từ thông tin user
-        AuthResponse authResponse = new AuthResponse(); //tạo ra một đối tượng AuthResponse
-        authResponse.setJwt(jwt); //set jwt cho AuthResponse
-        authResponse.setMessage("Sign Up successfully"); //set message cho AuthResponse
-        authResponse.setRole(savedUser.getRole()); //set role cho AuthResponse
-
-        if (user.getRole().equals(USER_ROLE.ROLE_RESTAURANT_OWNER)) {
-            emailService.sendMailWelcomeOwner(user.getEmail(), user.getFullName());
-        } else if (user.getRole().equals(USER_ROLE.ROLE_CUSTOMER)) {
-            emailService.sendMailWelcomeCustomer(user.getEmail(), user.getFullName());
-        }
-        else if (user.getRole().equals(USER_ROLE.ROLE_SHIPPER)) {
-            emailService.sendMailWelcomeShipper(user.getEmail(), user.getFullName());
-        }
-
-        return new ResponseEntity<>(authResponse, HttpStatus.CREATED); //trả về AuthResponse và status code 200 (OK)
     }
 
     @PostMapping("/signin") //đánh dấu phương thức signin là phương thức xử lý request POST tới /auth/signin

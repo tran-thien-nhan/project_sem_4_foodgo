@@ -12,6 +12,7 @@ import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
 import { createOrder, sendOtp, sendOtpViaEmail, verifyOtp, verifyOtpViaEmail } from '../State/Order/Action';
 import { Bounce, toast } from "react-toastify";
 import { getAddresses } from '../State/Address/Action';
+import { calculateDistance, calculateDuration, calculateFare, getCoordinates } from '../Config/logic';
 
 const initialValues = {
     streetAddress: '',
@@ -52,6 +53,7 @@ const Cart = () => {
     const [selectedAddress, setSelectedAddress] = useState(null);
     const address = useSelector(state => state.address.addresses);
     const jwt = localStorage.getItem('jwt');
+    const [coordsUser, setCoordsUser] = useState(null);
 
     useEffect(() => {
         dispatch(findCart(token));
@@ -127,12 +129,45 @@ const Cart = () => {
         paymentMethod: Yup.string().required('Payment Method Is Required'),
     });
 
-    const handleSubmitOrder = (values) => {
+    const fetchCoordinates = async (address) => {
+        const coordinates = await getCoordinates(address);
+        setCoordsUser(coordinates);
+        return coordinates;
+    }
+
+    const handleSubmitOrder = async (values) => {
         // console.log("Payment Method:", values.paymentMethod);
         // if (!otpVerified) {
         //     alertFail("You need to verify the OTP before placing the order.");
         //     return;
         // }
+
+        const coordinates = await fetchCoordinates(values.streetAddress);
+
+        if (!coordinates) {
+            alertFail("Unable to fetch coordinates for the address.");
+            return;
+        }
+
+        // Fetch restaurant coordinates
+        const restaurantCoordinatesLat = cart.cart?.cartItems[0].food?.restaurant?.latitude;
+        const restaurantCoordinatesLon = cart.cart?.cartItems[0].food?.restaurant?.longitude;
+
+        if (!restaurantCoordinatesLat && !restaurantCoordinatesLon) {
+            alertFail("Unable to fetch coordinates for the restaurant.");
+            return;
+        }
+
+        // Calculate distance and duration
+        const distance = calculateDistance(
+            restaurantCoordinatesLat,
+            restaurantCoordinatesLon,
+            coordinates.lat,
+            coordinates.lon
+        );
+
+        const duration = calculateDuration(distance);
+        const fare = calculateFare(distance);
 
         const data = {
             jwt: localStorage.getItem('jwt'),
@@ -146,11 +181,20 @@ const Cart = () => {
                     pinCode: values.pinCode,
                     country: "vietnam",
                     phone: values.phone,
+                    latitude: coordinates.lat,
+                    longitude: coordinates.lon,
                 },
                 paymentMethod: values.paymentMethod,
-                comment: values.comment
+                comment: values.comment,
+                userLatitude: coordinates.lat,
+                userLongitude: coordinates.lon,
+                distance: distance,
+                duration: duration,
+                fare: fare,
             }
         }
+        console.log("restaurant latitude: " + restaurantCoordinatesLat);
+        console.log("restaurant longitude: " + restaurantCoordinatesLon);
         console.log("DATA:", data);
         dispatch(createOrder(data));
 

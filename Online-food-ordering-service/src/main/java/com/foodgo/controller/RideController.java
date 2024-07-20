@@ -23,7 +23,11 @@ public class RideController {
 
     @PostMapping("/request")
     public Ride requestRide(@RequestBody RideRequest rideRequest) {
-        return rideService.requestRide(rideRequest);
+        try{
+            return rideService.requestRide(rideRequest);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     @GetMapping("/{id}")

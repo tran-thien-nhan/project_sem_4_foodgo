@@ -41,6 +41,8 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import UndoIcon from '@mui/icons-material/Undo';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import { requestRide } from '../../component/State/Ride/Action';
 
 const style = {
     position: 'absolute',
@@ -101,11 +103,12 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
     const handleClose = () => setOpen(false);
 
     useEffect(() => {
+        console.log("restaurant info: ",restaurant);
         dispatch(fetchRestaurantsAllOrder({
             restaurantId: restaurant.usersRestaurant?.id,
             jwt: jwt,
         }));
-    }, [dispatch, restaurant.usersRestaurant?.id, jwt]);
+    }, [dispatch, restaurant.usersRestaurant?.id, jwt, restaurant]);
 
     const handleToggle = (id) => {
         setShowAll(prevShowAll => ({ ...prevShowAll, [id]: !prevShowAll[id] }));
@@ -402,6 +405,20 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
         doc.save('PendingOrders.pdf');
     };
 
+    const handleRequestRide = (order) => {
+        const rideRequest = {
+            restaurantLatitude: restaurant.usersRestaurant.latitude,
+            restaurantLongitude: restaurant.usersRestaurant.longitude,
+            destinationLatitude: order.latitude,
+            destinationLongitude: order.longitude,
+            userId: order.customer.id,
+            restaurantId: restaurant.usersRestaurant.id,
+            orderId: order.id,
+        }
+        // console.log("rideRequest: ",rideRequest);
+        dispatch(requestRide(rideRequest, jwt));
+    }
+
     const handleReset = () => {
         setSearchTerm('');
         setSearchOrderTerm('');
@@ -541,12 +558,14 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
                                             </IconButton>
                                             {
                                                 (order.orderStatus === "CANCELLED")
-                                                    ? (
+                                                    ? 
+                                                    (
                                                         <IconButton onClick={() => handleRefund(order.id)}>
                                                             <HighlightOffIcon />
                                                         </IconButton>
                                                     )
-                                                    : (
+                                                    : 
+                                                    (
                                                         <IconButton onClick={() => handleCancelOrder(order.id, order.orderStatus)}>
                                                             <CancelIcon />
                                                         </IconButton>
@@ -555,6 +574,9 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
 
                                             <IconButton onClick={() => handleRevertStatus(order.id, order.orderStatus)}>
                                                 <UndoIcon />
+                                            </IconButton>
+                                            <IconButton onClick={() => handleRequestRide(order)}>
+                                                <LocalShippingIcon />
                                             </IconButton>
                                         </TableCell>
                                     </TableRow>
@@ -637,6 +659,14 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
                                     <tr>
                                         <td><strong>Delivery Address:</strong></td>
                                         <td>{selectedOrder.deliveryAddress.streetAddress}, {selectedOrder.deliveryAddress.city}, {selectedOrder.deliveryAddress.state}, {selectedOrder.deliveryAddress.country}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>latitude:</strong></td>
+                                        <td>{selectedOrder.latitude}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>longtitude:</strong></td>
+                                        <td>{selectedOrder.longitude}</td>
                                     </tr>
                                     <tr>
                                         <td><strong>Items:</strong></td>

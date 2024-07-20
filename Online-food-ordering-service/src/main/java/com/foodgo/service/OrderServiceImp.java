@@ -58,6 +58,9 @@ public class OrderServiceImp implements OrderService{
     @Autowired
     private RideRepository rideRepository;
 
+    @Autowired
+    private DriverService driverService;
+
     @Override
     public List<Order> createOrder(OrderRequest order, User user) throws Exception {
         try{
@@ -95,6 +98,11 @@ public class OrderServiceImp implements OrderService{
                 createdOrder.setOrderStatus("PENDING");
                 createdOrder.setDeliveryAddress(savedAddress);
                 createdOrder.setRestaurant(restaurant);
+                createdOrder.setLatitude(order.getUserLatitude());
+                createdOrder.setLongitude(order.getUserLongitude());
+                createdOrder.setDistance(order.getDistance());
+                createdOrder.setDuration(order.getDuration());
+                createdOrder.setFare(order.getFare());
 //                createdOrder.setComment(order.getComment());
 
                 List<OrderItem> orderItems = new ArrayList<>();
@@ -152,30 +160,64 @@ public class OrderServiceImp implements OrderService{
             // clear cart
             cartService.clearCart(user.getId());
 
-            // tạo 1 cuốc xe giao hàng
-            RideRequest rideRequest = new RideRequest();
-            rideRequest.setUserId(user.getId());
-            rideRequest.setRestaurantId(createdOrders.get(0).getRestaurant().getId());
-            rideRequest.setOrderId(createdOrders.get(0).getId());
-            rideRequest.setRestaurantLatitude(createdOrders.get(0).getRestaurant().getLatitude());
-            rideRequest.setRestaurantLongitude(createdOrders.get(0).getRestaurant().getLongitude());
-            rideRequest.setDestinationLatitude(order.getUserLatitude());
-            rideRequest.setDestinationLongitude(order.getUserLongitude());
-
-            // tạo cuốc xe
-            Ride ride = rideService.requestRide(rideRequest);
-            if (ride != null) {
-                ride.setOrders(createdOrders);
-                rideRepository.save(ride);
-            }
-            else{
-                //set ispaid = false
-                for (Order createdOrder : createdOrders) {
-                    createdOrder.setIsPaid(false);
-                    orderRepository.save(createdOrder);
-                }
-                throw new Exception("Error creating ride");
-            }
+//            // tạo 1 cuốc xe giao hàng
+//            RideRequest rideRequest = new RideRequest();
+//            rideRequest.setUserId(user.getId());
+//            rideRequest.setRestaurantId(createdOrders.get(0).getRestaurant().getId());
+//            rideRequest.setOrderId(createdOrders.get(0).getId());
+//            rideRequest.setRestaurantLatitude(createdOrders.get(0).getRestaurant().getLatitude());
+//            rideRequest.setRestaurantLongitude(createdOrders.get(0).getRestaurant().getLongitude());
+//            rideRequest.setDestinationLatitude(order.getUserLatitude());
+//            rideRequest.setDestinationLongitude(order.getUserLongitude());
+//
+//            Ride requestRide = rideService.requestRide(rideRequest);
+//            // Tạo cuốc xe và tìm tài xế
+//            List<Driver> availableDrivers = driverService.getAvailableDrivers(
+//                    rideRequest.getRestaurantLatitude(),
+//                    rideRequest.getRestaurantLongitude(),
+//                    requestRide); // null cho Ride vì chưa có
+//
+//            if (availableDrivers.isEmpty()) {
+//                throw new Exception("No available drivers found");
+//            }
+//
+//            Double restaurantLatitude = restaurantRepository.findById(order.getRestaurantId()).get().getLatitude();
+//            Double restaurantLongitude = restaurantRepository.findById(order.getRestaurantId()).get().getLongitude();
+//
+//            Driver nearestDriver = driverService.findNearestDriver(
+//                    availableDrivers,
+//                    restaurantLatitude,
+//                    restaurantLongitude);
+//
+//            // Cập nhật RideRequest với tài xế
+//            Ride ride = rideService.createRideRequest(
+//                    nearestDriver,
+//                    restaurantLatitude,
+//                    restaurantLongitude,
+//                    rideRequest.getDestinationLatitude(),
+//                    rideRequest.getDestinationLongitude(),
+//                    rideRequest);
+//
+//            System.out.println("Ride created: " + ride);
+//
+//            if (ride != null) {
+//                ride.setOrders(createdOrders);
+//                ride.setDriver(nearestDriver);
+//                rideRepository.save(ride);
+//
+//                // Cập nhật đơn hàng với thông tin cuốc xe
+//                for (Order createdOrder : createdOrders) {
+//                    createdOrder.setRide(ride);
+//                    orderRepository.save(createdOrder);
+//                }
+//            } else {
+//                // Nếu không thể tạo cuốc xe, cập nhật lại trạng thái thanh toán cho các đơn hàng
+//                for (Order createdOrder : createdOrders) {
+//                    createdOrder.setIsPaid(false);
+//                    orderRepository.save(createdOrder);
+//                }
+//                throw new Exception("Error creating ride");
+//            }
 
             return createdOrders;
         }

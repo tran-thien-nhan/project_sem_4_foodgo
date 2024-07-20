@@ -19,7 +19,7 @@ const ShipperRouter = () => {
             <Routes>
                 <Route path="/*" element=
                     {
-                        !driver.data ? <CreateShipperInFoForm /> : <AdminShipper />
+                        (!driver.data || auth.driver === null) ? <CreateShipperInFoForm /> : <AdminShipper />
                     }
                 />
             </Routes>

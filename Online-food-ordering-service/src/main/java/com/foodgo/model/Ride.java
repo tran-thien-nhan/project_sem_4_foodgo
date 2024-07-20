@@ -64,10 +64,8 @@ public class Ride {
 
     private double driverStopLongitude; // Kinh độ của điểm dừng tài xế hiện tại
 
-    @Column(nullable = false)
     private double distance; // Khoảng cách từ nhà hàng đến nhà của khách hàng
 
-    @Column(nullable = false)
     private Long duration; // Thời gian từ nhà hàng đến nhà của khách hàng
 
     @Enumerated(EnumType.STRING)
@@ -81,6 +79,5 @@ public class Ride {
     private LocalDateTime endTime; // Thời gian kết thúc giao hàng
 
     // Giá cước
-    @Column(nullable = false)
     private Long fare; // Giá cước
 }

@@ -214,9 +214,11 @@ export const createOrder = (reqData) => {
                 }
             });
 
-            data.forEach(paymentResponse => {
-                window.open(paymentResponse.payment_url, '_blank');
-            });
+            if (data) {
+                data.forEach(paymentResponse => {
+                    window.open(paymentResponse.payment_url, '_blank');
+                });
+            }
 
             toast.success('create order successfully!', {
                 position: "top-center",

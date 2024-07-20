@@ -52,6 +52,15 @@ public class Order {
 
     private String paymentIntentId;
 
+    private Double latitude;
+    private Double longitude;
+
+    private double distance;
+
+    private Long duration;
+
+    private Long fare;
+
     @ManyToOne
     @JoinColumn(name = "ride_id")
     private Ride ride; // Thêm thuộc tính ride để xác định mối quan hệ

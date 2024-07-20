@@ -101,6 +101,7 @@ public class DriverServiceImp implements DriverService{
     public List<Driver> getAvailableDrivers(double restaurantLatitude, double restaurantLongitude, Ride ride) throws Exception {
         try{
             List<Driver> allDrivers = driverRepository.findAll();
+            System.out.println("All drivers: " + allDrivers);
             List<Driver> availableDrivers = new ArrayList<>();
             for (Driver driver : allDrivers) {
                 // Nếu tài xế đang ở trong chuyến đi thì không thêm vào danh sách
@@ -117,6 +118,8 @@ public class DriverServiceImp implements DriverService{
                 double driverLatitude = driver.getLatitude();
                 double driverLongitude = driver.getLongitude();
                 double distance = distanceCalculator.calculateDistance(restaurantLatitude, restaurantLongitude, driverLatitude, driverLongitude);
+
+                availableDrivers.add(driver);
             }
             return availableDrivers;
         }

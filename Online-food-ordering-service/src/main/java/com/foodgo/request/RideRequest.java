@@ -14,4 +14,8 @@ public class RideRequest {
     private Long UserId; // ID của người dùng
     private Long RestaurantId; // ID của nhà hàng
     private Long OrderId; // ID của đơn hàng
+
+    private double distance;
+    private Long duration;
+    private Long fare;
 }
