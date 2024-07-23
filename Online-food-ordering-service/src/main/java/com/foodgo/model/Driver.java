@@ -36,13 +36,16 @@ public class Driver {
     private boolean isAvailable = false;
 
     @OneToOne(mappedBy = "driver", cascade = CascadeType.ALL)
+    @ToString.Exclude
     private License license; // Một driver chỉ có một license
 
     @JsonIgnore
     @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     private List<Ride> rides;
 
     @OneToOne(mappedBy = "driver", cascade = CascadeType.ALL, orphanRemoval = true)
+//    @ToString.Exclude
     private Vehicle vehicle; // Một driver chỉ có một vehicle
 
     @JsonIgnore
@@ -56,7 +59,8 @@ public class Driver {
     private List<DeclinedDriver> declinedDrivers;
 
     @OneToOne // Thêm liên kết tới User
-    @ToString.Exclude
+//    @ToString.Exclude
+    @JsonIgnore
     private User driver;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)

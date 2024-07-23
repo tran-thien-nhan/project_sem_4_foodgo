@@ -1,12 +1,12 @@
-//package com.foodgo.mapper;
-//
-//import com.foodgo.dto.*;
-//import com.foodgo.model.*;
-//
-//import java.util.List;
-//import java.util.stream.Collectors;
-//
-//public class DtoMapper {
+package com.foodgo.mapper;
+
+import com.foodgo.dto.*;
+import com.foodgo.model.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class DtoMapper {
 //    public static DriverDto toDriverDto(Driver driver) {
 //        DriverDto driverDto = new DriverDto();
 //        driverDto.setDriverId(driver.getId());
@@ -18,30 +18,43 @@
 //        driverDto.setLongitude(driver.getLongitude());
 //        return driverDto;
 //    }
-//
-//    public static RideDto toRideDto(Ride ride) {
-//        RideDto rideDto = new RideDto();
-//        rideDto.setRideId(ride.getId());
-//        rideDto.setOrder(DtoMapper.toOrderDto(ride.getOrder()));
-//        rideDto.setRestaurant(DtoMapper.toRestaurantDto(ride.getRestaurant()));
-//        rideDto.setUser(DtoMapper.toUserDto(ride.getUser()));
-//        rideDto.setRestaurantLatitude(ride.getRestaurantLatitude());
-//        rideDto.setRestaurantLongitude(ride.getRestaurantLongitude());
-//        rideDto.setDriverStopLatitude(ride.getDriverStopLatitude());
-//        rideDto.setDriverStopLongitude(ride.getDriverStopLongitude());
-//        rideDto.setDestinationLatitude(ride.getDestinationLatitude());
-//        rideDto.setDestinationLongitude(ride.getDestinationLongitude());
-//        rideDto.setUserAddress(ride.getUserAddress());
-//        rideDto.setRestaurantAddress(ride.getRestaurantAddress());
-//        rideDto.setDistance(ride.getDistance());
-//        rideDto.setDuration(ride.getDuration());
-//        rideDto.setStartTime(ride.getStartTime());
-//        rideDto.setEndTime(ride.getEndTime());
-//        rideDto.setFare(ride.getFare());
-//        rideDto.setStatus(ride.getStatus());
-//        return rideDto;
-//    }
-//
+
+    public static RideDto toRideDto(Ride ride) {
+        RideDto rideDto = new RideDto();
+        rideDto.setRideId(ride.getId());
+        rideDto.setDriverId(ride.getDriver().getId());
+        rideDto.setRestaurantId(ride.getRestaurant().getId());
+        rideDto.setOrderId(ride.getOrder().getId());
+        rideDto.setRestaurantLatitude(ride.getRestaurantLatitude());
+        rideDto.setRestaurantLongitude(ride.getRestaurantLongitude());
+        rideDto.setDestinationLatitude(ride.getDestinationLatitude());
+        rideDto.setDestinationLongitude(ride.getDestinationLongitude());
+        rideDto.setUserAddress(ride.getUserAddress());
+        rideDto.setRestaurantAddress(ride.getRestaurantAddress());
+        rideDto.setDistance(ride.getDistance());
+        rideDto.setDuration(ride.getDuration());
+        rideDto.setStartTime(ride.getStartTime());
+        rideDto.setEndTime(ride.getEndTime());
+        rideDto.setFare(ride.getFare());
+        rideDto.setTotal(ride.getTotal());
+        rideDto.setStatus(ride.getStatus());
+        rideDto.setOrderItem(toOrderItemDtos(ride.getOrder().getItems()));
+        rideDto.setPaymentMethod(ride.getOrder().getPaymentMethod());
+        return rideDto;
+    }
+
+    private static List<OrderItemDto> toOrderItemDtos(List<OrderItem> items) {
+        return items.stream().map(item -> {
+            OrderItemDto orderItemDto = new OrderItemDto();
+            orderItemDto.setItemId(item.getId());
+            orderItemDto.setItemName(item.getFood().getName());
+            orderItemDto.setItemPrice(item.getTotalPrice());
+            orderItemDto.setIngredientsName(item.getIngredients());
+            orderItemDto.setItemQuantity(item.getQuantity());
+            return orderItemDto;
+        }).collect(Collectors.toList());
+    }
+
 //    private static UserDto toUserDto(User user) {
 //        UserDto userDto = new UserDto();
 //        userDto.setUserId(user.getId());
@@ -93,14 +106,4 @@
 //        return orderDto;
 //    }
 //
-//    private static List<OrderItemDto> toOrderItemDtos(List<OrderItem> items) {
-//        return items.stream().map(item -> {
-//            OrderItemDto orderItemDto = new OrderItemDto();
-//            orderItemDto.setItemId(item.getId());
-//            orderItemDto.setItemName(item.getFood().getName());
-//            orderItemDto.setItemPrice(item.getTotalPrice());
-//            orderItemDto.setIngredientsName(item.getIngredients());
-//            return orderItemDto;
-//        }).collect(Collectors.toList());
-//    }
-//}
+}

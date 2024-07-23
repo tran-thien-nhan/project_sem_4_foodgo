@@ -44,7 +44,7 @@ export const registerDriver = (reqData) => {
                 },
             });
             dispatch({ type: REGISTER_DRIVER_SUCCESS, payload: data });
-            console.log("Register driver successfully: ",data);
+            console.log("Register driver successfully: ", data);
             toast.success('register driver successfully!', {
                 position: "top-center",
                 autoClose: 5000,
@@ -58,7 +58,7 @@ export const registerDriver = (reqData) => {
             });
         } catch (error) {
             dispatch({ type: REGISTER_DRIVER_FAILURE, payload: error.message });
-            console.log("ERROR: ",error);
+            console.log("ERROR: ", error);
         }
     }
 }
@@ -108,7 +108,7 @@ export const getDriverProfile = (jwt) => {
                 },
             });
             dispatch({ type: GET_DRIVER_PROFILE_SUCCESS, payload: data });
-            console.log("DRIVER PROFILE: ",data);
+            console.log("DRIVER PROFILE: ", data);
         } catch (error) {
             dispatch({ type: GET_DRIVER_PROFILE_FAILURE, payload: error.message });
             console.log("ERROR: ", error);
@@ -117,35 +117,39 @@ export const getDriverProfile = (jwt) => {
 }
 
 // Action creator for getting driver's current ride
-export const getDriverCurrentRide = (driverId, token) => {
+export const getDriverCurrentRide = ({ driverId, token }) => {
     return async (dispatch) => {
         dispatch({ type: GET_DRIVER_CURRENT_RIDE_REQUEST });
         try {
-            const { data } = await api.get(`/api/admin/shipper/${driverId}/currentRide`, {
+            const { data } = await api.get(`/api/admin/shipper/${driverId}/current-ride`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
             dispatch({ type: GET_DRIVER_CURRENT_RIDE_SUCCESS, payload: data });
+            console.log("current ride: ", data);
         } catch (error) {
             dispatch({ type: GET_DRIVER_CURRENT_RIDE_FAILURE, payload: error.message });
+            console.log("ERROR: ", error);
         }
     }
 }
 
 // Action creator for getting allocated rides
-export const getAllocatedRides = (driverId, token) => {
+export const getAllocatedRides = ({ driverId, token }) => {
     return async (dispatch) => {
         dispatch({ type: GET_ALLOCATED_RIDES_REQUEST });
         try {
-            const { data } = await api.get(`/api/admin/shipper/${driverId}/allocatedRides`, {
+            const { data } = await api.get(`/api/admin/shipper/${driverId}/allocated-rides`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
             dispatch({ type: GET_ALLOCATED_RIDES_SUCCESS, payload: data });
+            console.log("allocated rides: ", data);
         } catch (error) {
             dispatch({ type: GET_ALLOCATED_RIDES_FAILURE, payload: error.message });
+            console.log("ERROR: ", error);
         }
     }
 }

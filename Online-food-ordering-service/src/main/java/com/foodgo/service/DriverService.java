@@ -1,5 +1,6 @@
 package com.foodgo.service;
 
+import com.foodgo.dto.RideDto;
 import com.foodgo.model.*;
 import com.foodgo.request.CreateLicenseVehicleRequest;
 import com.foodgo.request.UpdateDriverInfoRequest;
@@ -17,8 +18,8 @@ public interface DriverService {
     // Tìm tài xế gần nhà hàng nhất
     public Driver findNearestDriver(List<Driver> availableDrivers ,double restaurantLatitude, double restaurantLongitude) throws Exception;
     public Driver getDriverProfile(String jwt) throws Exception; // Lấy thông tin cá nhân của tài xế
-    public Ride getDriverCurrentRide(Long driverId) throws Exception; // Lấy thông tin chuyến đi hiện tại của tài xế
-    public List<Ride> getAllocatedRides(Long driverId) throws Exception; // Lấy danh sách các chuyến đi đã nhận
+    public RideDto getDriverCurrentRide(Long driverId) throws Exception; // Lấy thông tin chuyến đi hiện tại của tài xế
+    public List<RideDto> getAllocatedRides(Long driverId) throws Exception; // Lấy danh sách các chuyến đi đã nhận
     public Driver findDriverById(Long driverId) throws Exception; // Tìm tài xế theo ID
     public List<Ride> completedRides(Long driverId) throws Exception; // Lấy danh sách các chuyến đi đã hoàn thành
 

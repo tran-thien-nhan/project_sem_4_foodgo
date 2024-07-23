@@ -42,7 +42,8 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import UndoIcon from '@mui/icons-material/Undo';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import { requestRide } from '../../component/State/Ride/Action';
+import { findAllRide, requestRide } from '../../component/State/Ride/Action';
+import { Bounce, toast } from "react-toastify";
 
 const style = {
     position: 'absolute',
@@ -78,7 +79,7 @@ const getButtonColor = (status) => {
 const OrderTable = ({ filterValue, setFilterValue }) => {
     const dispatch = useDispatch();
     const jwt = localStorage.getItem('jwt');
-    const { restaurant, restaurantOrder } = useSelector(store => store);
+    const { restaurant, restaurantOrder, ride } = useSelector(store => store);
     const [showAll, setShowAll] = useState({});
     const [searchTerm, setSearchTerm] = useState('');
     const [searchOrderTerm, setSearchOrderTerm] = useState('');
@@ -93,7 +94,7 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
     const [previousStatuses, setPreviousStatuses] = useState({});
 
     const pendingOrderss = restaurantOrder.orders.filter(order => order.orderStatus === 'PENDING' && order.isPaid).length;
-    console.log("Pending orders: ", pendingOrderss);
+    // console.log("Pending orders: ", pendingOrderss);
 
     const handleOpen = (order) => {
         setSelectedOrder(order);
@@ -103,12 +104,12 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
     const handleClose = () => setOpen(false);
 
     useEffect(() => {
-        console.log("restaurant info: ",restaurant);
+        console.log("all rides: ", ride);
         dispatch(fetchRestaurantsAllOrder({
             restaurantId: restaurant.usersRestaurant?.id,
             jwt: jwt,
         }));
-    }, [dispatch, restaurant.usersRestaurant?.id, jwt, restaurant]);
+    }, [dispatch, restaurant.usersRestaurant?.id, jwt, restaurant, ride]);
 
     const handleToggle = (id) => {
         setShowAll(prevShowAll => ({ ...prevShowAll, [id]: !prevShowAll[id] }));
@@ -406,6 +407,19 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
     };
 
     const handleRequestRide = (order) => {
+        if (order.orderStatus !== "DELIVERING") {
+            toast.error("Order must be in 'DELIVERING' status to request a ride", {
+                position: "top-center",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+            });
+            return;
+        }
         const rideRequest = {
             restaurantLatitude: restaurant.usersRestaurant.latitude,
             restaurantLongitude: restaurant.usersRestaurant.longitude,
@@ -415,7 +429,6 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
             restaurantId: restaurant.usersRestaurant.id,
             orderId: order.id,
         }
-        // console.log("rideRequest: ",rideRequest);
         dispatch(requestRide(rideRequest, jwt));
     }
 
@@ -558,13 +571,13 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
                                             </IconButton>
                                             {
                                                 (order.orderStatus === "CANCELLED")
-                                                    ? 
+                                                    ?
                                                     (
                                                         <IconButton onClick={() => handleRefund(order.id)}>
                                                             <HighlightOffIcon />
                                                         </IconButton>
                                                     )
-                                                    : 
+                                                    :
                                                     (
                                                         <IconButton onClick={() => handleCancelOrder(order.id, order.orderStatus)}>
                                                             <CancelIcon />

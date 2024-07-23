@@ -6,7 +6,9 @@ import {
     DECLINE_RIDE_REQUEST, DECLINE_RIDE_SUCCESS, DECLINE_RIDE_FAILURE,
     START_RIDE_REQUEST, START_RIDE_SUCCESS, START_RIDE_FAILURE,
     COMPLETE_RIDE_REQUEST, COMPLETE_RIDE_SUCCESS, COMPLETE_RIDE_FAILURE,
-    CANCEL_RIDE_REQUEST, CANCEL_RIDE_SUCCESS, CANCEL_RIDE_FAILURE
+    CANCEL_RIDE_REQUEST, CANCEL_RIDE_SUCCESS, CANCEL_RIDE_FAILURE,
+    FIND_ALL_RIDE_SUCCESS,
+    FIND_ALL_RIDE_REQUEST
 } from "./ActionType";
 
 const initialState = {
@@ -25,10 +27,17 @@ export const rideReducer = (state = initialState, action) => {
         case START_RIDE_REQUEST:
         case COMPLETE_RIDE_REQUEST:
         case CANCEL_RIDE_REQUEST:
+        case FIND_ALL_RIDE_REQUEST:
             return {
                 ...state,
                 isLoading: true,
                 error: null,
+            };
+        case FIND_ALL_RIDE_SUCCESS:
+            return {
+                ...state,
+                rides: action.payload,
+                isLoading: false,
             };
         case REQUEST_RIDE_SUCCESS:
             return {
@@ -49,7 +58,7 @@ export const rideReducer = (state = initialState, action) => {
         case CANCEL_RIDE_SUCCESS:
             return {
                 ...state,
-                rides: state.rides.map(ride => 
+                rides: state.rides.map(ride =>
                     ride.id === action.payload ? { ...ride, status: action.type } : ride
                 ),
                 isLoading: false,
@@ -61,6 +70,7 @@ export const rideReducer = (state = initialState, action) => {
         case START_RIDE_FAILURE:
         case COMPLETE_RIDE_FAILURE:
         case CANCEL_RIDE_FAILURE:
+        case REQUEST_RIDE_FAILURE:
             return {
                 ...state,
                 isLoading: false,

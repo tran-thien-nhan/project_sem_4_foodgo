@@ -52,6 +52,10 @@ public class RideServiceImp implements RideService{
     @Override
     public Ride requestRide(RideRequest rideRequest) {
         try{
+            Order isOrderHasRide = orderService.findOrderById(rideRequest.getOrderId());
+            if(isOrderHasRide.getRide() != null) {
+                throw new RuntimeException("Order has been taken");
+            }
             double restaurantLatitude = rideRequest.getRestaurantLatitude();
             double restaurantLongitude = rideRequest.getRestaurantLongitude();
 
@@ -86,6 +90,7 @@ public class RideServiceImp implements RideService{
                     destinationLongitude,
                     rideRequest);
 
+            rideRepository.save(ride);
             return ride;
         }
         catch(Exception e) {
@@ -96,7 +101,7 @@ public class RideServiceImp implements RideService{
     @Override
     public Ride createRideRequest(Driver nearestDriver, double restaurantLatitude, double restaurantLongitude, double destinationLatitude, double destinationLongitude, RideRequest rideRequest) {
         try {
-            System.out.println("rideRequest: " + rideRequest);
+//            System.out.println("rideRequest: " + rideRequest);
             if (rideRequest.getUserId() == null) {
                 throw new RuntimeException("User ID must not be null");
             } else if (rideRequest.getRestaurantId() == null) {
@@ -108,6 +113,10 @@ public class RideServiceImp implements RideService{
             User user = userService.findUserById(rideRequest.getUserId());
             Restaurant restaurant = restaurantService.findRestaurantById(rideRequest.getRestaurantId());
             Order order = orderService.findOrderById(rideRequest.getOrderId());
+
+            userRepository.save(user);
+            restaurantRepository.save(restaurant);
+            orderRepository.save(order);
 
             String userAddress = order.getDeliveryAddress().getStreetAddress();
 
@@ -122,7 +131,7 @@ public class RideServiceImp implements RideService{
 
             ride.setUser(user);
             ride.setRestaurant(restaurant);
-            ride.setOrders(List.of(order));
+            ride.setOrder(order);
 
             ride.setUserAddress(userAddress);
             ride.setRestaurantAddress(restaurantAddress);
@@ -131,11 +140,21 @@ public class RideServiceImp implements RideService{
             ride.setDriverStopLatitude(nearestDriver.getLatitude());
             ride.setDriverStopLongitude(nearestDriver.getLongitude());
 
-            // Cập nhật thông tin tài xế
-            nearestDriver.setCurrentRide(ride);
-            driverService.updateDriver(nearestDriver.getId(), new UpdateDriverInfoRequest());
+            ride.setStartTime(LocalDateTime.now());
+            ride.setTotal(order.getTotalPrice());
+            ride.setFare(order.getFare());
+            ride.setDuration(order.getDuration());
+            ride.setDistance(order.getDistance());
+            ride.setRestaurantAddress(restaurant.getAddress().getStreetAddress());
 
             rideRepository.save(ride);
+
+            order.setRide(ride);
+            orderRepository.save(order);
+
+            // Cập nhật thông tin tài xế
+//            nearestDriver.setCurrentRide(ride);
+//            driverRepository.save(nearestDriver);
 
             return ride;
         }
@@ -147,13 +166,24 @@ public class RideServiceImp implements RideService{
     @Override
     public Ride findRideById(Long id) throws Exception {
         try {
-            Optional<Ride> ride = rideRepository.findById(id);
-            if(ride.isPresent()) {
-                return ride.get();
+//            Optional<Ride> ride = rideRepository.findById(id);
+//            if(ride.isPresent()) {
+//                return ride.get();
+//            }
+//            else {
+//                throw new Exception("Ride not found");
+//            }
+
+            List<Ride> rides = rideRepository.findAll();
+            for (Ride ride : rides) {
+                if (ride.getId().equals(id)) {
+//                    if(ride.getDriver().getCurrentRide() != null){
+//                        throw new RuntimeException("Driver already has a ride");
+//                    }
+                    return ride;
+                }
             }
-            else {
-                throw new Exception("Ride not found");
-            }
+            return null;
         }
         catch (Exception e) {
             throw new RuntimeException("Error in finding ride by id");
@@ -161,38 +191,41 @@ public class RideServiceImp implements RideService{
     }
 
     @Override
-    public void acceptRide(Long rideId) {
+    public void acceptRide(Long rideId) { // Chấp nhận chuyến đi
         try {
-            Ride ride = findRideById(rideId);
-            ride.setStatus(RIDE_STATUS.ACCEPTED);
-            Driver driver = ride.getDriver();
-            driver.setCurrentRide(ride);
-            driverRepository.save(driver);
-            rideRepository.save(ride);
+            Ride ride = findRideById(rideId); // Tìm chuyến đi theo ID
+            ride.setStatus(RIDE_STATUS.ACCEPTED); // Cập nhật trạng thái chuyến đi thành đã chấp nhận
+            Driver driver = ride.getDriver(); // Lấy thông tin tài xế
+            if(driver.getCurrentRide() != null) { // Nếu tài xế đã có chuyến đi khác
+                throw new RuntimeException("Driver already has a ride");
+            }
+            driver.setCurrentRide(ride); // Cập nhật chuyến đi hiện tại của tài xế thành chuyến đi vừa chấp nhận
+            driverRepository.save(driver); // Lưu thông tin tài xế
+            rideRepository.save(ride); // Lưu thông tin chuyến đi
         }
         catch (Exception e) {
-            throw new RuntimeException("Error in accepting ride");
+            throw new RuntimeException(e.getMessage());
         }
     }
 
     @Override
-    public void declineRide(Long rideId, Long driverId) {
+    public void declineRide(Long rideId, Long driverId) { // Từ chối chuyến đi
         try {
-            Ride ride = findRideById(rideId);
-            DeclinedDriver declinedDriver = new DeclinedDriver();
-            declinedDriver.setId(driverId);
-            ride.getDeclinedDrivers().add(declinedDriver);
-            List<Driver> availableDrivers = driverService.getAvailableDrivers(
-                    ride.getRestaurantLatitude(),
-                    ride.getRestaurantLongitude(),
-                    ride);
-            Driver nearestDriver = driverService.findNearestDriver(
-                    availableDrivers,
-                    ride.getRestaurantLatitude(),
-                    ride.getRestaurantLongitude()
+            Ride ride = findRideById(rideId); // Tìm chuyến đi theo ID
+            DeclinedDriver declinedDriver = new DeclinedDriver(); // Tạo một tài xế từ chối
+            declinedDriver.setId(driverId); // Gán ID của tài xế từ chối
+            ride.getDeclinedDrivers().add(declinedDriver); // Thêm tài xế từ chối vào danh sách tài xế từ chối
+            List<Driver> availableDrivers = driverService.getAvailableDrivers( // Lấy danh sách tài xế có sẵn
+                    ride.getRestaurantLatitude(), // Vĩ độ nhà hàng
+                    ride.getRestaurantLongitude(), // Kinh độ nhà hàng
+                    ride); // Chuyến đi
+            Driver nearestDriver = driverService.findNearestDriver( // Tìm tài xế gần nhà hàng nhất
+                    availableDrivers, // Danh sách tài xế có sẵn
+                    ride.getRestaurantLatitude(), // Vĩ độ nhà hàng
+                    ride.getRestaurantLongitude() // Kinh độ nhà hàng
             );
-            ride.setDriver(nearestDriver);
-            rideRepository.save(ride);
+            ride.setDriver(nearestDriver); // Cập nhật tài xế cho chuyến đi
+            rideRepository.save(ride); // Lưu thông tin chuyến đi
         }
         catch (Exception e) {
             throw new RuntimeException("Error in declining ride");
@@ -200,12 +233,12 @@ public class RideServiceImp implements RideService{
     }
 
     @Override
-    public void startRide(Long rideId) {
+    public void startRide(Long rideId) { // Bắt đầu chuyến đi
         try {
-            Ride ride = findRideById(rideId);
-            ride.setStatus(RIDE_STATUS.STARTED);
-            ride.setStartTime(LocalDateTime.now());
-            rideRepository.save(ride);
+            Ride ride = findRideById(rideId); // Tìm chuyến đi theo ID
+            ride.setStatus(RIDE_STATUS.STARTED); // Cập nhật trạng thái chuyến đi thành đã bắt đầu
+            ride.setStartTime(LocalDateTime.now()); // Cập nhật thời gian bắt đầu chuyến đi
+            rideRepository.save(ride); // Lưu thông tin chuyến đi
         }
         catch (Exception e) {
             throw new RuntimeException("Error in starting ride");
@@ -213,38 +246,38 @@ public class RideServiceImp implements RideService{
     }
 
     @Override
-    public void completeRide(Long rideId) {
+    public void completeRide(Long rideId) { // Hoàn thành chuyến đi
         try {
-            Ride ride = findRideById(rideId);
-            Driver driver = ride.getDriver();
-            driver.setCurrentRide(null);
-            ride.setStatus(RIDE_STATUS.COMPLETED);
-            ride.setEndTime(LocalDateTime.now());
+            Ride ride = findRideById(rideId); // Tìm chuyến đi theo ID
+            Driver driver = ride.getDriver(); // Lấy thông tin tài xế
+            driver.setCurrentRide(null); // Cập nhật chuyến đi hiện tại của tài xế thành null
+            ride.setStatus(RIDE_STATUS.COMPLETED); // Cập nhật trạng thái chuyến đi thành đã hoàn thành
+            ride.setEndTime(LocalDateTime.now()); // Cập nhật thời gian kết thúc chuyến đi
 
-            LocalDateTime startTime = ride.getStartTime();
-            LocalDateTime endTime = ride.getEndTime();
-
-            if (startTime == null || endTime == null) {
-                throw new RuntimeException("Ride start time or end time is null");
-            }
-
-            Duration duration = Duration.between(startTime, endTime);
-            Long durationInMinutes = duration.toMinutes();
-            ride.setDuration(durationInMinutes);
-
-            double distance = calculator.calculateDistance(
-                    ride.getRestaurantLatitude(),
-                    ride.getRestaurantLongitude(),
-                    ride.getDestinationLatitude(),
-                    ride.getDestinationLongitude());
-
-            ride.setDistance(Math.round(distance * 100.0/100.0));
-
-            double fare = calculator.calculateFare(distance);
-            ride.setFare(Math.round(fare));
+//            LocalDateTime startTime = ride.getStartTime();
+//            LocalDateTime endTime = ride.getEndTime();
+//
+//            if (startTime == null || endTime == null) {
+//                throw new RuntimeException("Ride start time or end time is null");
+//            }
+//
+//            Duration duration = Duration.between(startTime, endTime);
+//            Long durationInMinutes = duration.toMinutes();
+//            ride.setDuration(durationInMinutes);
+//
+//            double distance = calculator.calculateDistance(
+//                    ride.getRestaurantLatitude(),
+//                    ride.getRestaurantLongitude(),
+//                    ride.getDestinationLatitude(),
+//                    ride.getDestinationLongitude());
+//
+//            ride.setDistance(Math.round(distance * 100.0/100.0));
+//
+//            double fare = calculator.calculateFare(distance);
+//            ride.setFare(Math.round(fare));
 
             driver.getRides().add(ride);
-            Long totalRevenue = ride.getDriver().getTotalRevenue() + Math.round(fare * 0.8);
+            Long totalRevenue = ride.getDriver().getTotalRevenue() + Math.round(ride.getFare());
             driver.setTotalRevenue(totalRevenue);
 
             driverRepository.save(driver);

@@ -37,6 +37,8 @@ const initialState = {
     drivers: [],
     rides: [],
     error: null,
+    allocated: [],
+    currentRide: null,
 };
 
 const driverReducer = (state = initialState, action) => {
@@ -63,11 +65,23 @@ const driverReducer = (state = initialState, action) => {
                 data: action.payload,
                 error: null,
             };
+        case GET_ALLOCATED_RIDES_SUCCESS:
+            return {
+                ...state,
+                loading: false,
+                allocated: action.payload,
+                error: null,
+            };
+        case GET_DRIVER_CURRENT_RIDE_SUCCESS:
+            return {
+                ...state,
+                loading: false,
+                currentRide: action.payload,
+                error: null,
+            };
         case GET_AVAILABLE_DRIVERS_SUCCESS:
         case FIND_NEAREST_DRIVER_SUCCESS:
         case GET_DRIVER_PROFILE_SUCCESS:
-        case GET_DRIVER_CURRENT_RIDE_SUCCESS:
-        case GET_ALLOCATED_RIDES_SUCCESS:
         case FIND_DRIVER_BY_ID_SUCCESS:
         case COMPLETED_RIDES_SUCCESS:
         case UPDATE_DRIVER_SUCCESS:

@@ -1,5 +1,6 @@
 package com.foodgo.controller;
 
+import com.foodgo.dto.RideDto;
 import com.foodgo.model.Driver;
 import com.foodgo.model.Ride;
 import com.foodgo.model.USER_ROLE;
@@ -80,11 +81,11 @@ public class DriverController {
     }
 
     @GetMapping("/{driverId}/current-ride")
-    public ResponseEntity<Ride> getDriverCurrentRide(@PathVariable Long driverId,
+    public ResponseEntity<RideDto> getDriverCurrentRide(@PathVariable Long driverId,
                                                      @RequestHeader("Authorization") String jwt) throws Exception {
         try{
             User user = userService.findUserByJwtToken(jwt);
-            Ride ride = driverService.getDriverCurrentRide(driverId);
+            RideDto ride = driverService.getDriverCurrentRide(driverId);
             return ResponseEntity.ok(ride);
         }
         catch(Exception e){
@@ -93,11 +94,11 @@ public class DriverController {
     }
 
     @GetMapping("/{driverId}/allocated-rides")
-    public ResponseEntity<List<Ride>> getAllocatedRides(@PathVariable Long driverId,
+    public ResponseEntity<List<RideDto>> getAllocatedRides(@PathVariable Long driverId,
                                                         @RequestHeader("Authorization") String jwt) throws Exception {
         try{
             User user = userService.findUserByJwtToken(jwt);
-            List<Ride> rides = driverService.getAllocatedRides(driverId);
+            List<RideDto> rides = driverService.getAllocatedRides(driverId);
             return ResponseEntity.ok(rides);
         }
         catch(Exception e){

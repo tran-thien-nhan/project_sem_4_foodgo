@@ -37,7 +37,7 @@ public class User {
 
     @JsonIgnore //tránh lặp vô hạn, không lấy thông tin của orders, chỉ lấy thông tin của user
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "customer") //một user có thể có nhiều order, khi xóa user thì xóa hết order, mappedBy trỏ tới customer trong Order
-    @ToString.Exclude
+//    @ToString.Exclude
     private List<Order> orders = new ArrayList<>(); //mảng chứa thông tin các order
 
     @ElementCollection //tạo bảng mới chứa thông tin favorites, không cần tạo class mới
@@ -51,7 +51,7 @@ public class User {
 
     @JsonIgnore //tránh lặp vô hạn, không lấy thông tin của addresses, chỉ lấy thông tin của user
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "user") //một user có thể có nhiều địa chỉ, khi xóa user thì xóa hết địa chỉ, orphanRemoval xóa địa chỉ khi không có user nào sử dụng
-    @ToString.Exclude
+//    @ToString.Exclude
     private List<Address> addresses = new ArrayList<>(); //mảng chứa thông tin các địa chỉ
 
     private String resetPasswordToken;

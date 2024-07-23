@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+
 import java.util.*;
 
 @Entity
@@ -24,5 +26,6 @@ public class IngredientCategory {
 
     @JsonIgnore
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL) // Một loại nguyên liệu có nhiều nguyên liệu, mappedBy trỏ tới category trong IngredientsItem
+    @ToString.Exclude
     private List<IngredientsItem> ingredients = new ArrayList<>();
 }

@@ -1,6 +1,7 @@
 package com.foodgo.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -47,5 +48,6 @@ public class Event {
 
     @ManyToOne
     @JoinColumn(name = "restaurant_id")
+//    @JsonIgnore
     private Restaurant restaurant;
 }

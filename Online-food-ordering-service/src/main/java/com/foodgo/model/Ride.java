@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,20 +20,26 @@ public class Ride {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id; // ID của chuyến đi
 
-    @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne
 //    @JoinColumn(name = "order_id")
-    private List<Order> orders; // Danh sách các đơn hàng trong chuyến đi
+//    @JsonIgnore
+
+    private Order order; // Danh sách các đơn hàng trong chuyến đi
 
     @ManyToOne // Mỗi chuyến đi chỉ do một người dùng đặt
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user; // Thông tin người dùng đặt đơn hàng
 
     @ManyToOne(cascade = CascadeType.ALL) // Mỗi chuyến đi chỉ giao cho một tài xế
     @JoinColumn(name = "driver_id")
+    @JsonIgnore
+    @ToString.Exclude
     private Driver driver; // Thông tin tài xế nhận đơn hàng
 
     @ManyToOne // Mỗi chuyến đi chỉ giao một nhà hàng
     @JoinColumn(name = "restaurant_id")
+    @JsonIgnore
     private Restaurant restaurant; // Thông tin nhà hàng
 
     @JsonIgnore
@@ -80,4 +87,6 @@ public class Ride {
 
     // Giá cước
     private Long fare; // Giá cước
+
+    private Long total;
 }

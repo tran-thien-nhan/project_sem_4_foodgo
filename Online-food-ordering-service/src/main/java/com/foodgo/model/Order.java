@@ -63,5 +63,7 @@ public class Order {
 
     @ManyToOne
     @JoinColumn(name = "ride_id")
+    @JsonIgnore
+    @ToString.Exclude
     private Ride ride; // Thêm thuộc tính ride để xác định mối quan hệ
 }

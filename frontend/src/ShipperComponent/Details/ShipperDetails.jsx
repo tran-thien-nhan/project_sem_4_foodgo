@@ -17,6 +17,7 @@ import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ImageIcon from '@mui/icons-material/Image';
 
 const ShipperDetails = () => {
     const dispatch = useDispatch();
@@ -515,6 +516,9 @@ const ShipperDetails = () => {
                                 aria-controls="panel1-content"
                                 id="panel1-header"
                             >
+                                <IconButton>
+                                    <ImageIcon />
+                                </IconButton>
                                 <CardHeader title="License, paper Images" />
                             </AccordionSummary>
                             <AccordionDetails>
@@ -605,6 +609,9 @@ const ShipperDetails = () => {
                                 aria-controls="panel1-content"
                                 id="panel1-header"
                             >
+                                <IconButton>
+                                    <ImageIcon />
+                                </IconButton>
                                 <CardHeader title="Vehicle Images" />
                             </AccordionSummary>
                             <AccordionDetails>

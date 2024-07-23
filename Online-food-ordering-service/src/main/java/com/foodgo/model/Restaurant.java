@@ -43,6 +43,7 @@ public class Restaurant {
     @JsonIgnore
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true) // Một nhà hàng có nhiều order, mappedBy trỏ tới restaurant trong Order
     // Khi xóa nhà hàng thì xóa hết order, orphanRemoval xóa order khi không có nhà hàng nào sử dụng
+    @ToString.Exclude
     private List<Order> orders = new ArrayList<>(); // Mảng chứa thông tin các order
 
     @ElementCollection // Đánh dấu là một collection của các phần tử, không phải một entity riêng biệt
@@ -57,14 +58,17 @@ public class Restaurant {
 
     @JsonIgnore // Không trả về thông tin này khi gửi response
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL) // Một nhà hàng có nhiều món ăn, mappedBy trỏ tới restaurant trong Food
+    @ToString.Exclude
     private List<Food> foods = new ArrayList<>(); // Mảng chứa thông tin các món ăn
 
     @JsonIgnore
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     private List<Rating> ratings = new ArrayList<>();
 
     @JsonIgnore
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     private List<Event> events = new ArrayList<>(); // Thêm trường này vào để lưu thông tin sự kiện của nhà hàng
 
     @ElementCollection

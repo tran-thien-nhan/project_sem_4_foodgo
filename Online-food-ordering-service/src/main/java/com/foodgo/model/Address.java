@@ -1,5 +1,6 @@
 package com.foodgo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,5 +37,6 @@ public class Address {
     @ManyToOne
     @JoinColumn(name = "user_id")
     @ToString.Exclude
+    @JsonIgnore
     private User user;
 }

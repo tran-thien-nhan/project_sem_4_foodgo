@@ -1,5 +1,7 @@
 package com.foodgo.service;
 
+import com.foodgo.dto.RideDto;
+import com.foodgo.mapper.DtoMapper;
 import com.foodgo.model.*;
 import com.foodgo.repository.*;
 import com.foodgo.request.CreateLicenseVehicleRequest;
@@ -173,10 +175,20 @@ public class DriverServiceImp implements DriverService{
     }
 
     @Override
-    public Ride getDriverCurrentRide(Long driverId) throws Exception {
+    public RideDto getDriverCurrentRide(Long driverId) throws Exception {
         try{
-            Driver driver = driverRepository.findById(driverId).get();
-            return driver.getCurrentRide();
+            Optional<Driver> driverOpt = driverRepository.findById(driverId);
+            if (!driverOpt.isPresent()) {
+                throw new Exception("Driver not found");
+            }
+
+            Driver driver = driverOpt.get();
+            Ride ride = driver.getCurrentRide();
+            if (ride == null) {
+                throw new Exception("Driver has no current ride");
+            }
+
+            return DtoMapper.toRideDto(ride);
         }
         catch (Exception e){
             System.out.println(e.getMessage());
@@ -185,9 +197,15 @@ public class DriverServiceImp implements DriverService{
     }
 
     @Override
-    public List<Ride> getAllocatedRides(Long driverId) throws Exception {
+    public List<RideDto> getAllocatedRides(Long driverId) throws Exception {
         try{
-            return driverRepository.getAllocatedRides(driverId);
+            List<Ride> rides = driverRepository.getAllocatedRides(driverId);
+            List<RideDto> rideDtos = new ArrayList<>();
+            for (Ride ride : rides) {
+                RideDto r = DtoMapper.toRideDto(ride);
+                rideDtos.add(r);
+            }
+            return rideDtos;
         }
         catch (Exception e){
             System.out.println(e.getMessage());
@@ -238,6 +256,8 @@ public class DriverServiceImp implements DriverService{
             driver.setName(req.getName());
             driver.setPhone(req.getPhone());
             driver.setImageOfDriver(req.getImageOfDriver());
+            driver.setEmail(req.getEmail());
+            driver.setPhone(req.getPhone());
 
             // Cập nhật thông tin người dùng
             user.setEmail(req.getEmail());
