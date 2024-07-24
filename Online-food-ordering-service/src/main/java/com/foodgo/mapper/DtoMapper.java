@@ -40,6 +40,7 @@ public class DtoMapper {
         rideDto.setStatus(ride.getStatus());
         rideDto.setOrderItem(toOrderItemDtos(ride.getOrder().getItems()));
         rideDto.setPaymentMethod(ride.getOrder().getPaymentMethod());
+        rideDto.setOrderStatus(ride.getOrder().getOrderStatus());
         return rideDto;
     }
 
@@ -53,6 +54,40 @@ public class DtoMapper {
             orderItemDto.setItemQuantity(item.getQuantity());
             return orderItemDto;
         }).collect(Collectors.toList());
+    }
+
+    public static EventDto toEventDto(Event event) {
+        EventDto eventDto = new EventDto();
+        eventDto.setId(event.getId());
+        eventDto.setName(event.getName());
+        eventDto.setLocation(event.getLocation());
+        eventDto.setDescription(event.getDescription());
+        eventDto.setOfRestaurant(event.getRestaurant().getName());
+        eventDto.setEventLimit(event.getEventLimit());
+        eventDto.setIsFull(event.isFull());
+        eventDto.setIsAvailable(event.isAvailable());
+        eventDto.setStartedAt(event.getStartedAt());
+        eventDto.setEndsAt(event.getEndsAt());
+        eventDto.setImages(event.getImages());
+        eventDto.setTotalFavorites(event.getTotalFavorites());
+        return eventDto;
+    }
+
+    public static EventDto updateEventDto(Event event) {
+        EventDto eventDto = new EventDto();
+        eventDto.setId(event.getId());
+        eventDto.setName(event.getName());
+        eventDto.setLocation(event.getLocation());
+        eventDto.setDescription(event.getDescription());
+        eventDto.setOfRestaurant(event.getRestaurant().getName());
+        eventDto.setEventLimit(event.getEventLimit());
+        eventDto.setIsFull(event.isFull());
+        eventDto.setIsAvailable(event.isAvailable());
+        eventDto.setStartedAt(event.getStartedAt());
+        eventDto.setEndsAt(event.getEndsAt());
+        eventDto.setImages(event.getImages());
+        eventDto.setTotalFavorites(event.getTotalFavorites());
+        return eventDto;
     }
 
 //    private static UserDto toUserDto(User user) {

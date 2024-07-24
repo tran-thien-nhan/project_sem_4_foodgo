@@ -1,6 +1,7 @@
 package com.foodgo.controller;
 
 import com.foodgo.dto.EventDto;
+import com.foodgo.mapper.DtoMapper;
 import com.foodgo.model.Event;
 import com.foodgo.model.User;
 import com.foodgo.service.EventService;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -20,7 +22,6 @@ public class EventController {
 
     @Autowired
     private UserService userService;
-
 
     @PostMapping("/restaurant/{restaurantId}")
     public ResponseEntity<Event> createEvent(@PathVariable Long restaurantId, @RequestBody Event event,
@@ -63,12 +64,23 @@ public class EventController {
     }
 
     @PostMapping("/{eventId}/favorite")
-    public ResponseEntity<EventDto> addEventToFavorites(@PathVariable Long eventId,
-                                                        @RequestHeader("Authorization") String jwt) throws Exception {
+    public ResponseEntity<Event> toggleEventFavorite(@PathVariable Long eventId,
+                                                     @RequestHeader("Authorization") String jwt) throws Exception {
         User user = userService.findUserByJwtToken(jwt);
-        EventDto eventDto = eventService.addEventToFavorites(eventId, user);
-        return new ResponseEntity<>(eventDto, HttpStatus.OK);
+        Event event = eventService.getEventById(eventId);
+
+        // Kiểm tra xem user đã tham gia event chưa
+        if (event.getUsers().contains(user)) {
+            // Nếu đã tham gia, gọi removeUserFromEvent
+            eventService.removeUserFromEvent(eventId, user.getId());
+        } else {
+            // Nếu chưa tham gia, gọi addUserToEvent
+            eventService.addUserToEvent(eventId, user.getId());
+        }
+
+        return new ResponseEntity<>(event, HttpStatus.OK);
     }
+
 
     @GetMapping("/favorites")
     public ResponseEntity<List<Event>> getFavoriteEvents(@RequestHeader("Authorization") String jwt) throws Exception {
@@ -77,20 +89,19 @@ public class EventController {
         return new ResponseEntity<>(events, HttpStatus.OK);
     }
 
-    //toggleAvailable(Long eventId)
     @PutMapping("/{eventId}/toggle-available")
     public ResponseEntity<Event> toggleAvailable(@PathVariable Long eventId,
                                                  @RequestHeader("Authorization") String jwt) throws Exception {
         User user = userService.findUserByJwtToken(jwt);
-        Event event = eventService.toggleAvailable(eventId);
+        Event event = eventService.toggleAvailable(eventId); // Toggle trạng thái available của event
         return new ResponseEntity<>(event, HttpStatus.OK);
     }
 
-    // getFavoriteEventsOfRestaurantsByUser
     @GetMapping("/favorites-of-restaurants")
     public ResponseEntity<List<Event>> getFavoriteEventsOfRestaurantsByUser(@RequestHeader("Authorization") String jwt) throws Exception {
-        User user = userService.findUserByJwtToken(jwt);
-        List<Event> events = eventService.getFavoriteEventsOfRestaurantsByUser(user);
+        User user = userService.findUserByJwtToken(jwt); // Lấy thông tin user từ jwt
+        List<Event> events = eventService.getFavoriteEventsOfRestaurantsByUser(user); // Lấy danh sách sự kiện yêu thích của user
+        List<EventDto> eventDtos = new ArrayList<>(); // Tạo danh sách chứa thông tin sự kiện dưới dạng EventDto
         return new ResponseEntity<>(events, HttpStatus.OK);
     }
 }

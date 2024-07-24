@@ -21,9 +21,12 @@ public interface DriverService {
     public RideDto getDriverCurrentRide(Long driverId) throws Exception; // Lấy thông tin chuyến đi hiện tại của tài xế
     public List<RideDto> getAllocatedRides(Long driverId) throws Exception; // Lấy danh sách các chuyến đi đã nhận
     public Driver findDriverById(Long driverId) throws Exception; // Tìm tài xế theo ID
-    public List<Ride> completedRides(Long driverId) throws Exception; // Lấy danh sách các chuyến đi đã hoàn thành
+    public List<RideDto> completedRides(Long driverId) throws Exception; // Lấy danh sách các chuyến đi đã hoàn thành
 
     public Driver updateDriver(Long driverId, UpdateDriverInfoRequest req) throws Exception; // Cập nhật thông tin tài xế
 
     public void deleteImage(Long driverId, String imageUrl) throws Exception;
+
+    //cancelledRides
+    public List<RideDto> cancelledRides(Long driverId) throws Exception;
 }

@@ -14,7 +14,7 @@ import {
 } from "./ActionType";
 import { API_URL } from "../../Config/api";
 import { Bounce, toast } from "react-toastify";
-import { getAllocatedRides, getDriverCurrentRide } from "../Driver/Action";
+import { cancelledRides, completedRides, getAllocatedRides, getDriverCurrentRide, getDriverProfile } from "../Driver/Action";
 
 export const requestRide = (rideRequest, jwt) => async (dispatch) => {
     dispatch({ type: REQUEST_RIDE });
@@ -121,13 +121,23 @@ export const declineRide = (rideId, driverId, jwt) => async (dispatch) => {
             }
         });
         dispatch({ type: DECLINE_RIDE_SUCCESS, payload: { rideId, driverId } });
+        dispatch(getAllocatedRides({
+            driverId: driverId,
+            token: jwt
+        }))
+        dispatch(getDriverProfile(jwt))
+        dispatch(cancelledRides({
+            driverId: driverId,
+            token: jwt
+        }))
+        console.log("DECLINE_RIDE_SUCCESS");
     } catch (error) {
         dispatch({ type: DECLINE_RIDE_FAILURE, payload: error });
         console.log("ERROR: ", error);
     }
 };
 
-export const startRide = (id, jwt) => async (dispatch) => {
+export const startRide = ({ id, jwt, driverId }) => async (dispatch) => {
     dispatch({ type: START_RIDE_REQUEST });
     try {
         await axios.put(`${API_URL}/api/admin/shipper/ride/start/${id}`, null, {
@@ -136,6 +146,10 @@ export const startRide = (id, jwt) => async (dispatch) => {
             }
         });
         dispatch({ type: START_RIDE_SUCCESS, payload: id });
+        dispatch(getDriverCurrentRide({
+            driverId: driverId,
+            token: jwt
+        }))
         console.log("start ride success");
     } catch (error) {
         dispatch({ type: START_RIDE_FAILURE, payload: error });
@@ -143,7 +157,7 @@ export const startRide = (id, jwt) => async (dispatch) => {
     }
 };
 
-export const completeRide = (id, jwt) => async (dispatch) => {
+export const completeRide = ({ id, jwt, driverId }) => async (dispatch) => {
     dispatch({ type: COMPLETE_RIDE_REQUEST });
     try {
         await axios.put(`${API_URL}/api/admin/shipper/ride/complete/${id}`, null, {
@@ -152,6 +166,15 @@ export const completeRide = (id, jwt) => async (dispatch) => {
             }
         });
         dispatch({ type: COMPLETE_RIDE_SUCCESS, payload: id });
+        dispatch(getDriverCurrentRide({
+            driverId: driverId,
+            token: jwt
+        }))
+        dispatch(completedRides({
+            driverId: driverId,
+            token: jwt
+        }))
+        dispatch(getDriverProfile(jwt))
         console.log("complete ride success: ");
     } catch (error) {
         dispatch({ type: COMPLETE_RIDE_FAILURE, payload: error });

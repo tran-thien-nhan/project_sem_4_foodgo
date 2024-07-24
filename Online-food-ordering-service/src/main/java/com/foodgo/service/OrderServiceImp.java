@@ -160,64 +160,19 @@ public class OrderServiceImp implements OrderService{
             // clear cart
             cartService.clearCart(user.getId());
 
-//            // tạo 1 cuốc xe giao hàng
-//            RideRequest rideRequest = new RideRequest();
-//            rideRequest.setUserId(user.getId());
-//            rideRequest.setRestaurantId(createdOrders.get(0).getRestaurant().getId());
-//            rideRequest.setOrderId(createdOrders.get(0).getId());
-//            rideRequest.setRestaurantLatitude(createdOrders.get(0).getRestaurant().getLatitude());
-//            rideRequest.setRestaurantLongitude(createdOrders.get(0).getRestaurant().getLongitude());
-//            rideRequest.setDestinationLatitude(order.getUserLatitude());
-//            rideRequest.setDestinationLongitude(order.getUserLongitude());
-//
-//            Ride requestRide = rideService.requestRide(rideRequest);
-//            // Tạo cuốc xe và tìm tài xế
-//            List<Driver> availableDrivers = driverService.getAvailableDrivers(
-//                    rideRequest.getRestaurantLatitude(),
-//                    rideRequest.getRestaurantLongitude(),
-//                    requestRide); // null cho Ride vì chưa có
-//
-//            if (availableDrivers.isEmpty()) {
-//                throw new Exception("No available drivers found");
-//            }
-//
-//            Double restaurantLatitude = restaurantRepository.findById(order.getRestaurantId()).get().getLatitude();
-//            Double restaurantLongitude = restaurantRepository.findById(order.getRestaurantId()).get().getLongitude();
-//
-//            Driver nearestDriver = driverService.findNearestDriver(
-//                    availableDrivers,
-//                    restaurantLatitude,
-//                    restaurantLongitude);
-//
-//            // Cập nhật RideRequest với tài xế
-//            Ride ride = rideService.createRideRequest(
-//                    nearestDriver,
-//                    restaurantLatitude,
-//                    restaurantLongitude,
-//                    rideRequest.getDestinationLatitude(),
-//                    rideRequest.getDestinationLongitude(),
-//                    rideRequest);
-//
-//            System.out.println("Ride created: " + ride);
-//
-//            if (ride != null) {
-//                ride.setOrders(createdOrders);
-//                ride.setDriver(nearestDriver);
-//                rideRepository.save(ride);
-//
-//                // Cập nhật đơn hàng với thông tin cuốc xe
-//                for (Order createdOrder : createdOrders) {
-//                    createdOrder.setRide(ride);
-//                    orderRepository.save(createdOrder);
-//                }
-//            } else {
-//                // Nếu không thể tạo cuốc xe, cập nhật lại trạng thái thanh toán cho các đơn hàng
-//                for (Order createdOrder : createdOrders) {
-//                    createdOrder.setIsPaid(false);
-//                    orderRepository.save(createdOrder);
-//                }
-//                throw new Exception("Error creating ride");
-//            }
+            // tạo 1 cuốc xe giao hàng
+            RideRequest rideRequest = new RideRequest();
+            rideRequest.setUserId(user.getId());
+            rideRequest.setRestaurantId(createdOrders.get(0).getRestaurant().getId());
+            rideRequest.setOrderId(createdOrders.get(0).getId());
+            rideRequest.setRestaurantLatitude(createdOrders.get(0).getRestaurant().getLatitude());
+            rideRequest.setRestaurantLongitude(createdOrders.get(0).getRestaurant().getLongitude());
+            rideRequest.setDestinationLatitude(order.getUserLatitude());
+            rideRequest.setDestinationLongitude(order.getUserLongitude());
+            rideRequest.setDistance(order.getDistance());
+            rideRequest.setDuration(order.getDuration());
+            rideRequest.setFare(order.getFare());
+            rideService.requestRide(rideRequest);
 
             return createdOrders;
         }
@@ -244,6 +199,18 @@ public class OrderServiceImp implements OrderService{
         Order order = findOrderById(orderId);
 
         ORDER_STATUS currentStatus = ORDER_STATUS.valueOf(order.getOrderStatus());
+
+        // hồi số lượng của các ingredient
+        if (newStatus == ORDER_STATUS.CANCELLED) {
+            for (OrderItem item : order.getItems()) {
+                for (String ingredient : item.getIngredients()) {
+                    IngredientsItem ingredientsItem = ingredientService.findIngredientByName(ingredient);
+                    ingredientsItem.setQuantity(ingredientsItem.getQuantity() + item.getQuantity());
+                    ingredientsItem.setInStoke(true);
+                    ingredientItemRepository.save(ingredientsItem);
+                }
+            }
+        }
 
         if (currentStatus.canTransitionTo(newStatus)) {
             order.setOrderStatus(newStatus.toString());

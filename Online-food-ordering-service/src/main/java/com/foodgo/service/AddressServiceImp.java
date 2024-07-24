@@ -63,7 +63,7 @@ public class AddressServiceImp implements AddressService {
         address.setState(req.getState());
         address.setPinCode(req.getPinCode());
         address.setCountry(req.getCountry());
-//        address.setPhone(req.getPhone());
+        address.setPhone(req.getPhone());
 //        address.setLatitude(req.getLatitude());
 //        address.setLongitude(req.getLongitude());
         address.setUser(user);  // Set the user of the address
@@ -84,7 +84,7 @@ public class AddressServiceImp implements AddressService {
         address.setState(req.getState());
         address.setPinCode(req.getPinCode());
         address.setCountry(req.getCountry());
-//        address.setPhone(req.getPhone());
+        address.setPhone(req.getPhone());
 
         return addressRepository.save(address);  // Save the updated address to the database
     }

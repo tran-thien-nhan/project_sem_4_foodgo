@@ -7,9 +7,11 @@ import { logOut } from '../../component/State/Authentication/Action';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { Divider, useMediaQuery } from '@mui/material';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import WorkHistoryIcon from '@mui/icons-material/WorkHistory';
 
 const menu = [
     { title: 'Dashboard', icon: <Dashboard />, path: '/' },
+    { title: 'Rides History', icon: <WorkHistoryIcon />, path: '/' },
     { title: 'Shipper Details', icon: <AdminPanelSettingsIcon />, path: '/details' },
     { title: 'Log out', icon: <LogoutIcon />, path: '/' }
 ]

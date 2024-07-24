@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @Entity
@@ -16,9 +17,11 @@ public class DeclinedDriver {
 
     @ManyToOne
     @JoinColumn(name = "driver_id")
+    @ToString.Exclude
     private Driver driver;
 
     @ManyToOne
     @JoinColumn(name = "ride_id")
+    @ToString.Exclude
     private Ride ride;
 }

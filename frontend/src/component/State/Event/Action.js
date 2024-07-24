@@ -130,6 +130,7 @@ export const addEventToFavorite = ({ eventId, jwt }) => {
             dispatch(getUser(jwt));
             dispatch(getFavoritesEvents(jwt))
             dispatch(getAllFavoritedRestaurantsEvents(jwt));
+            dispatch(getAllPubLicEvents());
             console.log("Added event to favorites: ", data);
         } catch (error) {
             dispatch({ type: ADD_EVENT_TO_FAVORITE_FAILURE, payload: error });
@@ -159,6 +160,7 @@ export const getFavoritesEvents = (jwt) => {
                 },
             });
             dispatch({ type: GET_EVENT_FAVORITED_BY_ID_SUCCESS, payload: data });
+            console.log("GET_EVENT_FAVORITED_BY_ID_SUCCESS: ", data);
         } catch (error) {
             dispatch({ type: GET_EVENT_FAVORITED_BY_ID_FAILURE, payload: error });
             console.log("Error: ", error);

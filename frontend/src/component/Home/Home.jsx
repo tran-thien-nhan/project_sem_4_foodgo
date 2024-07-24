@@ -26,6 +26,8 @@ const Home = () => {
     const [duration, setDuration] = useState(null)
     const [fare, setFare] = useState(null)
 
+    console.log("auth: ",auth);
+
     useEffect(() => {
         const fetchCoordinates = async () => {
             const coordinates1 = await getCoordinates(address1)
@@ -101,21 +103,11 @@ const Home = () => {
                                 event={e}
                                 onShow={true}
                                 onAddEventToFavorites={handleAddEventToFavorites}
-                                eventsFavorites={auth.user?.eventDtoFavorites}
+                                eventsFavorites={auth.user?.favoriteEventsDto}
                             />
                         </div>
                     ))}
                 </Slider>
-            </section>
-            <section className='px-5 lg:px-20'>
-                <h1 className='text-2xl font-semibold text-gray-400 py-3 pb-5'>Coordinates</h1>
-                <div>
-                    <p>Coordinates for {address1}: {coords1 ? `Lat: ${coords1.lat}, Long: ${coords1.lon}` : 'Loading...'}</p>
-                    <p>Coordinates for {address2}: {coords2 ? `Lat: ${coords2.lat}, Long: ${coords2.lon}` : 'Loading...'}</p>
-                    <p>Distance: {distance !== null ? `${distance.toFixed(2)} km` : 'Calculating distance...'}</p>
-                    <p>Duration: {duration !== null ? `${duration.toFixed(2)} minutes` : 'Calculating duration...'}</p>
-                    <p>Fare: {fare !== null ? `${fare.toLocaleString('vi-VN')} VND` : 'Calculating fare...'}</p>
-                </div>
             </section>
         </div>
     )

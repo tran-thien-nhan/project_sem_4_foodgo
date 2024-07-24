@@ -185,7 +185,7 @@ public class DriverServiceImp implements DriverService{
             Driver driver = driverOpt.get();
             Ride ride = driver.getCurrentRide();
             if (ride == null) {
-                throw new Exception("Driver has no current ride");
+                return null;
             }
 
             return DtoMapper.toRideDto(ride);
@@ -231,9 +231,16 @@ public class DriverServiceImp implements DriverService{
     }
 
     @Override
-    public List<Ride> completedRides(Long driverId) throws Exception {
+    public List<RideDto> completedRides(Long driverId) throws Exception {
         try{
-            return driverRepository.completedRides(driverId);
+//            return driverRepository.completedRides(driverId);
+            List<Ride> rides = driverRepository.completedRides(driverId);
+            List<RideDto> rideDtos = new ArrayList<>();
+            for (Ride ride : rides) {
+                RideDto r = DtoMapper.toRideDto(ride);
+                rideDtos.add(r);
+            }
+            return rideDtos;
         }
         catch (Exception e){
             System.out.println(e.getMessage());
@@ -330,6 +337,23 @@ public class DriverServiceImp implements DriverService{
                 throw new Exception("Image not found");
             }
         } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    @Override
+    public List<RideDto> cancelledRides(Long driverId) throws Exception {
+        try{
+            List<Ride> rides = driverRepository.cancelledRides(driverId);
+            List<RideDto> rideDtos = new ArrayList<>();
+            for (Ride ride : rides) {
+                RideDto r = DtoMapper.toRideDto(ride);
+                rideDtos.add(r);
+            }
+            return rideDtos;
+        }
+        catch (Exception e){
+            System.out.println(e.getMessage());
             throw new Exception(e.getMessage());
         }
     }

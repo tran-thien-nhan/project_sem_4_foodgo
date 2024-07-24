@@ -85,7 +85,7 @@ public class UserServiceImp implements UserService {
         }).collect(Collectors.toList());
 
         // Gán danh sách EventDto vào user
-        user.setEventDto(favoriteEventDtos);
+//        user.setEventDto(favoriteEventDtos);
 
         return user;
     }

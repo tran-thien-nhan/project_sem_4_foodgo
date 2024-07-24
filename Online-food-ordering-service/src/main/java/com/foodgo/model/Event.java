@@ -50,4 +50,11 @@ public class Event {
     @JoinColumn(name = "restaurant_id")
 //    @JsonIgnore
     private Restaurant restaurant;
+
+    @JsonIgnore
+    @ManyToMany
+    @JoinTable(name = "event_user",
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
+    private List<User> users; // Mảng chứa thông tin các user tham gia event
 }

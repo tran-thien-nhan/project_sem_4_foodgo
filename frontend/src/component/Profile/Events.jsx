@@ -35,8 +35,8 @@ const Events = () => {
   };
 
   const filterEvents = () => {
-    if (auth.user?.eventDto && event.events) {
-      const filtered = auth.user.eventDto.filter(userEvent => {
+    if (auth.user?.favoriteEventsDto && event.events) {
+      const filtered = auth.user.favoriteEventsDto.filter(userEvent => {
         const matchingEvent = event.events.find(e => e.id === userEvent.id);
         return matchingEvent?.available && (selectedRestaurant === '' || matchingEvent.restaurant.name === selectedRestaurant);
       });
@@ -70,12 +70,12 @@ const Events = () => {
         </select>
       </div>
 
-      {filteredEvents.map((event) =>
+      {event.events.map((event) =>
         <EventCard
           key={event.id}
           event={event}
           onAddEventToFavorites={handleAddEventToFavorites}
-          eventsFavorites={auth.user?.eventDtoFavorites}
+          eventsFavorites={auth.user?.favoriteEventsDto}
           onShow={true}
         />
       )}

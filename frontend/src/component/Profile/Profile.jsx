@@ -23,7 +23,7 @@ const Profile = () => {
     const [show, setShow] = useState(false);
     // const count = event.favorites.length || event.count;
     let count = event.count;
-    console.log("event.favorites: ",event);
+    // console.log("event.favorites: ",event);
 
     // const count = event.favorites.filter(favorite => favorite.available).length;
 

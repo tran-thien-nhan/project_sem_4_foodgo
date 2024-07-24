@@ -170,8 +170,8 @@ public class RestaurantServiceImp implements RestaurantService{
                     restaurant.setTotalFavorites(restaurant.getTotalFavorites() - 1); // giảm số lượng yêu thích của nhà hàng xuống 1 nếu nhà hàng thực sự bị xóa
                     dto.setTotalFavorites(restaurant.getTotalFavorites()); // cập nhật lại số lượng yêu thích của nhà hàng
                     favorites.removeIf(favorite -> favorite.getId().equals(restaurantId)); // xóa nhà hàng khỏi danh sách yêu thích của người dùng
-                    user.getEventDto().removeIf(eventDto -> eventDto.getOfRestaurant().equals(restaurant.getName())); // xóa sự kiện của nhà hàng khỏi danh sách sự kiện yêu thích của người dùng
-                    user.getEventDtoFavorites().removeIf(eventDtoFavorite -> eventDtoFavorite.getOfRestaurant().equals(restaurant.getName())); // xóa sự kiện yêu thích của nhà hàng khỏi danh sách sự kiện yêu thích của người dùng
+//                    user.getEventDto().removeIf(eventDto -> eventDto.getOfRestaurant().equals(restaurant.getName())); // xóa sự kiện của nhà hàng khỏi danh sách sự kiện yêu thích của người dùng
+//                    user.getEventDtoFavorites().removeIf(eventDtoFavorite -> eventDtoFavorite.getOfRestaurant().equals(restaurant.getName())); // xóa sự kiện yêu thích của nhà hàng khỏi danh sách sự kiện yêu thích của người dùng
                     // update lại các truong isFull và isAvailable của sự kiện
                     List<Event> events = eventRepository.findByRestaurantId(restaurant.getId());
                     for (Event event : events) {

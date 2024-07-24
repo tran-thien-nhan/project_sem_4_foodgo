@@ -29,6 +29,9 @@ import {
     DELETE_DRIVER_IMAGE_REQUEST,
     DELETE_DRIVER_IMAGE_SUCCESS,
     DELETE_DRIVER_IMAGE_FAILURE,
+    CANCELLED_RIDES_REQUEST,
+    CANCELLED_RIDES_SUCCESS,
+    CANCELLED_RIDES_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -39,6 +42,9 @@ const initialState = {
     error: null,
     allocated: [],
     currentRide: null,
+    completeRides: null,
+    currentRideCount: null,
+    cancelledRides: null
 };
 
 const driverReducer = (state = initialState, action) => {
@@ -53,6 +59,7 @@ const driverReducer = (state = initialState, action) => {
         case COMPLETED_RIDES_REQUEST:
         case UPDATE_DRIVER_REQUEST:
         case DELETE_DRIVER_IMAGE_REQUEST:
+        case CANCELLED_RIDES_REQUEST:
             return {
                 ...state,
                 loading: true,
@@ -77,13 +84,27 @@ const driverReducer = (state = initialState, action) => {
                 ...state,
                 loading: false,
                 currentRide: action.payload,
+                currentRideCount: action.payload.length,
+                error: null,
+            };
+        case COMPLETED_RIDES_SUCCESS:
+            return {
+                ...state,
+                loading: false,
+                completeRides: action.payload.length,
+                error: null,
+            };
+        case CANCELLED_RIDES_SUCCESS:
+            return {
+                ...state,
+                loading: false,
+                cancelledRides: action.payload.length,
                 error: null,
             };
         case GET_AVAILABLE_DRIVERS_SUCCESS:
         case FIND_NEAREST_DRIVER_SUCCESS:
         case GET_DRIVER_PROFILE_SUCCESS:
         case FIND_DRIVER_BY_ID_SUCCESS:
-        case COMPLETED_RIDES_SUCCESS:
         case UPDATE_DRIVER_SUCCESS:
             return {
                 ...state,
@@ -107,6 +128,7 @@ const driverReducer = (state = initialState, action) => {
         case COMPLETED_RIDES_FAILURE:
         case UPDATE_DRIVER_FAILURE:
         case DELETE_DRIVER_IMAGE_FAILURE:
+        case CANCELLED_RIDES_FAILURE:
             return {
                 ...state,
                 loading: false,

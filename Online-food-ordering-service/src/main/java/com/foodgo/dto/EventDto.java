@@ -34,4 +34,6 @@ public class EventDto {
     private LocalDateTime endsAt;
 
     private List<String> images;
+
+    private Integer totalFavorites = 0;
 }

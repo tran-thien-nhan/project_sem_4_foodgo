@@ -120,12 +120,26 @@ public class DriverController {
     }
 
     @GetMapping("/{driverId}/completed-rides")
-    public ResponseEntity<List<Ride>> completedRides(@PathVariable Long driverId,
+    public ResponseEntity<List<RideDto>> completedRides(@PathVariable Long driverId,
                                                      @RequestHeader("Authorization") String jwt) throws Exception {
         try{
             User user = userService.findUserByJwtToken(jwt);
-            List<Ride> rides = driverService.completedRides(driverId);
-            return ResponseEntity.ok(rides);
+            List<RideDto> rideDtos = driverService.completedRides(driverId);
+            return ResponseEntity.ok(rideDtos);
+        }
+        catch(Exception e){
+            throw new Exception("Error: " + e.getMessage());
+        }
+    }
+
+    //cancelledRides
+    @GetMapping("/{driverId}/cancelled-rides")
+    public ResponseEntity<List<RideDto>> cancelledRides(@PathVariable Long driverId,
+                                                     @RequestHeader("Authorization") String jwt) throws Exception {
+        try{
+            User user = userService.findUserByJwtToken(jwt);
+            List<RideDto> rideDtos = driverService.cancelledRides(driverId);
+            return ResponseEntity.ok(rideDtos);
         }
         catch(Exception e){
             throw new Exception("Error: " + e.getMessage());

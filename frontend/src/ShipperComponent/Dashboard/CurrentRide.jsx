@@ -11,6 +11,8 @@ import CreditCardIcon from '@mui/icons-material/CreditCard';
 import { useDispatch } from 'react-redux';
 import { getAllocatedRides, getDriverCurrentRide } from '../../component/State/Driver/Action';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
+import { completeRide, startRide } from '../../component/State/Ride/Action';
+import MapComponent from '../../component/util/MapComponent';
 
 const style = {
   position: 'absolute',
@@ -58,6 +60,27 @@ const CurrentRide = ({ ride }) => {
     const formattedHours = hours % 12 || 12;
 
     return `${day}/${month}/${year} ${formattedHours}:${minutes} ${ampm}`;
+  };
+
+  const handleStartRide = (rideId, driverId) => {
+    dispatch(startRide({ id: rideId, jwt, driverId }));
+  }
+
+  const handleCompleteRide = (rideId, driverId) => {
+    dispatch(completeRide({ id: rideId, jwt, driverId }));
+  }
+
+  const handleChangeRideStatus = (status) => {
+    switch (status) {
+      case 'ACCEPTED':
+        return <Button variant="contained" color="primary" onClick={() => handleStartRide(ride.rideId, ride.driverId)}>START RIDE</Button>;
+      case 'STARTED':
+        return <Button variant="contained" color="success" onClick={() => handleCompleteRide(ride.rideId, ride.driverId)}>COMPLETE</Button>;
+      case 'CANCELLED':
+        return <FmdGoodIcon color="error" />;
+      default:
+        return <FmdGoodIcon />;
+    }
   };
 
   const handlePaymentIcon = (paymentMethod) => {
@@ -127,9 +150,9 @@ const CurrentRide = ({ ride }) => {
             </p>
           </div>
           <div>
-            <Button variant="contained" color="success">
-              COMPLETED
-            </Button>
+            {
+              handleChangeRideStatus(ride.status)
+            }
           </div>
         </div>
         <div className='mx-2'>
@@ -137,6 +160,9 @@ const CurrentRide = ({ ride }) => {
             INFO
           </Button>
         </div>
+      </CardContent>
+      <CardContent>
+        <MapComponent address1={ride.userAddress} address2={ride.restaurantAddress} />
       </CardContent>
       {selectedOrder && (
         <Modal
@@ -169,12 +195,17 @@ const CurrentRide = ({ ride }) => {
                   </tr>
                   <tr>
                     <td><strong>Status:</strong></td>
+                    <td>{selectedOrder.orderStatus}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Ride Status:</strong></td>
                     <td>{selectedOrder.status}</td>
                   </tr>
                   <tr>
                     <td><strong>Delivery Address:</strong></td>
                     <td>{selectedOrder.userAddress}</td>
                   </tr>
+                  <Divider className='py-2'/>
                   <tr>
                     <td><strong>Items:</strong></td>
                     <td>

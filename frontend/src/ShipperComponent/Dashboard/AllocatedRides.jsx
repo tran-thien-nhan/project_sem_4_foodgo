@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Button from '@mui/material/Button';
 import LocalTaxiIcon from '@mui/icons-material/LocalTaxi';
-import { IconButton, Card, CardContent, Tooltip } from '@mui/material';
+import { IconButton, Card, CardContent, Tooltip, Modal, Box, Typography, Divider } from '@mui/material';
 import FmdGoodIcon from '@mui/icons-material/FmdGood';
 import PersonPinCircleIcon from '@mui/icons-material/PersonPinCircle';
 import TimerIcon from '@mui/icons-material/Timer';
@@ -12,9 +12,30 @@ import WalletIcon from '@mui/icons-material/Wallet';
 import AtmIcon from '@mui/icons-material/Atm';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 
+const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+};
+
 const AllocatedRides = ({ rides }) => {
     const dispatch = useDispatch();
     const jwt = localStorage.getItem('jwt');
+    const [open, setOpen] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState(null);
+
+    const handleOpen = (ride) => {
+        setSelectedOrder(ride);
+        setOpen(true);
+    };
+
+    const handleClose = () => setOpen(false);
 
     useEffect(() => {
         if (rides?.driverId) {
@@ -52,19 +73,19 @@ const AllocatedRides = ({ rides }) => {
             case 'BY_CASH':
                 return (
                     <Tooltip title="pay by cash">
-                        <WalletIcon/>
+                        <WalletIcon />
                     </Tooltip>
                 );
             case 'BY_VNPAY':
                 return (
                     <Tooltip title="paid by VNPay">
-                        <AtmIcon/>
+                        <AtmIcon />
                     </Tooltip>
                 );
             case 'BY_CREDIT_CARD':
                 return (
                     <Tooltip title="paid by credit card">
-                        <CreditCardIcon/>
+                        <CreditCardIcon />
                     </Tooltip>
                 );
             default:
@@ -73,6 +94,10 @@ const AllocatedRides = ({ rides }) => {
     };
 
     let rideRequest = rides.filter(r => r.status === 'REQUESTED');
+
+    if (rideRequest.length == 0) {
+        return <p>No Allocated ride available.</p>;
+      }
 
     return (
         <div>
@@ -102,7 +127,7 @@ const AllocatedRides = ({ rides }) => {
                                 </p>
                                 <p className="text-sm text-gray-500 mb-1">
                                     <IconButton>
-                                        <FmdGoodIcon/>
+                                        <FmdGoodIcon />
                                     </IconButton>
                                     {ride.userAddress}
                                 </p>
@@ -120,9 +145,88 @@ const AllocatedRides = ({ rides }) => {
                                 <Button variant="contained" color="error" onClick={() => handleDecline(ride.rideId, ride.driverId)}>
                                     DECLINE
                                 </Button>
+                                <Button variant="contained" color="info" onClick={() => handleOpen(ride)}>
+                                    INFO
+                                </Button>
                             </div>
                         </div>
                     </CardContent>
+                    {selectedOrder && (
+                        <Modal
+                            open={open}
+                            onClose={handleClose}
+                            aria-labelledby="modal-modal-title"
+                            aria-describedby="modal-modal-description"
+                        >
+                            <Box sx={style}>
+                                <Typography id="modal-modal-title" variant="h6" component="h2">
+                                    Order Details
+                                </Typography>
+                                <Typography
+                                    sx={{ mt: 2 }}
+                                    id='invoice-details'
+                                >
+                                    <table>
+                                        <tbody>
+                                            <tr>
+                                                <td><strong>Order ID:</strong></td>
+                                                <td>{selectedOrder.orderId}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Total Price:</strong></td>
+                                                <td>{selectedOrder.total.toLocaleString('vi-VN')}đ</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Payment Method:</strong></td>
+                                                <td>{selectedOrder.paymentMethod === "BY_CASH" ? "COD" : (selectedOrder.paymentMethod === "BY_CREDIT_CARD" ? "BY CREDIT CARD" : "BY VNPAY")}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Status:</strong></td>
+                                                <td>{selectedOrder.orderStatus}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Delivery Address:</strong></td>
+                                                <td>{selectedOrder.userAddress}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Items:</strong></td>
+                                                <td>
+                                                    {selectedOrder.orderItem.map((item, index) => (
+                                                        <div key={index}>
+                                                            <strong>{item.itemName} x</strong> {item.itemQuantity}<br />
+                                                            <strong>Ingredients: </strong>
+                                                            {
+                                                                (item.ingredientsName.length > 0)
+                                                                    ? item.ingredientsName.join(', ')
+                                                                    : 'No ingredients'
+                                                            }
+                                                            <br />
+                                                            <Divider className='py-3' />
+                                                        </div>
+                                                    ))}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                </Typography>
+                                {/* {
+              selectedOrder.orderStatus === "PENDING" && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handlePrintInvoiceModal()}
+                  className='justify-center items-center'
+                  fullWidth
+                >
+                  <IconButton>
+                    <PrintIcon />
+                  </IconButton>
+                </Button>)
+            } */}
+                            </Box>
+                        </Modal>
+                    )}
                 </Card>
             ))}
         </div>

@@ -407,19 +407,19 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
     };
 
     const handleRequestRide = (order) => {
-        if (order.orderStatus !== "DELIVERING") {
-            toast.error("Order must be in 'DELIVERING' status to request a ride", {
-                position: "top-center",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "colored",
-            });
-            return;
-        }
+        // if (order.orderStatus !== "DELIVERING") {
+        //     toast.error("Order must be in 'DELIVERING' status to request a ride", {
+        //         position: "top-center",
+        //         autoClose: 5000,
+        //         hideProgressBar: false,
+        //         closeOnClick: true,
+        //         pauseOnHover: true,
+        //         draggable: true,
+        //         progress: undefined,
+        //         theme: "colored",
+        //     });
+        //     return;
+        // }
         const rideRequest = {
             restaurantLatitude: restaurant.usersRestaurant.latitude,
             restaurantLongitude: restaurant.usersRestaurant.longitude,

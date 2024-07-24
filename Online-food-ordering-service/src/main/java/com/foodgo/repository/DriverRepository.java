@@ -21,5 +21,8 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
     @Query("SELECT r FROM Ride r WHERE r.driver.id = :driverId AND r.status = 'COMPLETED'")
     public List<Ride> completedRides(@Param("driverId") Long driverId);
 
+    @Query("SELECT r FROM Ride r WHERE r.driver.id = :driverId AND r.status = 'CANCELLED'")
+    public List<Ride> cancelledRides(@Param("driverId") Long driverId);
+
     Driver findByEmailAndRole(String email, USER_ROLE role);
 }

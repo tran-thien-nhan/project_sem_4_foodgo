@@ -13,9 +13,10 @@ import { useSelector } from 'react-redux';
 const EventCard = ({ event, onAddEventToFavorites, eventsFavorites, onShow, onEdit, showEdit, onUpdateAvailability }) => {
     const [isEventLoading, setIsEventLoading] = useState(false);
     const isLoading = useSelector(state => state.event.loading);
-    
+
     useEffect(() => {
         if (!isLoading) {
+            // console.log("EVENT: ", event);
             setIsEventLoading(false);
         }
     }, [isLoading]);
@@ -90,12 +91,12 @@ const EventCard = ({ event, onAddEventToFavorites, eventsFavorites, onShow, onEd
                         </Grid>
                         <Grid item sx={12}>
                             {
-                                (event.totalFavorites >= 0) &&
+                                // (event.totalFavorites >= 0) &&
                                 <>
                                     <Chip label=
                                         {
                                             <IconButton className='flex gap-1'>
-                                                <p className='text-sm'>{event.totalFavorites}</p>
+                                                <p className='text-sm'>{event.totalFavorites} / {event.eventLimit}</p>
                                                 <PersonIcon
                                                     sx={{ fontSize: "1.25rem" }}
                                                 />

@@ -30,6 +30,9 @@ import {
     DELETE_DRIVER_IMAGE_FAILURE,
     DELETE_DRIVER_IMAGE_SUCCESS,
     DELETE_DRIVER_IMAGE_REQUEST,
+    CANCELLED_RIDES_REQUEST,
+    CANCELLED_RIDES_SUCCESS,
+    CANCELLED_RIDES_FAILURE,
 } from "./ActionType";
 import { Bounce, toast } from "react-toastify";
 
@@ -172,18 +175,38 @@ export const findDriverById = (driverId, token) => {
 }
 
 // Action creator for getting completed rides
-export const completedRides = (driverId, token) => {
+export const completedRides = ({driverId, token}) => {
     return async (dispatch) => {
         dispatch({ type: COMPLETED_RIDES_REQUEST });
         try {
-            const { data } = await api.get(`/api/admin/shipper/${driverId}/completedRides`, {
+            const { data } = await api.get(`/api/admin/shipper/${driverId}/completed-rides`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
             dispatch({ type: COMPLETED_RIDES_SUCCESS, payload: data });
+            console.log("COMPLETED_RIDES_SUCCESS: ",data);
         } catch (error) {
             dispatch({ type: COMPLETED_RIDES_FAILURE, payload: error.message });
+            console.log("ERROR: ",error);
+        }
+    }
+}
+
+export const cancelledRides = ({driverId, token}) => {
+    return async (dispatch) => {
+        dispatch({ type: CANCELLED_RIDES_REQUEST });
+        try {
+            const { data } = await api.get(`/api/admin/shipper/${driverId}/cancelled-rides`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            dispatch({ type: CANCELLED_RIDES_SUCCESS, payload: data });
+            console.log("CANCELLED_RIDES_SUCCESS: ",data);
+        } catch (error) {
+            dispatch({ type: CANCELLED_RIDES_FAILURE, payload: error.message });
+            console.log("ERROR: ",error);
         }
     }
 }

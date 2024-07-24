@@ -49,6 +49,8 @@ public class RideServiceImp implements RideService{
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private DeclinedDriverRepository declinedDriverRepository;
     @Override
     public Ride requestRide(RideRequest rideRequest) {
         try{
@@ -79,7 +81,7 @@ public class RideServiceImp implements RideService{
                     restaurantLongitude);
 
             if(nearestDriver == null) {
-                throw new RuntimeException("No driver near restaurant");
+                throw new RuntimeException("No driver near restaurant"); // mai mot cho vào hàng chờ redis
             }
 
             Ride ride = createRideRequest(
@@ -212,23 +214,31 @@ public class RideServiceImp implements RideService{
     public void declineRide(Long rideId, Long driverId) { // Từ chối chuyến đi
         try {
             Ride ride = findRideById(rideId); // Tìm chuyến đi theo ID
+            ride.setStatus(RIDE_STATUS.CANCELLED); // Cập nhật trạng thái chuyến đi thành đã từ chối
             DeclinedDriver declinedDriver = new DeclinedDriver(); // Tạo một tài xế từ chối
-            declinedDriver.setId(driverId); // Gán ID của tài xế từ chối
+            declinedDriver.setRide(ride); // Gán chuyến đi cho tài xế từ chối
+            declinedDriver.setDriver(driverRepository.findById(driverId).get()); // Gán thông tin tài xế từ chối
+
+            declinedDriverRepository.save(declinedDriver); // Lưu thông tin tài xế từ chối
+
             ride.getDeclinedDrivers().add(declinedDriver); // Thêm tài xế từ chối vào danh sách tài xế từ chối
+
             List<Driver> availableDrivers = driverService.getAvailableDrivers( // Lấy danh sách tài xế có sẵn
                     ride.getRestaurantLatitude(), // Vĩ độ nhà hàng
                     ride.getRestaurantLongitude(), // Kinh độ nhà hàng
                     ride); // Chuyến đi
+
             Driver nearestDriver = driverService.findNearestDriver( // Tìm tài xế gần nhà hàng nhất
                     availableDrivers, // Danh sách tài xế có sẵn
                     ride.getRestaurantLatitude(), // Vĩ độ nhà hàng
                     ride.getRestaurantLongitude() // Kinh độ nhà hàng
             );
+
             ride.setDriver(nearestDriver); // Cập nhật tài xế cho chuyến đi
             rideRepository.save(ride); // Lưu thông tin chuyến đi
         }
         catch (Exception e) {
-            throw new RuntimeException("Error in declining ride");
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -237,8 +247,10 @@ public class RideServiceImp implements RideService{
         try {
             Ride ride = findRideById(rideId); // Tìm chuyến đi theo ID
             ride.setStatus(RIDE_STATUS.STARTED); // Cập nhật trạng thái chuyến đi thành đã bắt đầu
+            ride.getOrder().setOrderStatus(ORDER_STATUS.DELIVERING.toString()); // Cập nhật trạng thái đơn hàng thành đang giao hàng
             ride.setStartTime(LocalDateTime.now()); // Cập nhật thời gian bắt đầu chuyến đi
             rideRepository.save(ride); // Lưu thông tin chuyến đi
+            orderRepository.save(ride.getOrder()); // Lưu thông tin đơn hàng
         }
         catch (Exception e) {
             throw new RuntimeException("Error in starting ride");
@@ -252,39 +264,22 @@ public class RideServiceImp implements RideService{
             Driver driver = ride.getDriver(); // Lấy thông tin tài xế
             driver.setCurrentRide(null); // Cập nhật chuyến đi hiện tại của tài xế thành null
             ride.setStatus(RIDE_STATUS.COMPLETED); // Cập nhật trạng thái chuyến đi thành đã hoàn thành
+            ride.getOrder().setOrderStatus(ORDER_STATUS.COMPLETED.toString()); // Cập nhật trạng thái đơn hàng thành đã hoàn thành
             ride.setEndTime(LocalDateTime.now()); // Cập nhật thời gian kết thúc chuyến đi
 
-//            LocalDateTime startTime = ride.getStartTime();
-//            LocalDateTime endTime = ride.getEndTime();
-//
-//            if (startTime == null || endTime == null) {
-//                throw new RuntimeException("Ride start time or end time is null");
-//            }
-//
-//            Duration duration = Duration.between(startTime, endTime);
-//            Long durationInMinutes = duration.toMinutes();
-//            ride.setDuration(durationInMinutes);
-//
-//            double distance = calculator.calculateDistance(
-//                    ride.getRestaurantLatitude(),
-//                    ride.getRestaurantLongitude(),
-//                    ride.getDestinationLatitude(),
-//                    ride.getDestinationLongitude());
-//
-//            ride.setDistance(Math.round(distance * 100.0/100.0));
-//
-//            double fare = calculator.calculateFare(distance);
-//            ride.setFare(Math.round(fare));
-
             driver.getRides().add(ride);
+            if(driver.getTotalRevenue() == null) {
+                driver.setTotalRevenue(0L);
+            }
             Long totalRevenue = ride.getDriver().getTotalRevenue() + Math.round(ride.getFare());
             driver.setTotalRevenue(totalRevenue);
 
             driverRepository.save(driver);
             rideRepository.save(ride);
+            orderRepository.save(ride.getOrder());
         }
         catch (Exception e) {
-            throw new RuntimeException("Error in completing ride");
+            throw new RuntimeException(e.getMessage());
         }
     }
 

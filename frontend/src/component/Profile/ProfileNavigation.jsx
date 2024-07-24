@@ -113,7 +113,7 @@ const ProfileNavigation = ({ open, handleClose, setOpen, count, orderCount }) =>
     ];
 
     const filteredMenu = menu.filter(item => {
-        if (item.title === "Change Password" && auth.user.provider === "GOOGLE") {
+        if (item.title === "Change Password" && auth.user?.provider === "GOOGLE") {
             return false;
         }
         return true;
@@ -137,7 +137,8 @@ const ProfileNavigation = ({ open, handleClose, setOpen, count, orderCount }) =>
                             role="presentation"
                             onClick={toggleDrawer(false)}
                         >
-                            {filteredMenu.map((item, i) => (
+                            {
+                            filteredMenu.map((item, i) => (
                                 <MenuItem
                                     onClick={() => handleNavigate(item)}
                                     key={i}
@@ -147,7 +148,9 @@ const ProfileNavigation = ({ open, handleClose, setOpen, count, orderCount }) =>
                                         {renderTitle(item.title)}
                                     </span>
                                 </MenuItem>
-                            ))}
+                            ))
+                            || <p>waiting....</p>
+                            }
                         </Box>
                     </Drawer>
                 </>

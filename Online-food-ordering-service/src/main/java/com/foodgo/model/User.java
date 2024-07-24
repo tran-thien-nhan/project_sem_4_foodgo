@@ -43,11 +43,17 @@ public class User {
     @ElementCollection //tạo bảng mới chứa thông tin favorites, không cần tạo class mới
     private List<RestaurantDto> favorites = new ArrayList(); //mảng chứa thông tin các nhà hàng yêu thích
 
-    @ElementCollection
-    private List<EventDto> eventDto = new ArrayList(); //mảng chứa thông tin các sự kiện của 1 nhà hàng yêu thích
+    @JsonIgnore
+    @ManyToMany
+    @JoinTable(
+            name = "user_event",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "event_id")
+    )
+    private List<Event> events = new ArrayList<>();
 
-    @ElementCollection
-    private List<EventDto> eventDtoFavorites = new ArrayList(); //mảng chứa thông tin các sự kiện yêu thích
+    @ElementCollection //tạo bảng mới chứa thông tin favoriteEventsDto, không cần tạo class mới
+    private List<EventDto> favoriteEventsDto = new ArrayList<>();
 
     @JsonIgnore //tránh lặp vô hạn, không lấy thông tin của addresses, chỉ lấy thông tin của user
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "user") //một user có thể có nhiều địa chỉ, khi xóa user thì xóa hết địa chỉ, orphanRemoval xóa địa chỉ khi không có user nào sử dụng
@@ -60,5 +66,5 @@ public class User {
     private Boolean shipperInfoFilled = false;
 
     @ElementCollection //tạo bảng mới chứa thông tin previousPasswords, không cần tạo class mới
-    private List<String> previousPasswords = new ArrayList<>();;
+    private List<String> previousPasswords = new ArrayList<>();
 }

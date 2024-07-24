@@ -89,7 +89,7 @@ public class RideController {
             userService.findUserByJwtToken(jwt);
             rideService.completeRide(id);
         } catch (Exception e) {
-            throw new RuntimeException("Ride not found");
+            throw new RuntimeException(e.getMessage());
         }
     }
 

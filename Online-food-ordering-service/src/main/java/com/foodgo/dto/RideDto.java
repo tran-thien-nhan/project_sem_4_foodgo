@@ -32,4 +32,5 @@ public class RideDto {
     private Long total;
     private RIDE_STATUS status;
     private String paymentMethod;
+    private String orderStatus;
 }
