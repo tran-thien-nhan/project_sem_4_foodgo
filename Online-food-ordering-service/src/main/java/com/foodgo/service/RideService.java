@@ -6,6 +6,8 @@ import com.foodgo.model.Ride;
 import com.foodgo.model.User;
 import com.foodgo.request.RideRequest;
 
+import java.util.List;
+
 public interface RideService {
 
     public Ride requestRide(RideRequest rideRequest);
@@ -21,6 +23,6 @@ public interface RideService {
     public void acceptRide(Long rideId);
     public void declineRide(Long rideId, Long driverId);
     public void startRide(Long rideId);
-    public void completeRide(Long rideId);
+    public void completeRide(Long rideId, List<String> images, String comment);
     public void cancelRide(Long rideId);
 }

@@ -89,4 +89,8 @@ public class Ride {
     private Long fare; // Giá cước
 
     private Long total;
+
+    @ElementCollection // Đánh dấu là một collection của các phần tử, không phải một entity riêng biệt
+    @Column(length = 1000) // Độ dài tối đa của mỗi phần tử
+    private List<String> images; // Danh sách các đường dẫn hình ảnh đơn hàng (sau khi thành công hoặc thất bại)
 }

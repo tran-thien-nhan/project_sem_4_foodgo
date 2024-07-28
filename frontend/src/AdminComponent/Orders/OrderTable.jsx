@@ -682,6 +682,10 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
                                         <td>{selectedOrder.longitude}</td>
                                     </tr>
                                     <tr>
+                                        <td><strong>Comment:</strong></td>
+                                        <td>{selectedOrder.comment}</td>
+                                    </tr>
+                                    <tr>
                                         <td><strong>Items:</strong></td>
                                         <td>
                                             {selectedOrder.items.map((item, index) => (

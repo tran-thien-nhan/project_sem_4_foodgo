@@ -8,6 +8,7 @@ import AdminNavBar from '../../component/Navbar/AdminNavBar';
 import { Route, Routes } from 'react-router-dom';
 import ShipperNavbar from '../../component/Navbar/ShipperNavbar';
 import ShipperDetails from '../Details/ShipperDetails';
+import ShipperHistory from '../History/ShipperHistory';
 
 const AdminShipper = () => {
     const { driver } = useSelector(store => store);
@@ -41,6 +42,7 @@ const AdminShipper = () => {
                     <ShipperNavbar toggleDrawer={toggleDrawer} />
                     <Routes>
                         <Route path="/" element={<ShipperDashboard />} />
+                        <Route path="/history" element={<ShipperHistory />} />
                         <Route path="/details" element={<ShipperDetails />} />
                     </Routes>
                 </div>

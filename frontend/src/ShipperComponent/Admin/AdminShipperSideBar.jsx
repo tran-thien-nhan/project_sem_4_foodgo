@@ -11,7 +11,7 @@ import WorkHistoryIcon from '@mui/icons-material/WorkHistory';
 
 const menu = [
     { title: 'Dashboard', icon: <Dashboard />, path: '/' },
-    { title: 'Rides History', icon: <WorkHistoryIcon />, path: '/' },
+    { title: 'Rides History', icon: <WorkHistoryIcon />, path: '/history' },
     { title: 'Shipper Details', icon: <AdminPanelSettingsIcon />, path: '/details' },
     { title: 'Log out', icon: <LogoutIcon />, path: '/' }
 ]

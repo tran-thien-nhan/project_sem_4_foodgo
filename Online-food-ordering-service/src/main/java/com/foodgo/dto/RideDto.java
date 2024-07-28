@@ -33,4 +33,6 @@ public class RideDto {
     private RIDE_STATUS status;
     private String paymentMethod;
     private String orderStatus;
+    private List<String> images;
+    private String comment;
 }

@@ -54,6 +54,7 @@ const Cart = () => {
     const address = useSelector(state => state.address.addresses);
     const jwt = localStorage.getItem('jwt');
     const [coordsUser, setCoordsUser] = useState(null);
+    const [fare, setFare] = useState(null);
 
     useEffect(() => {
         dispatch(findCart(token));
@@ -206,10 +207,30 @@ const Cart = () => {
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
-    const handleSelectAddress = (address) => {
+    const handleSelectAddress = async (address) => {
         setSelectedAddress(address);
         handleOpen();
+
+        // Lấy tọa độ của địa chỉ người dùng
+        const coordinates = await fetchCoordinates(address.streetAddress);
+
+        // Lấy tọa độ của nhà hàng
+        const restaurantCoordinatesLat = cart.cart?.cartItems[0].food?.restaurant?.latitude;
+        const restaurantCoordinatesLon = cart.cart?.cartItems[0].food?.restaurant?.longitude;
+
+        if (restaurantCoordinatesLat && restaurantCoordinatesLon) {
+            // Tính toán khoảng cách và giá cước
+            const distance = calculateDistance(
+                restaurantCoordinatesLat,
+                restaurantCoordinatesLon,
+                coordinates.lat,
+                coordinates.lon
+            );
+            const calculatedFare = calculateFare(distance);
+            setFare(calculatedFare);
+        }
     };
+
 
     const handleOpenAddressModal = () => {
         setSelectedAddress(null);
@@ -480,6 +501,18 @@ const Cart = () => {
                                                 </ErrorMessage>
                                             }
                                         />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        {fare !== null && (
+                                            <div className="w-full px-4 py-2 flex items-center justify-between bg-white shadow rounded-lg">
+                                                <p className="text-lg font-semibold text-gray-700">
+                                                    Fare:
+                                                </p>
+                                                <p className="text-lg font-medium text-gray-900">
+                                                    {fare.toLocaleString('vi-VN')}đ
+                                                </p>
+                                            </div>
+                                        )}
                                     </Grid>
                                     <Grid item xs={12}>
                                         <FormControl component='fieldset'>

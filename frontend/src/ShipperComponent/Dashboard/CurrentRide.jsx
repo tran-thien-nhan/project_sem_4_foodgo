@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Button from '@mui/material/Button';
 import LocalTaxiIcon from '@mui/icons-material/LocalTaxi';
-import { IconButton, Card, CardContent, Tooltip, Modal, Box, Typography, Divider } from '@mui/material';
+import { IconButton, Card, CardContent, Tooltip, Modal, Box, Typography, Divider, Grid, CircularProgress, TextField, Accordion, AccordionSummary, CardHeader, AccordionDetails } from '@mui/material';
 import PersonPinCircleIcon from '@mui/icons-material/PersonPinCircle';
 import TimerIcon from '@mui/icons-material/Timer';
 import FmdGoodIcon from '@mui/icons-material/FmdGood';
@@ -13,6 +13,11 @@ import { getAllocatedRides, getDriverCurrentRide } from '../../component/State/D
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { completeRide, startRide } from '../../component/State/Ride/Action';
 import MapComponent from '../../component/util/MapComponent';
+import { uploadImageToCloudinary } from '../../AdminComponent/util/UploadToCloudinary';
+import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
+import CloseIcon from '@mui/icons-material/Close';
+import { Bounce, toast } from "react-toastify";
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const style = {
   position: 'absolute',
@@ -31,6 +36,9 @@ const CurrentRide = ({ ride }) => {
   const jwt = localStorage.getItem('jwt');
   const [open, setOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [images, setImages] = useState([]);
+  const [comment, setComment] = useState('');
 
   const handleOpen = (ride) => {
     setSelectedOrder(ride);
@@ -67,7 +75,27 @@ const CurrentRide = ({ ride }) => {
   }
 
   const handleCompleteRide = (rideId, driverId) => {
-    dispatch(completeRide({ id: rideId, jwt, driverId }));
+    if (images.length === 0) {
+      toast.error("Please upload image before completing", {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+      return;
+    }
+    const data = {
+      rideId,
+      driverId,
+      images: images.map((image) => ({ public_id: image.public_id })),
+      comment,
+    }
+    console.log("data: ",data);
+    dispatch(completeRide({ id: rideId, jwt, driverId, images, comment }));
   }
 
   const handleChangeRideStatus = (status) => {
@@ -107,6 +135,25 @@ const CurrentRide = ({ ride }) => {
         return null;
     }
   };
+
+  const handleImageChange = async (e) => {
+    const files = e.target.files;
+    const uploadPromises = [];
+    for (let i = 0; i < files.length; i++) {
+      uploadPromises.push(uploadImageToCloudinary(files[i]));
+    }
+    setUploading(true);
+    const uploadedImages = await Promise.all(uploadPromises);
+    setImages([...images, ...uploadedImages]);
+    setUploading(false);
+  };
+
+  const handleRemoveImage = (index) => {
+    const updatedImages = [...images];
+    updatedImages.splice(index, 1);
+    setImages(updatedImages);
+  };
+
 
   if (!ride) {
     return <p>No current ride available.</p>;
@@ -161,6 +208,73 @@ const CurrentRide = ({ ride }) => {
           </Button>
         </div>
       </CardContent>
+      {
+        ride.status === "STARTED" &&
+        <>
+          <CardContent>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <input
+                  accept="image/*"
+                  id="rideImageInput"
+                  style={{ display: 'none' }}
+                  onChange={handleImageChange}
+                  type="file"
+                  multiple
+                />
+                <label htmlFor="rideImageInput" className="relative">
+                  <span className="w-24 h-24 cursor-pointer flex items-center justify-center p-3 border rounded-md border-gray-600">
+                    <Tooltip title="Add ride image" placement="bottom" arrow>
+                      <AddPhotoAlternateIcon />
+                    </Tooltip>
+                  </span>
+                  {uploading && (
+                    <div className="absolute left-0 right-0 top-0 bottom-0 w-24 h-24 flex justify-center items-center">
+                      <CircularProgress />
+                    </div>
+                  )}
+                </label>
+                <div className="flex">
+                  {images.map((image, index) => (
+                    <div key={index} className="relative">
+                      <img className="w-24 h-24 object-cover m-2" src={image} alt={`Ride ${index + 1}`} />
+                      <IconButton onClick={() => handleRemoveImage(index)} size="small" sx={{ position: 'absolute', top: 0, right: 0 }}>
+                        <Tooltip title="Remove ride image" placement="bottom" arrow>
+                          <CloseIcon sx={{ fontSize: '1rem' }} />
+                        </Tooltip>
+                      </IconButton>
+                    </div>
+                  ))}
+                </div>
+              </Grid>
+              <Grid item xs={12} lg={12}>
+                <Accordion>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1-content"
+                    id="panel1-header"
+                  >
+                    <CardHeader title="Order Cancelled Comment" />
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Grid item xs={12}>
+                      <TextField
+                        label="Comment cancel order"
+                        variant="outlined"
+                        fullWidth
+                        multiline
+                        rows={4}
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)} // Cập nhật state comment
+                      />
+                    </Grid>
+                  </AccordionDetails>
+                </Accordion>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </>
+      }
       <CardContent>
         <MapComponent address1={ride.userAddress} address2={ride.restaurantAddress} />
       </CardContent>
@@ -190,6 +304,14 @@ const CurrentRide = ({ ride }) => {
                     <td>{selectedOrder.total.toLocaleString('vi-VN')}đ</td>
                   </tr>
                   <tr>
+                    <td><strong>Order Price:</strong></td>
+                    <td>{(selectedOrder.total - selectedOrder.fare).toLocaleString('vi-VN')}đ</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Fare:</strong></td>
+                    <td>{selectedOrder.fare.toLocaleString('vi-VN')}đ</td>
+                  </tr>
+                  <tr>
                     <td><strong>Payment Method:</strong></td>
                     <td>{selectedOrder.paymentMethod === "BY_CASH" ? "COD" : (selectedOrder.paymentMethod === "BY_CREDIT_CARD" ? "BY CREDIT CARD" : "BY VNPAY")}</td>
                   </tr>
@@ -205,7 +327,7 @@ const CurrentRide = ({ ride }) => {
                     <td><strong>Delivery Address:</strong></td>
                     <td>{selectedOrder.userAddress}</td>
                   </tr>
-                  <Divider className='py-2'/>
+                  <Divider className='py-2' />
                   <tr>
                     <td><strong>Items:</strong></td>
                     <td>
@@ -228,20 +350,6 @@ const CurrentRide = ({ ride }) => {
               </table>
 
             </Typography>
-            {/* {
-              selectedOrder.orderStatus === "PENDING" && (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => handlePrintInvoiceModal()}
-                  className='justify-center items-center'
-                  fullWidth
-                >
-                  <IconButton>
-                    <PrintIcon />
-                  </IconButton>
-                </Button>)
-            } */}
           </Box>
         </Modal>
       )}

@@ -51,10 +51,11 @@ public class AddressServiceImp implements AddressService {
 //                        existingAddress.getPhone().equalsIgnoreCase(req.getPhone())
         );
 
-        // Nếu địa chỉ đã tồn tại, không thêm mới
+        // Nếu địa chỉ đã tồn tại, thêm lại cái cũ
         if (addressExists) {
-            throw new Exception("Địa chỉ đã tồn tại.");
+            addressRepository.save(findByStreetAddressAndCityAndStateAndPinCode(req.getStreetAddress(), req.getCity(), req.getState(), req.getPinCode(), userId));
         }
+
 
         // Nếu địa chỉ chưa tồn tại, thêm mới
         Address address = new Address();

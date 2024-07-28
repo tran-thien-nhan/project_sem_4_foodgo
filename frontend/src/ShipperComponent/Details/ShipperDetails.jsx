@@ -198,7 +198,7 @@ const ShipperDetails = () => {
                         Save
                     </Button>
                 ) : (
-                    <Button variant="contained" color="secondary" onClick={handleEditClick}>
+                    <Button variant="contained" color="secondary" onClick={handleEditClick} disabled={driverProfile.available}>
                         Edit
                     </Button>
                 )}
@@ -243,7 +243,7 @@ const ShipperDetails = () => {
                                     {editMode ? (
                                         <TextField
                                             name="city"
-                                            value={updatedDriverInfo.city}
+                                            value={updatedDriverInfo?.city}
                                             onChange={handleInputChange}
                                         />
                                     ) : (

@@ -2,11 +2,13 @@ import React, { useEffect } from 'react';
 import { Card, CardContent, Typography } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { completedRides, getDriverProfile, getDriverStatistics } from '../../component/State/Driver/Action';
+import { useNavigate } from 'react-router-dom';
 
 const ShipperStatistic = ({rideSuccess, currentRide, totalRevenue, cancelledRides}) => {
     const dispatch = useDispatch();
     const { driver } = useSelector(store => store);
     const jwt = localStorage.getItem('jwt');
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (driver?.data?.id) {
@@ -31,7 +33,7 @@ const ShipperStatistic = ({rideSuccess, currentRide, totalRevenue, cancelledRide
                             {currentRide ?? 0}
                         </Typography>
                     </div>
-                    <div className="text-center">
+                    <div className="text-center cursor-pointer" onClick={()=>navigate("/admin/shippers/history")}>
                         <img src="https://t3.ftcdn.net/jpg/01/71/13/24/360_F_171132449_uK0OO5XHrjjaqx5JUbJOIoCC3GZP84Mt.jpg" alt="Cancel" className="h-16 w-20 mx-auto" />
                         <Typography variant="body1" className="text-red-500 mt-2">
                             Cancel
@@ -40,7 +42,7 @@ const ShipperStatistic = ({rideSuccess, currentRide, totalRevenue, cancelledRide
                             {cancelledRides ?? 0}
                         </Typography>
                     </div>
-                    <div className="text-center">
+                    <div className="text-center cursor-pointer" onClick={()=>navigate("/admin/shippers/history")}>
                         <img src="https://t3.ftcdn.net/jpg/01/71/13/24/360_F_171132449_uK0OO5XHrjjaqx5JUbJOIoCC3GZP84Mt.jpg" alt="Completed" className="h-16 w-20 mx-auto" />
                         <Typography variant="body1" className="text-green-500 mt-2">
                             Completed

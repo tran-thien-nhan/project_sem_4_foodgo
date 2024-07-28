@@ -35,11 +35,8 @@ const Events = () => {
   };
 
   const filterEvents = () => {
-    if (auth.user?.favoriteEventsDto && event.events) {
-      const filtered = auth.user.favoriteEventsDto.filter(userEvent => {
-        const matchingEvent = event.events.find(e => e.id === userEvent.id);
-        return matchingEvent?.available && (selectedRestaurant === '' || matchingEvent.restaurant.name === selectedRestaurant);
-      });
+    if (event.events) {
+      const filtered = event.events.filter(e => (selectedRestaurant === '' || e.restaurant.name === selectedRestaurant) && e.available);
       setFilteredEvents(filtered);
     }
   };
@@ -63,14 +60,14 @@ const Events = () => {
           onChange={handleRestaurantChange}
           className='p-2 border rounded bg-black text-white'
         >
-          <option value=''>Tất cả nhà hàng</option>
+          <option value=''>All Restaurants</option>
           {restaurantNames.map(name => (
             <option key={name} value={name}>{name}</option>
           ))}
         </select>
       </div>
 
-      {event.events.map((event) =>
+      {filteredEvents.map((event) =>
         <EventCard
           key={event.id}
           event={event}

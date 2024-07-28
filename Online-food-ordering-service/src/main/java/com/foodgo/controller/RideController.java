@@ -3,6 +3,7 @@ package com.foodgo.controller;
 
 import com.foodgo.model.Ride;
 import com.foodgo.repository.RideRepository;
+import com.foodgo.request.CompleteRideRequest;
 import com.foodgo.request.RideRequest;
 import com.foodgo.service.DriverService;
 import com.foodgo.service.RideService;
@@ -84,10 +85,11 @@ public class RideController {
 
     @PutMapping("/complete/{id}")
     public void completeRide(@PathVariable Long id,
+                             @RequestBody CompleteRideRequest completeRideRequest,
                              @RequestHeader("Authorization") String jwt) {
         try{
             userService.findUserByJwtToken(jwt);
-            rideService.completeRide(id);
+            rideService.completeRide(id, completeRideRequest.getImages(), completeRideRequest.getComment());
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }

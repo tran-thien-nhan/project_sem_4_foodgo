@@ -157,12 +157,13 @@ export const startRide = ({ id, jwt, driverId }) => async (dispatch) => {
     }
 };
 
-export const completeRide = ({ id, jwt, driverId }) => async (dispatch) => {
+export const completeRide = ({ id, jwt, driverId, images, comment }) => async (dispatch) => {
     dispatch({ type: COMPLETE_RIDE_REQUEST });
     try {
-        await axios.put(`${API_URL}/api/admin/shipper/ride/complete/${id}`, null, {
+        await axios.put(`${API_URL}/api/admin/shipper/ride/complete/${id}`, { images, comment }, {
             headers: {
-                Authorization: `Bearer ${jwt}`
+                Authorization: `Bearer ${jwt}`,
+                'Content-Type': 'application/json'
             }
         });
         dispatch({ type: COMPLETE_RIDE_SUCCESS, payload: id });

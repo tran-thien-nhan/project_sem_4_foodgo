@@ -1,6 +1,8 @@
 package com.foodgo.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.foodgo.dto.DriverDto;
+import com.foodgo.dto.RideDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -60,6 +62,9 @@ public class Order {
     private Long duration;
 
     private Long fare;
+
+    @Embedded
+    private DriverDto driverdto;
 
     @ManyToOne
     @JoinColumn(name = "ride_id")

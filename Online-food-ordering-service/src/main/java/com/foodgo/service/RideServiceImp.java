@@ -1,5 +1,7 @@
 package com.foodgo.service;
 
+import com.foodgo.dto.DriverDto;
+import com.foodgo.mapper.DtoMapper;
 import com.foodgo.model.*;
 import com.foodgo.repository.*;
 import com.foodgo.request.RideRequest;
@@ -83,6 +85,10 @@ public class RideServiceImp implements RideService{
             if(nearestDriver == null) {
                 throw new RuntimeException("No driver near restaurant"); // mai mot cho vào hàng chờ redis
             }
+
+            DriverDto driverDto = DtoMapper.toDriverDto(nearestDriver);
+            isOrderHasRide.setDriverdto(driverDto);
+            orderRepository.save(isOrderHasRide);
 
             Ride ride = createRideRequest(
                     nearestDriver,
@@ -211,36 +217,66 @@ public class RideServiceImp implements RideService{
     }
 
     @Override
-    public void declineRide(Long rideId, Long driverId) { // Từ chối chuyến đi
+    public void declineRide(Long rideId, Long driverId) {
         try {
             Ride ride = findRideById(rideId); // Tìm chuyến đi theo ID
-            ride.setStatus(RIDE_STATUS.CANCELLED); // Cập nhật trạng thái chuyến đi thành đã từ chối
+            if (ride == null) {
+                throw new RuntimeException("Ride not found");
+            }
+
+            Driver driver = driverRepository.findById(driverId).orElse(null); // Tìm tài xế theo ID
+            if (driver == null) {
+                throw new RuntimeException("Driver not found");
+            }
+
             DeclinedDriver declinedDriver = new DeclinedDriver(); // Tạo một tài xế từ chối
             declinedDriver.setRide(ride); // Gán chuyến đi cho tài xế từ chối
-            declinedDriver.setDriver(driverRepository.findById(driverId).get()); // Gán thông tin tài xế từ chối
+            declinedDriver.setDriver(driver); // Gán thông tin tài xế từ chối
+
+            Order order = ride.getOrder(); // Lấy thông tin đơn hàng
+            if (order != null) {
+                order.setDriverdto(null); // Xóa thông tin tài xế
+            }
 
             declinedDriverRepository.save(declinedDriver); // Lưu thông tin tài xế từ chối
-
             ride.getDeclinedDrivers().add(declinedDriver); // Thêm tài xế từ chối vào danh sách tài xế từ chối
 
-            List<Driver> availableDrivers = driverService.getAvailableDrivers( // Lấy danh sách tài xế có sẵn
-                    ride.getRestaurantLatitude(), // Vĩ độ nhà hàng
-                    ride.getRestaurantLongitude(), // Kinh độ nhà hàng
-                    ride); // Chuyến đi
-
-            Driver nearestDriver = driverService.findNearestDriver( // Tìm tài xế gần nhà hàng nhất
-                    availableDrivers, // Danh sách tài xế có sẵn
-                    ride.getRestaurantLatitude(), // Vĩ độ nhà hàng
-                    ride.getRestaurantLongitude() // Kinh độ nhà hàng
+            // Lấy danh sách tài xế có sẵn
+            List<Driver> availableDrivers = driverService.getAvailableDrivers(
+                    ride.getRestaurantLatitude(),
+                    ride.getRestaurantLongitude(),
+                    ride
             );
 
-            ride.setDriver(nearestDriver); // Cập nhật tài xế cho chuyến đi
+            // Loại bỏ tài xế đã từ chối
+            availableDrivers.removeIf(d -> ride.getDeclinedDrivers().stream()
+                    .anyMatch(declined -> declined.getDriver().getId().equals(d.getId()))
+            );
+
+            // Tìm tài xế gần nhà hàng nhất
+            Driver nearestDriver = driverService.findNearestDriver(
+                    availableDrivers,
+                    ride.getRestaurantLatitude(),
+                    ride.getRestaurantLongitude()
+            );
+
+            if (nearestDriver == null) {
+                ride.setStatus(RIDE_STATUS.CANCELLED); // Cập nhật trạng thái chuyến đi thành đã hủy
+            } else {
+                ride.setDriver(nearestDriver); // Cập nhật tài xế cho chuyến đi
+                if (order != null) {
+                    order.setDriverdto(DtoMapper.toDriverDto(nearestDriver)); // Cập nhật thông tin tài xế cho đơn hàng
+                    orderRepository.save(order); // Lưu thông tin đơn hàng
+                }
+            }
+
             rideRepository.save(ride); // Lưu thông tin chuyến đi
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException("Error processing decline ride: " + e.getMessage());
         }
     }
+
+
 
     @Override
     public void startRide(Long rideId) { // Bắt đầu chuyến đi
@@ -258,27 +294,39 @@ public class RideServiceImp implements RideService{
     }
 
     @Override
-    public void completeRide(Long rideId) { // Hoàn thành chuyến đi
+    public void completeRide(Long rideId, List<String> images, String comment) { // Hoàn thành chuyến đi
         try {
             Ride ride = findRideById(rideId); // Tìm chuyến đi theo ID
             Driver driver = ride.getDriver(); // Lấy thông tin tài xế
             driver.setCurrentRide(null); // Cập nhật chuyến đi hiện tại của tài xế thành null
             ride.setStatus(RIDE_STATUS.COMPLETED); // Cập nhật trạng thái chuyến đi thành đã hoàn thành
-            ride.getOrder().setOrderStatus(ORDER_STATUS.COMPLETED.toString()); // Cập nhật trạng thái đơn hàng thành đã hoàn thành
             ride.setEndTime(LocalDateTime.now()); // Cập nhật thời gian kết thúc chuyến đi
 
             driver.getRides().add(ride);
-            if(driver.getTotalRevenue() == null) {
+            if (driver.getTotalRevenue() == null) {
                 driver.setTotalRevenue(0L);
             }
-            Long totalRevenue = ride.getDriver().getTotalRevenue() + Math.round(ride.getFare());
+
+            if (images == null) {
+                throw new RuntimeException("Images must not be null");
+            } else {
+                ride.setImages(images);
+            }
+
+            if (!comment.isEmpty()) {
+                ride.getOrder().setComment(comment);
+                ride.getOrder().setOrderStatus(ORDER_STATUS.CANCELLED.toString()); // Cập nhật trạng thái đơn hàng thành đã hủy
+            } else {
+                ride.getOrder().setOrderStatus(ORDER_STATUS.COMPLETED.toString()); // Cập nhật trạng thái đơn hàng thành đã hoàn thành
+            }
+
+            Long totalRevenue = driver.getTotalRevenue() + Math.round(ride.getFare());
             driver.setTotalRevenue(totalRevenue);
 
             driverRepository.save(driver);
             rideRepository.save(ride);
             orderRepository.save(ride.getOrder());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
     }

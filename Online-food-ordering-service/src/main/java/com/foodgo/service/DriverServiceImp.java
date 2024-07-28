@@ -48,6 +48,7 @@ public class DriverServiceImp implements DriverService{
             Driver newDriver = new Driver();
             License license = new License();
             Vehicle vehicle = new Vehicle();
+            Address address = new Address();
 
             newDriver.setName(user.getFullName());
             newDriver.setEmail(user.getEmail());
@@ -59,7 +60,6 @@ public class DriverServiceImp implements DriverService{
             newDriver.setLongitude(0.0);
             newDriver.setDriver(user);
 
-            Address address = new Address();
             address.setCity(req.getCity());
             address.setCountry(req.getCountry());
             address.setStreetAddress(req.getStreetAddress());

@@ -233,6 +233,7 @@ export const createOrder = (reqData) => {
             });
 
             dispatch({ type: CREATE_ORDER_SUCCESS, payload: data });
+            dispatch(findCart({token: reqData.jwt}));
             console.log("CREATE ORDER SUCCESS: ", data);
         } catch (error) {
             dispatch({ type: CREATE_ORDER_FAILURE, payload: error });

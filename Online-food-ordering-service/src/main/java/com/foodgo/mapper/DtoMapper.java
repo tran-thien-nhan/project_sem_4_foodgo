@@ -41,6 +41,8 @@ public class DtoMapper {
         rideDto.setOrderItem(toOrderItemDtos(ride.getOrder().getItems()));
         rideDto.setPaymentMethod(ride.getOrder().getPaymentMethod());
         rideDto.setOrderStatus(ride.getOrder().getOrderStatus());
+        rideDto.setImages(ride.getImages());
+        rideDto.setComment(ride.getOrder().getComment());
         return rideDto;
     }
 
@@ -88,6 +90,16 @@ public class DtoMapper {
         eventDto.setImages(event.getImages());
         eventDto.setTotalFavorites(event.getTotalFavorites());
         return eventDto;
+    }
+
+    public static DriverDto toDriverDto(Driver driver) {
+        DriverDto driverDto = new DriverDto();
+        driverDto.setDriverId(driver.getId());
+        driverDto.setName(driver.getName());
+        driverDto.setPhone(driver.getPhone());
+        driverDto.setImage(driver.getImageOfDriver().get(0));
+        driverDto.setLicenseNumber(driver.getLicense().getLicenseNumber());
+        return driverDto;
     }
 
 //    private static UserDto toUserDto(User user) {

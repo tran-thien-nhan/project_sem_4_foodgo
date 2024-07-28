@@ -10,7 +10,6 @@ public class DriverDto {
     private Long driverId;
     private String name;
     private String phone;
-    private String email;
-    private Double latitude;
-    private Double longitude;
+    private String image;
+    private String licenseNumber;
 }

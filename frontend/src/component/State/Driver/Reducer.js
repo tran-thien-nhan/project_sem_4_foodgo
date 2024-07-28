@@ -44,7 +44,9 @@ const initialState = {
     currentRide: null,
     completeRides: null,
     currentRideCount: null,
-    cancelledRides: null
+    cancelledRides: null,
+    listCompletedRides: [],
+    listCancelledRides: [],
 };
 
 const driverReducer = (state = initialState, action) => {
@@ -92,6 +94,7 @@ const driverReducer = (state = initialState, action) => {
                 ...state,
                 loading: false,
                 completeRides: action.payload.length,
+                listCompletedRides: action.payload,
                 error: null,
             };
         case CANCELLED_RIDES_SUCCESS:
@@ -99,6 +102,7 @@ const driverReducer = (state = initialState, action) => {
                 ...state,
                 loading: false,
                 cancelledRides: action.payload.length,
+                listCancelledRides: action.payload,
                 error: null,
             };
         case GET_AVAILABLE_DRIVERS_SUCCESS:

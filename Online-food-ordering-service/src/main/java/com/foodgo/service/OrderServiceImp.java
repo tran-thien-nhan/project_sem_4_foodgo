@@ -139,7 +139,7 @@ public class OrderServiceImp implements OrderService{
                 createdOrder.setTotalItem(Long.valueOf(count));
                 createdOrder.setTotalAmount(totalAmount);
 
-                long totalPrice = totalAmount + 18000; // delivery charge
+                long totalPrice = totalAmount + order.getFare(); // delivery charge
                 createdOrder.setItems(orderItems);
                 createdOrder.setTotalPrice(totalPrice);
                 createdOrder.setPaymentMethod(order.getPaymentMethod());
