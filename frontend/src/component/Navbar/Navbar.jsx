@@ -108,7 +108,8 @@ export const Navbar = () => {
     };
 
     const handleNavigateToSearch = () => {
-        window.location.href = '/search';
+        // window.location.href = '/search';
+        navigate("/search");
     };
 
     return (

@@ -1,4 +1,4 @@
-import { Card, CardActions, CardContent, CardMedia, Chip, Grid, IconButton, Typography, CircularProgress } from '@mui/material';
+import { Card, CardActions, CardContent, CardMedia, Chip, Grid, IconButton, Typography, CircularProgress, Button } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
@@ -9,14 +9,15 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
-const EventCard = ({ event, onAddEventToFavorites, eventsFavorites, onShow, onEdit, showEdit, onUpdateAvailability }) => {
+const EventCard = ({ event, onAddEventToFavorites, eventsFavorites, onShow, onEdit, showEdit, onUpdateAvailability, showCheckIn }) => {
     const [isEventLoading, setIsEventLoading] = useState(false);
     const isLoading = useSelector(state => state.event.loading);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (!isLoading) {
-            // console.log("EVENT: ", event);
             setIsEventLoading(false);
         }
     }, [isLoading]);
@@ -26,6 +27,12 @@ const EventCard = ({ event, onAddEventToFavorites, eventsFavorites, onShow, onEd
         await onUpdateAvailability(event);
     };
 
+    const handleCheckIn = (eventId) => {
+        if (showCheckIn === true) {
+            navigate(`/admin/restaurants/check-in/${eventId}`);
+        }
+    }
+
     return (
         <div>
             <Card sx={{ width: 345, height: 690 }}>
@@ -33,6 +40,7 @@ const EventCard = ({ event, onAddEventToFavorites, eventsFavorites, onShow, onEd
                     sx={{ height: 345 }}
                     image={event.images[0]}
                     className='object-cover'
+                    onClick={() => handleCheckIn(event.id)}
                 />
                 <CardContent>
                     <Typography variant='h5'>
@@ -84,27 +92,22 @@ const EventCard = ({ event, onAddEventToFavorites, eventsFavorites, onShow, onEd
                                             :
                                             ''
                                     }
-
                                 </Grid>
                             </Grid>
-
                         </Grid>
                         <Grid item sx={12}>
-                            {
-                                // (event.totalFavorites >= 0) &&
-                                <>
-                                    <Chip label=
-                                        {
-                                            <IconButton className='flex gap-1'>
-                                                <p className='text-sm'>{event.totalFavorites} / {event.eventLimit}</p>
-                                                <PersonIcon
-                                                    sx={{ fontSize: "1.25rem" }}
-                                                />
-                                            </IconButton>
-                                        }
-                                        className='my-1' sx={{ backgroundColor: "green" }} />
-                                </>
-                            }
+                            <>
+                                <Chip label=
+                                    {
+                                        <IconButton className='flex gap-1'>
+                                            <p className='text-sm'>{event.totalFavorites} / {event.eventLimit}</p>
+                                            <PersonIcon
+                                                sx={{ fontSize: "1.25rem" }}
+                                            />
+                                        </IconButton>
+                                    }
+                                    className='my-1' sx={{ backgroundColor: "green" }} />
+                            </>
                             {
                                 showEdit &&
                                 <IconButton onClick={() => handleUpdateAvailability(event)}>
@@ -130,6 +133,18 @@ const EventCard = ({ event, onAddEventToFavorites, eventsFavorites, onShow, onEd
                                                         : <AddCircleOutlineIcon />
                                                 }
                                             </IconButton>
+                                        </CardActions>
+                                    </Grid>
+                                </>
+                            }
+                            {
+                                showCheckIn &&
+                                <>
+                                    <Grid item>
+                                        <CardActions className='flex justify-between'>
+                                            <Button variant="contained" color="primary" onClick={() => handleCheckIn(event.id)}>
+                                                Check In
+                                            </Button>
                                         </CardActions>
                                     </Grid>
                                 </>

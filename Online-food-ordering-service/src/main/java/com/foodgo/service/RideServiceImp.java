@@ -174,20 +174,9 @@ public class RideServiceImp implements RideService{
     @Override
     public Ride findRideById(Long id) throws Exception {
         try {
-//            Optional<Ride> ride = rideRepository.findById(id);
-//            if(ride.isPresent()) {
-//                return ride.get();
-//            }
-//            else {
-//                throw new Exception("Ride not found");
-//            }
-
             List<Ride> rides = rideRepository.findAll();
             for (Ride ride : rides) {
                 if (ride.getId().equals(id)) {
-//                    if(ride.getDriver().getCurrentRide() != null){
-//                        throw new RuntimeException("Driver already has a ride");
-//                    }
                     return ride;
                 }
             }
@@ -298,6 +287,8 @@ public class RideServiceImp implements RideService{
         try {
             Ride ride = findRideById(rideId); // Tìm chuyến đi theo ID
             Driver driver = ride.getDriver(); // Lấy thông tin tài xế
+            driver.setLatitude(ride.getDestinationLatitude()); // Cập nhật vĩ độ của tài xế
+            driver.setLongitude(ride.getDestinationLongitude()); // Cập nhật kinh độ của tài xế
             driver.setCurrentRide(null); // Cập nhật chuyến đi hiện tại của tài xế thành null
             ride.setStatus(RIDE_STATUS.COMPLETED); // Cập nhật trạng thái chuyến đi thành đã hoàn thành
             ride.setEndTime(LocalDateTime.now()); // Cập nhật thời gian kết thúc chuyến đi
@@ -311,6 +302,7 @@ public class RideServiceImp implements RideService{
                 throw new RuntimeException("Images must not be null");
             } else {
                 ride.setImages(images);
+                ride.getOrder().setImages(images);
             }
 
             if (!comment.isEmpty()) {

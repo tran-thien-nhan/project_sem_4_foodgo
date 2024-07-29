@@ -11,6 +11,7 @@ const EventList = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showEdit, setShowEdit] = useState(true);
+  const [showCheckIn, setShowCheckIn] = useState(true);
 
   useEffect(() => {
     dispatch(getEventsByRestaurant({
@@ -49,7 +50,14 @@ const EventList = () => {
   return (
     <div className="flex justify-center items-center gap-5">
       {events.map((event, index) => (
-        <EventCard key={index} event={event} onEdit={handleEditEvent} showEdit={showEdit} onUpdateAvailability={handleUpdateVisibility} />
+        <EventCard
+          key={index}
+          event={event}
+          onEdit={handleEditEvent}
+          showEdit={showEdit}
+          onUpdateAvailability={handleUpdateVisibility}
+          showCheckIn={showCheckIn}
+        />
       ))}
       {selectedEvent && (
         <UpdateEventModal

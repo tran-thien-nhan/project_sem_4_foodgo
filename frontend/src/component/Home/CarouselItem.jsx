@@ -1,8 +1,14 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const CarouselItem = ({ image, title }) => {
+    const navigate = useNavigate();
+
+    const handleItemClick = () => {
+        navigate('/search', { state: { keyword: title } });
+    };
     return (
-        <div className='flex flex-col justify-center items-center p-4'>
+        <div onClick={handleItemClick} className='flex flex-col justify-center items-center p-4 cursor-pointer'>
             <img
                 className='w-[15vw] h-[15vw] max-w-[10rem] max-h-[10rem] rounded-full object-cover object-center mb-4'
                 src={image}

@@ -17,6 +17,7 @@ import { fetchRestaurantsAllOrder, fetchRestaurantsOrder } from '../../component
 import { Box, Button, Drawer } from '@mui/material'
 import AdminNavBar from '../../component/Navbar/AdminNavBar'
 import Rating from '../Rating/Rating'
+import CheckInEvent from '../Events/CheckInEvent'
 
 const Admin = () => {
     const { restaurant } = useSelector(store => store);
@@ -70,6 +71,7 @@ const Admin = () => {
                         <Route path="/details" element={<RestaurantDetails />} />
                         <Route path="/add-menu" element={<CreateMenuForm />} />
                         <Route path="/ratings" element={<Rating />} />
+                        <Route path="/check-in/:eventId" element={<CheckInEvent />} />
                     </Routes>
                 </div>
             </div>

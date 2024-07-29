@@ -57,4 +57,11 @@ public class Event {
             joinColumns = @JoinColumn(name = "event_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
     private List<User> users; // Mảng chứa thông tin các user tham gia event
+
+    @JsonIgnore
+    @ManyToMany
+    @JoinTable(name = "event_actual_attendees",
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
+    private List<User> actualAttendees; // Danh sách người đến tham gia thực tế
 }

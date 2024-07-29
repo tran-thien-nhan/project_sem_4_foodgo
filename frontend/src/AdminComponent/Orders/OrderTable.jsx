@@ -50,11 +50,12 @@ const style = {
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: 400,
+    width: '80%',
     bgcolor: 'background.paper',
-    border: '2px solid #000',
     boxShadow: 24,
     p: 4,
+    maxHeight: '90vh', // Giới hạn chiều cao của modal
+    overflowY: 'auto', // Cho phép cuộn dọc
 };
 
 const getButtonColor = (status) => {
@@ -92,6 +93,15 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
     const [localRestaurantOrder, setLocalRestaurantOrder] = useState(restaurantOrder.orders);
     const [checked, setChecked] = useState(false);
     const [previousStatuses, setPreviousStatuses] = useState({});
+    const [selectedImage, setSelectedImage] = useState(null);
+
+    const handleImageClick = (image) => {
+        setSelectedImage(image);
+    };
+
+    const handleCloseImageModal = () => {
+        setSelectedImage(null);
+    };
 
     const pendingOrderss = restaurantOrder.orders.filter(order => order.orderStatus === 'PENDING' && order.isPaid).length;
     // console.log("Pending orders: ", pendingOrderss);
@@ -703,6 +713,23 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
                                             ))}
                                         </td>
                                     </tr>
+                                    <tr>
+                                        <td><strong>Images:</strong></td>
+                                        <td>
+                                            <div className="grid grid-cols-3 gap-4">
+                                                {selectedOrder.images.map((image, index) => (
+                                                    <div key={index} className="p-2">
+                                                        <img
+                                                            src={image}
+                                                            alt={`Image ${index + 1}`}
+                                                            className="w-full object-cover h-48 rounded-lg shadow-lg cursor-pointer"
+                                                            onClick={() => handleImageClick(image)}
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
 
@@ -724,7 +751,30 @@ const OrderTable = ({ filterValue, setFilterValue }) => {
                     </Box>
                 </Modal>
             )}
-
+            {selectedImage && (
+                <Modal
+                    open={Boolean(selectedImage)}
+                    onClose={handleCloseImageModal}
+                    aria-labelledby="image-modal-title"
+                    aria-describedby="image-modal-description"
+                >
+                    <Box sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        maxHeight: '90vh',
+                        maxWidth: '90vw',
+                        overflow: 'hidden',
+                    }}>
+                        <img
+                            src={selectedImage}
+                            alt="Selected"
+                            className="w-full h-auto object-contain"
+                        />
+                    </Box>
+                </Modal>
+            )}
         </Box>
     );
 };

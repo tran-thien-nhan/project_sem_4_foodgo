@@ -4,25 +4,27 @@ import MenuCard from '../Restaurant/MenuCard';
 import { getAllMenuPubLicToSearch, getMenuItemsByRestaurantId, getMenuItemsByRestaurantIdPublic } from '../State/Menu/Action';
 import { TextField, Grid, Card, CardHeader, Divider, FormControl, InputLabel, MenuItem, Select, Pagination, Button } from '@mui/material';
 import { getAllRestaurantsAction, getAllRestaurantsPublicAction, getRestaurantById, getRestaurantPublicById, getRestaurantsCategory, getRestaurantsCategoryPublic } from '../State/Restaurant/Action';
+import { useLocation } from 'react-router-dom';
 
 const foodTypes = [
-    { label: "All", value: "all" },
-    { label: "Vegetarian only", value: "vegetarian" },
-    { label: "Non-Vegetarian", value: "non_vegetarian" },
-    { label: "Seasonal", value: "seasonal" },
+  { label: "All", value: "all" },
+  { label: "Vegetarian only", value: "vegetarian" },
+  { label: "Non-Vegetarian", value: "non_vegetarian" },
+  { label: "Seasonal", value: "seasonal" },
 ];
 
 const priceRanges = [
-    { label: "All", value: "all" },
-    { label: "50k-100k", value: "50k_100k" },
-    { label: "100k-200k", value: "100k_200k" },
-    { label: "200k-300k", value: "200k_300k" },
-    { label: "300k-400k", value: "300k_400k" },
-    { label: "above 400k", value: "above_400k" },
+  { label: "All", value: "all" },
+  { label: "50k-100k", value: "50k_100k" },
+  { label: "100k-200k", value: "100k_200k" },
+  { label: "200k-300k", value: "200k_300k" },
+  { label: "300k-400k", value: "300k_400k" },
+  { label: "above 400k", value: "above_400k" },
 ];
 
 const SearchMenu = () => {
   const dispatch = useDispatch();
+  const location = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredMenus, setFilteredMenus] = useState([]);
   const { menu, restaurant } = useSelector(store => store);
@@ -33,6 +35,15 @@ const SearchMenu = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const menusPerPage = 4;
   const id = 1;
+  const [keyword, setKeyword] = useState('');
+  const { state } = location;
+  const keywordFromCarousel = state?.keyword;
+
+  useEffect(() => {
+    if (keywordFromCarousel) {
+      setSearchTerm(keywordFromCarousel);
+    }
+  }, [keywordFromCarousel]);
 
   useEffect(() => {
     dispatch(getAllMenuPubLicToSearch());
@@ -76,7 +87,7 @@ const SearchMenu = () => {
           (priceRange === "200k_300k" && (m.price >= 200000 && m.price < 300000)) ||
           (priceRange === "300k_400k" && (m.price >= 300000 && m.price < 400000)) ||
           (priceRange === "above_400k" && (m.price >= 400000));
-        
+
         return matchesSearchTerm && matchesFoodType && matchesPriceRange;
       })
     );
@@ -158,7 +169,7 @@ const SearchMenu = () => {
       <Grid container spacing={2}>
         {currentMenus.map(menu => (
           <Grid item xs={12} key={menu.id}>
-            <MenuCard item={menu}/>
+            <MenuCard item={menu} />
           </Grid>
         ))}
       </Grid>

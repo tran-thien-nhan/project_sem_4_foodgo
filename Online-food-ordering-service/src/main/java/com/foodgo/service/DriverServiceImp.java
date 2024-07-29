@@ -140,7 +140,10 @@ public class DriverServiceImp implements DriverService{
                 double driverLatitude = driver.getLatitude();
                 double driverLongitude = driver.getLongitude();
                 double distance = distanceCalculator.calculateDistance(restaurantLatitude, restaurantLongitude, driverLatitude, driverLongitude);
-                if (distance < minDistance) {
+                if(driverRepository.getAllocatedRides(driver.getId()).size() == 1){
+                    continue;
+                }
+                if (distance < minDistance){
                     minDistance = distance;
                     nearestDriver = driver;
                 }

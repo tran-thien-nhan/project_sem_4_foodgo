@@ -30,7 +30,19 @@ import {
     ALL_EVENTS_OF_FAVORITED_RESTAURANTS_FAILURE,
     GET_ALL_PUBLIC_EVENTS_REQUEST,
     GET_ALL_PUBLIC_EVENTS_SUCCESS,
-    GET_ALL_PUBLIC_EVENTS_FAILURE
+    GET_ALL_PUBLIC_EVENTS_FAILURE,
+    GET_LIST_USERS_BY_EVENT_REQUEST,
+    GET_LIST_USERS_BY_EVENT_SUCCESS,
+    GET_LIST_USERS_BY_EVENT_FAILURE,
+    IS_USER_CHECKIN_EVENT_REQUEST,
+    IS_USER_CHECKIN_EVENT_SUCCESS,
+    IS_USER_CHECKIN_EVENT_FAILURE,
+    GET_LIST_CHECKIN_REQUEST,
+    GET_LIST_CHECKIN_SUCCESS,
+    GET_LIST_CHECKIN_FAILURE,
+    GET_EVENT_ATTENDEES_ANALYTICS_REQUEST,
+    GET_EVENT_ATTENDEES_ANALYTICS_SUCCESS,
+    GET_EVENT_ATTENDEES_ANALYTICS_FAILURE
 } from "./ActionType";
 import { Bounce, toast } from "react-toastify";
 
@@ -216,6 +228,80 @@ export const getAllPubLicEvents = () => {
             console.log("All public events: ", data);
         } catch (error) {
             dispatch({ type: GET_ALL_PUBLIC_EVENTS_FAILURE, payload: error });
+            console.log("Error: ", error);
+        }
+    };
+}
+
+export const getListUsersByEvent = (eventId, jwt) => {
+    return async (dispatch) => {
+        dispatch({ type: GET_LIST_USERS_BY_EVENT_REQUEST });
+        try {
+            const { data } = await api.get(`/api/events/${eventId}/users`, {
+                headers: {
+                    Authorization: `Bearer ${jwt}`,
+                },
+            });
+            dispatch({ type: GET_LIST_USERS_BY_EVENT_SUCCESS, payload: data });
+            console.log("Users attending event: ", data);
+        } catch (error) {
+            dispatch({ type: GET_LIST_USERS_BY_EVENT_FAILURE, payload: error });
+            console.log("Error: ", error);
+        }
+    };
+}
+
+export const isUserCheckin = (eventId, userId, jwt) => {
+    return async (dispatch) => {
+        dispatch({ type: IS_USER_CHECKIN_EVENT_REQUEST });
+        try {
+            const { data } = await api.get(`/api/events/${eventId}/${userId}/is-joined`, {
+                headers: {
+                    Authorization: `Bearer ${jwt}`,
+                },
+            });
+            dispatch({ type: IS_USER_CHECKIN_EVENT_SUCCESS, payload: data });
+            dispatch(getListCheckIn(eventId, jwt));
+            dispatch(getEventAttendeesAnalytics(eventId, userId));
+            console.log("User checkin status: ", data);
+        } catch (error) {
+            dispatch({ type: IS_USER_CHECKIN_EVENT_FAILURE, payload: error });
+            console.log("Error: ", error);
+        }
+    };
+}
+
+export const getListCheckIn = (eventId, jwt) => {
+    return async (dispatch) => {
+        dispatch({ type: GET_LIST_CHECKIN_REQUEST });
+        try {
+            const { data } = await api.get(`/api/events/${eventId}/check-in`, {
+                headers: {
+                    Authorization: `Bearer ${jwt}`,
+                },
+            });
+            dispatch({ type: GET_LIST_CHECKIN_SUCCESS, payload: data });
+            console.log("Users checkin list: ", data);
+        } catch (error) {
+            dispatch({ type: GET_LIST_CHECKIN_FAILURE, payload: error });
+            console.log("Error: ", error);
+        }
+    };
+}
+
+export const getEventAttendeesAnalytics = (eventId, jwt) => {
+    return async (dispatch) => {
+        dispatch({ type: GET_EVENT_ATTENDEES_ANALYTICS_REQUEST });
+        try {
+            const { data } = await api.get(`/api/events/${eventId}/analytics`, {
+                headers: {
+                    Authorization: `Bearer ${jwt}`,
+                },
+            });
+            dispatch({ type: GET_EVENT_ATTENDEES_ANALYTICS_SUCCESS, payload: data });
+            console.log("Event attendees analytics: ", data);
+        } catch (error) {
+            dispatch({ type: GET_EVENT_ATTENDEES_ANALYTICS_FAILURE, payload: error });
             console.log("Error: ", error);
         }
     };

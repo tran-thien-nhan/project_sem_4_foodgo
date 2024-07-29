@@ -1,6 +1,7 @@
 package com.foodgo.service;
 
 import com.foodgo.dto.EventDto;
+import com.foodgo.dto.UserDto;
 import com.foodgo.mapper.DtoMapper;
 import com.foodgo.model.Event;
 import com.foodgo.model.Restaurant;
@@ -15,11 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.chrono.ChronoLocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -170,6 +167,80 @@ public class EventServiceImp implements EventService {
             throw new Exception("Event or User not found");
         }
     }
+
+    @Override
+    public List<UserDto> getListUserByEventId(Long eventId) throws Exception {
+        List<User> users = eventRepository.getListUserByEventId(eventId);
+        List<UserDto> userDtos = new ArrayList<>();
+
+        if (users != null && !users.isEmpty()) {
+            for (User user : users) {
+                userDtos.add(DtoMapper.toUserDto(user));
+            }
+        }
+
+        return userDtos;
+    }
+
+
+    @Override
+    public boolean isUserJoinedEvent(Long eventId, Long userId) throws Exception {
+        try {
+            Event event = getEventById(eventId); // Lấy thông tin event từ eventId
+            Optional<User> userOptional = userRepository.findById(userId); // Lấy thông tin user từ userId
+
+            if (userOptional.isPresent()) { // Nếu thông tin user tồn tại
+                User user = userOptional.get(); // Lấy thông tin user
+
+                boolean hasCheckedIn = eventRepository.checkIfUserJoinedEvent(eventId, userId); // Kiểm tra xem user đã tham gia event chưa
+
+                if (hasCheckedIn) { // Nếu user đã tham gia event
+                    if (!event.getActualAttendees().contains(user)) { // Nếu user chưa trong danh sách tham gia thực tế
+                        event.getActualAttendees().add(user); // Thêm user vào danh sách tham gia thực tế
+                    } else { // Nếu user đã có trong danh sách tham gia thực tế
+                        event.getActualAttendees().remove(user); // Xóa user khỏi danh sách tham gia thực tế
+                    }
+                    eventRepository.save(event); // Lưu thông tin event
+                }
+                return event.getActualAttendees().contains(user); // Trả về true nếu user đã check-in, ngược lại trả về false
+            }
+            return false;
+        } catch (Exception e) {
+            throw new Exception("Event or User not found");
+        }
+    }
+
+    @Override
+    public List<UserDto> getListUserCheckInByEventId(Long eventId) throws Exception {
+        try{
+            Event event = getEventById(eventId); // Lấy thông tin event từ eventId
+            List<User> users = event.getActualAttendees(); // Lấy danh sách user đã check-in
+            List<UserDto> userDtos = new ArrayList<>();
+            for (User user : users) {
+                userDtos.add(DtoMapper.toUserDto(user));
+            }
+            return userDtos;
+        }
+        catch (Exception e) {
+            throw new Exception("Event or User not found");
+        }
+    }
+
+    @Override
+    public Map<String, Object> getEventAttendeeAnalytics(Long eventId) throws Exception {
+        Event event = getEventById(eventId);
+
+        int totalInvited = event.getUsers().size();
+        int totalCheckedIn = event.getActualAttendees().size();
+
+        Map<String, Object> analytics = new HashMap<>();
+        analytics.put("totalInvited", totalInvited);
+        analytics.put("totalCheckedIn", totalCheckedIn);
+        analytics.put("percentageCheckedIn", (totalInvited > 0) ? ((double) totalCheckedIn / totalInvited) * 100 : 0);
+
+        return analytics;
+    }
+
 
     @Override
     public List<Event> getFavoriteEvents(User user) throws Exception {

@@ -63,6 +63,10 @@ public class Order {
 
     private Long fare;
 
+    @ElementCollection // Đánh dấu là một collection của các phần tử, không phải một entity riêng biệt
+    @Column(length = 1000) // Độ dài tối đa của mỗi phần tử
+    private List<String> images;
+
     @Embedded
     private DriverDto driverdto;
 

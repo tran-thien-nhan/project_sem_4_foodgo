@@ -231,6 +231,30 @@ const Cart = () => {
         }
     };
 
+    const handleAddressChange = async (event, setFieldValue) => {
+        const { name, value } = event.target;
+        setFieldValue(name, value);
+        if (name === 'streetAddress') {
+            const coordinates = await fetchCoordinates(value);
+            if (coordinates) {
+                // Lấy tọa độ của nhà hàng
+                const restaurantCoordinatesLat = cart.cart?.cartItems[0].food?.restaurant?.latitude;
+                const restaurantCoordinatesLon = cart.cart?.cartItems[0].food?.restaurant?.longitude;
+
+                if (restaurantCoordinatesLat && restaurantCoordinatesLon) {
+                    // Tính toán khoảng cách và giá cước
+                    const distance = calculateDistance(
+                        restaurantCoordinatesLat,
+                        restaurantCoordinatesLon,
+                        coordinates.lat,
+                        coordinates.lon
+                    );
+                    const calculatedFare = calculateFare(distance);
+                    setFare(calculatedFare);
+                }
+            }
+        }
+    };
 
     const handleOpenAddressModal = () => {
         setSelectedAddress(null);
@@ -403,7 +427,8 @@ const Cart = () => {
                                             label='Street Address'
                                             fullWidth
                                             variant='outlined'
-                                            onChange={handleChange}
+                                            // onChange={handleChange}
+                                            onChange={(event) => handleAddressChange(event, setFieldValue)}
                                             defaultValue={selectedAddress?.streetAddress || ''}
                                             error={!Boolean(ErrorMessage('streetAddress'))}
                                             helperText={

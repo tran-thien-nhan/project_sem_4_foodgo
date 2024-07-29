@@ -85,7 +85,6 @@ const MenuCard = ({ item }) => {
                 transition: Bounce,
             });
             navigate('/account/login');
-
         }
         if (selectedIngredients.includes(itemName)) {
             setSelectedIngredients(selectedIngredients.filter(ingredient => ingredient !== itemName));
@@ -142,13 +141,12 @@ const MenuCard = ({ item }) => {
                                 <FormGroup>
                                     {
                                         categorizeIngredient(item.ingredients)[category].map((ingredient) => (
-                                            <Tooltip title={(!restaurant.restaurant.open || !item.restaurant.open) ? "this restaurant is closing" : ""} placement="bottom" arrow>
+                                            <Tooltip key={ingredient.ID} title={(!restaurant || !restaurant.restaurant || !restaurant.restaurant.open || !item.restaurant.open) ? "this restaurant is closing" : ""} placement="bottom" arrow>
                                                 <Tooltip title={!ingredient.inStoke ? "this topping is temporarily out of stoke" : ""} placement="bottom" arrow>
                                                     <FormControlLabel
-                                                        key={ingredient.ID}
                                                         control={<Checkbox onChange={() => handleCheckBoxChange(ingredient.name)} />}
                                                         label={ingredient.name + ' (+' + ingredient.price.toLocaleString('vi-VN') + 'đ)'}
-                                                        disabled={!ingredient.inStoke || !restaurant.restaurant.open}
+                                                        disabled={!ingredient.inStoke || !restaurant || !restaurant.restaurant || !restaurant.restaurant.open}
                                                     />
                                                 </Tooltip>
                                             </Tooltip>
@@ -159,7 +157,7 @@ const MenuCard = ({ item }) => {
                         ))}
                     </div>
                     <div className='pt-5'>
-                        {(restaurant.restaurant.open) ?
+                        {(restaurant && restaurant.restaurant && restaurant.restaurant.open) ?
                             (item.available) ?
                                 <Button type='submit' variant='contained' color='primary'>
                                     Add to Cart
@@ -169,7 +167,7 @@ const MenuCard = ({ item }) => {
                                     Out of Stock
                                 </Button>
                             :
-                            <Tooltip title={!restaurant.restaurant.open ? "this restaurant is closing " : ""} placement="bottom" arrow>
+                            <Tooltip title={(!restaurant || !restaurant.restaurant || !restaurant.restaurant.open) ? "this restaurant is closing " : ""} placement="bottom" arrow>
                                 <Button variant='contained' color='primary' disabled>
                                     Add to Cart
                                 </Button>
