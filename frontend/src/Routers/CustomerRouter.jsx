@@ -22,6 +22,7 @@ import GoogleSignUp from "../component/Auth/GoogleSignUp";
 import GoogleSignUpSuccess from "../component/Auth/GoogleSignUpSuccess";
 import ResetPassword from "../component/Auth/ResetPassword";
 import ChatAssistant from "../component/ChatAssistant";
+import SearchMenu from "../component/Search/SearchMenu";
 
 const CustomerRouter = () => {
   return (

@@ -81,8 +81,14 @@ public class IngredientServiceImp implements IngredientService {
     @Override
     public long calculateTotalPrice(List<String> ingredients) {
         long total = 0; // khởi tạo total
-        for (String ingredient : ingredients) { // duyệt qua từng ingredient
-            total += Long.parseLong(ingredient); // cộng vào total
+        for (String ingredientName : ingredients) { // duyệt qua từng tên nguyên liệu
+            // Tìm ingredient theo tên
+            IngredientsItem ingredient = findIngredientByName(ingredientName);
+            if (ingredient != null) {
+                total += ingredient.getPrice(); // cộng giá của ingredient vào tổng
+            } else {
+                throw new RuntimeException("Ingredient not found: " + ingredientName); // báo lỗi nếu không tìm thấy ingredient
+            }
         }
         return total; // trả về total
     }
@@ -92,4 +98,15 @@ public class IngredientServiceImp implements IngredientService {
         Optional<IngredientsItem> opt = ingredientItemRepository.findById(id); // tìm ingredient item theo id
         return opt.orElse(null); // trả về ingredient item hoặc null nếu không tìm thấy
     }
+
+    @Override
+    public IngredientsItem findIngredientByName(String name) {
+        return ingredientItemRepository.findByName(name) // tìm ingredient item theo tên
+                .orElseThrow(() -> new RuntimeException("Ingredient not found: " + name)); // ném ra lỗi nếu không tìm thấy
+    }
+
+//    private IngredientsItem findIngredientByName(String name) {
+//        return ingredientItemRepository.findByName(name)
+//                .orElseThrow(() -> new RuntimeException("Ingredient not found: " + name));
+//    }
 }

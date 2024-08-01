@@ -16,12 +16,12 @@ public enum ORDER_STATUS {
     }
 
     static {
-        PENDING.next = new ORDER_STATUS[]{CONFIRMED};
-        CONFIRMED.next = new ORDER_STATUS[]{DELIVERING};
-        DELIVERING.next = new ORDER_STATUS[]{COMPLETED, CANCELLED};
-        COMPLETED.next = new ORDER_STATUS[]{};
-        CANCELLED.next = new ORDER_STATUS[]{CANCELLED_REFUNDED};
-        CANCELLED_REFUNDED.next = new ORDER_STATUS[]{};
+        PENDING.next = new ORDER_STATUS[]{CONFIRMED,CANCELLED};
+        CONFIRMED.next = new ORDER_STATUS[]{DELIVERING, PENDING,CANCELLED}; // Allow going back to PENDING
+        DELIVERING.next = new ORDER_STATUS[]{COMPLETED, CANCELLED, CONFIRMED}; // Allow going back to CONFIRMED
+        COMPLETED.next = new ORDER_STATUS[]{DELIVERING,CANCELLED}; // Allow going back to DELIVERING
+        CANCELLED.next = new ORDER_STATUS[]{CANCELLED_REFUNDED, DELIVERING}; // Allow going back to DELIVERING
+        CANCELLED_REFUNDED.next = new ORDER_STATUS[]{}; // No next status
     }
 
     public boolean canTransitionTo(ORDER_STATUS nextStatus) {

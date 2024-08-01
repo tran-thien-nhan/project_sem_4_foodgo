@@ -20,7 +20,10 @@ import {
     UPDATE_MENU_ITEMS_AVAILABILITY_FAILURE,
     GET_INGREDIENTS_OF_MENU_ITEM_REQUEST,
     GET_INGREDIENTS_OF_MENU_ITEM_SUCCESS,
-    GET_INGREDIENTS_OF_MENU_ITEM_FAILURE
+    GET_INGREDIENTS_OF_MENU_ITEM_FAILURE,
+    GET_ALL_MENU_REQUEST,
+    GET_ALL_MENU_SUCCESS,
+    GET_ALL_MENU_FAILURE,
 } from "./ActionType";
 
 export const createMenuItem = ({ menu, jwt }) => {
@@ -161,3 +164,18 @@ export const deleteFoodAction = ({foodId, jwt}) => {
         }
     }
 }
+
+export const getAllMenuPubLicToSearch = () => {
+    return async (dispatch) => {
+        dispatch({ type: GET_ALL_MENU_REQUEST });
+        try {
+            const { data } = await api.get('api/public/foods');
+            dispatch({ type: GET_ALL_MENU_SUCCESS, payload: data });
+            console.log("ALL FOODS: ", data);
+        }
+        catch (error) {
+            dispatch({ type: GET_ALL_MENU_FAILURE, payload: error });
+            console.log("ERROR: ", error);
+        }
+    }
+};

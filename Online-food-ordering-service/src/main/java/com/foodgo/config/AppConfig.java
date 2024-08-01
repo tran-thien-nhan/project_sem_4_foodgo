@@ -30,7 +30,7 @@ public class AppConfig {
         http
                 .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // tắt session trên ứng dụng, không lưu session trên server, STATELESS là không lưu session
                 .authorizeHttpRequests(authorize -> authorize // cấu hình cho việc xác thực người dùng, phân quyền truy cập, bảo mật trên ứng dụng
-                        .requestMatchers("/api/admin/**").hasAnyRole("RESTAURANT_OWNER", "ADMIN") // chỉ cho phép người dùng có role là ADMIN hoặc RESTAURANT_OWNER truy cập vào các API bắt đầu bằng /api/admin
+                        .requestMatchers("/api/admin/**").hasAnyRole("RESTAURANT_OWNER", "ADMIN", "SHIPPER") // chỉ cho phép người dùng có role là ADMIN hoặc RESTAURANT_OWNER truy cập vào các API bắt đầu bằng /api/admin
                         .requestMatchers("/auth/signup").permitAll() // cho phép mọi người dùng truy cập vào endpoint /auth/signup mà không cần xác thực
                         .requestMatchers("/api/public/**").permitAll() // cho phép mọi người dùng truy cập vào các API bắt đầu bằng /public
                         .requestMatchers("/api/**").authenticated() // chỉ cho phép người dùng đã xác thực truy cập vào các API bắt đầu bằng /api

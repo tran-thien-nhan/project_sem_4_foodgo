@@ -3,6 +3,7 @@ package com.foodgo.service;
 import com.foodgo.model.*;
 import com.foodgo.repository.CartItemRepository;
 import com.foodgo.repository.CartRepository;
+import com.foodgo.repository.IngredientItemRepository;
 import com.foodgo.request.AddCartItemRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,9 @@ public class CartServiceImp implements CartService {
 
     @Autowired
     private IngredientService ingredientService;
+
+    @Autowired
+    private IngredientItemRepository ingredientsItemRepository;
 
     @Override
     public CartItem addItemToCart(AddCartItemRequest req, String jwt) throws Exception {
@@ -130,5 +134,42 @@ public class CartServiceImp implements CartService {
         Cart cart = findCartByUserId(userId); // lấy cart của user (đã viết ở trên)
         cart.getCartItems().clear(); // xóa hết cart item
         return cartRepository.save(cart); // lưu cart
+    }
+
+    @Override
+    public Cart removeIngredientFromCart(Long cartItemId, Long ingredientId) throws Exception {
+        Optional<CartItem> cartItemOptional = cartItemRepository.findById(cartItemId); // tìm cart item theo id
+        if (cartItemOptional.isEmpty()) { // nếu không tìm thấy thì báo lỗi
+            throw new Exception("Cart item not found"); // báo lỗi
+        }
+
+        CartItem cartItem = cartItemOptional.get(); // lấy ra cart item
+        List<String> ingredientNames = cartItem.getIngredients(); // lấy ra danh sách tên ingredients
+
+        // Chuyển đổi danh sách tên ingredients thành danh sách IngredientsItem
+        List<IngredientsItem> ingredients = ingredientNames.stream()
+                .map(name -> findIngredientByName(name)) // Giả sử bạn có phương thức này để tìm IngredientsItem theo tên
+                .collect(Collectors.toList());
+
+        // Lọc ra ingredient không phải ingredientId
+        ingredients = ingredients.stream().filter(ingredient -> !ingredient.getId().equals(ingredientId)).collect(Collectors.toList());
+
+        // Chuyển đổi ngược lại từ danh sách IngredientsItem sang danh sách tên ingredients
+        ingredientNames = ingredients.stream()
+                .map(IngredientsItem::getName)
+                .collect(Collectors.toList());
+
+        cartItem.setIngredients(ingredientNames); // set lại danh sách tên ingredients
+        Long totalPriceIngredients = ingredientService.calculateTotalPrice(ingredientNames); // tính lại giá thành phần nguyên liệu
+        cartItem.setTotalPrice((cartItem.getFood().getPrice() + totalPriceIngredients) * cartItem.getQuantity()); // tính lại total price
+        return cartItemRepository.save(cartItem).getCart(); // lưu cart item và trả về cart
+    }
+
+    private IngredientsItem findIngredientByName(String name) {
+        return findByName(name).orElseThrow(() -> new RuntimeException("Ingredient not found"));
+    }
+
+    private Optional<IngredientsItem> findByName(String name) {
+        return ingredientsItemRepository.findByName(name);
     }
 }

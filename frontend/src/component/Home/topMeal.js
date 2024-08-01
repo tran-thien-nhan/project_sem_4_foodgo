@@ -30,5 +30,13 @@ export const topMeal = [
     {
         image: 'https://files.world.thaipbs.or.th/2019/07/12125756/bubble-milk-tea-1.jpg',
         title: 'Bubble Milk Tea',
+    },
+    {
+        image: 'https://static.vinwonders.com/production/banh-mi-sai-gon-2.jpg',
+        title: 'Banh Mi'
+    },
+    {
+        image: 'https://cdn.tgdd.vn/Files/2021/08/23/1377290/cach-lam-tra-chanh-hong-kong-ngon-chuan-vi-ngoai-quan-202201210008425468.jpeg',
+        title: 'Tea'
     }
 ]

@@ -1,17 +1,19 @@
 package com.foodgo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-@Data // Tự động tạo getter, setter, toString, equals, hashCode
-@Entity // Đánh dấu là một entity
-@NoArgsConstructor // Tự động tạo constructor không có tham số
-@AllArgsConstructor // Tự động tạo constructor có tham số
+@Data
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
 public class Address {
-    @Id //nghĩa là id là primary key
-    @GeneratedValue(strategy = GenerationType.AUTO) //tự động tăng giá trị id
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     private String city;
@@ -23,4 +25,18 @@ public class Address {
     private String pinCode;
 
     private String country;
+
+    private String phone;
+
+    @Column(nullable = false)
+    private double latitude;
+
+    @Column(nullable = false)
+    private double longitude;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    @ToString.Exclude
+    @JsonIgnore
+    private User user;
 }

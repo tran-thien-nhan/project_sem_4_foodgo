@@ -34,36 +34,42 @@ public class OrderController {
 
     @PostMapping("/order")
     public ResponseEntity<List<PaymentResponse>> createOrder(@RequestBody OrderRequest req, @RequestHeader("Authorization") String jwt) throws Exception {
-        User user = userService.findUserByJwtToken(jwt);
-        List<Order> orders = orderService.createOrder(req, user);
+        try{
+            User user = userService.findUserByJwtToken(jwt);
+            List<Order> orders = orderService.createOrder(req, user);
 
-        if(req.getPaymentMethod().contains(PAYMENT_METHOD.BY_CREDIT_CARD.toString())){
-            List<PaymentResponse> paymentResponses = orders.stream()
-                    .map(order -> {
-                        try {
-                            return paymentService.createPaymentLink(order);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    })
-                    .collect(Collectors.toList());
-            return new ResponseEntity<>(paymentResponses, HttpStatus.OK);
+            switch (req.getPaymentMethod()) {
+                case "BY_CASH":
+                    return new ResponseEntity<>(HttpStatus.OK);
+                case "BY_CREDIT_CARD":
+                    List<PaymentResponse> paymentResponsesCreditCard = orders.stream()
+                            .map(order -> {
+                                try {
+                                    return paymentService.createPaymentLink(order);
+                                } catch (Exception e) {
+                                    throw new RuntimeException(e);
+                                }
+                            })
+                            .collect(Collectors.toList());
+                    return new ResponseEntity<>(paymentResponsesCreditCard, HttpStatus.OK);
+                case "BY_VNPAY":
+                    List<PaymentResponse> paymentResponsesVnPay = orders.stream()
+                            .map(order -> {
+                                try {
+                                    return paymentService.createPaymentUrlVnPay(order);
+                                } catch (Exception e) {
+                                    throw new RuntimeException(e);
+                                }
+                            })
+                            .collect(Collectors.toList());
+                    return new ResponseEntity<>(paymentResponsesVnPay, HttpStatus.OK);
+                default:
+                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
         }
-
-        if(req.getPaymentMethod().contains(PAYMENT_METHOD.BY_VNPAY.toString())){
-            List<PaymentResponse> paymentResponses = orders.stream()
-                    .map(order -> {
-                        try {
-                            return paymentService.createPaymentUrlVnPay(order);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    })
-                    .collect(Collectors.toList());
-            return new ResponseEntity<>(paymentResponses, HttpStatus.OK);
+        catch (Exception e){
+            throw new Exception(e);
         }
-
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("/order/toggle-payment-status/{orderId}")

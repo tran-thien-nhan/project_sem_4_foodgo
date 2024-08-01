@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Divider, FormControl, Grid, Radio, RadioGroup, Typography, FormControlLabel } from '@mui/material';
+import { Divider, FormControl, Grid, Radio, RadioGroup, Typography, FormControlLabel, Modal, Box, Button, IconButton } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import MenuCard from './MenuCard';
@@ -8,6 +8,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getRestaurantById, getRestaurantPublicById, getRestaurantsCategory, getRestaurantsCategoryPublic } from '../State/Restaurant/Action';
 import { getMenuItemsByRestaurantId, getMenuItemsByRestaurantIdPublic } from '../State/Menu/Action';
 import NotFound from '../pages/NotFound';
+import RatingsList from '../../component/Rating/RatingsList';
+import RatingForm from '../../component/Rating/RatingForm';
+import { getRatings } from '../State/Rating/Action';
+import ReviewsIcon from '@mui/icons-material/Reviews';
 
 const foodTypes = [
     { label: "All", value: "all" },
@@ -19,14 +23,15 @@ const foodTypes = [
 const RestaurantDetail = () => {
     const [foodType, setFoodType] = useState("all");
     const [hasMenuItems, setHasMenuItems] = useState(true); // State để kiểm tra có menu items hay không
+    const [showRatingFormModal, setShowRatingFormModal] = useState(false); // State để điều khiển hiển thị modal
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const jwt = localStorage.getItem('jwt');
     const { auth, restaurant, menu } = useSelector(store => store);
     const { id, city } = useParams();
     const [selectedCategory, setSelectedCategory] = useState("");
-
-    console.log("MENU: ", menu);
+    let ratings = useSelector(state => state.rating.ratings);
+    let ratingCount = ratings.filter(rating => rating.visible).length;
 
     const handleFilter = (e) => {
         setFoodType(e.target.value);
@@ -41,6 +46,7 @@ const RestaurantDetail = () => {
         dispatch(getRestaurantPublicById({ restaurantId: id }));
         dispatch(getRestaurantsCategory({ jwt, restaurantId: id }));
         dispatch(getRestaurantsCategoryPublic({ restaurantId: id }));
+        dispatch(getRatings({ jwt, restaurantId: id }));
     }, [dispatch, id, jwt]);
 
     useEffect(() => {
@@ -66,11 +72,18 @@ const RestaurantDetail = () => {
         setHasMenuItems(menu.menuItems.length > 0);
     }, [menu.menuItems]);
 
+    const handleOpenRatingFormModal = () => {
+        setShowRatingFormModal(true);
+    };
+
+    const handleCloseRatingFormModal = () => {
+        setShowRatingFormModal(false);
+    };
+
     return (
         <div className='px-5 lg:px-20 pb-5'>
             <section>
                 <h3 className='text-gray-500 py-2 mt-10'>
-                    {/* Home/vietnam/vietnamese food/3 */}
                     Home/{restaurant.restaurant?.address.city}/{restaurant.restaurant?.cuisineType}/{restaurant.restaurant?.name || restaurant.restaurant?.title}
                 </h3>
                 <div>
@@ -114,19 +127,18 @@ const RestaurantDetail = () => {
                                 Food Type
                             </Typography>
                             <FormControl className='py-10 space-y-5' component={"fieldset"}>
-                                    <RadioGroup name='food_type' value={foodType} onChange={handleFilter}>
-                                        {
-                                            foodTypes.map((item) => (
-                                                <FormControlLabel
-                                                    key={item.value}
-                                                    value={item.value}
-                                                    control={<Radio />}
-                                                    label={item.label}
-                                                />
-                                            ))
-                                        }
-                                    </RadioGroup>
-                                
+                                <RadioGroup name='food_type' value={foodType} onChange={handleFilter}>
+                                    {
+                                        foodTypes.map((item) => (
+                                            <FormControlLabel
+                                                key={item.value}
+                                                value={item.value}
+                                                control={<Radio />}
+                                                label={item.label}
+                                            />
+                                        ))
+                                    }
+                                </RadioGroup>
                             </FormControl>
                         </div>
                         <Divider />
@@ -149,6 +161,19 @@ const RestaurantDetail = () => {
                                 </RadioGroup>
                             </FormControl>
                         </div>
+                        <Divider />
+                        <div>
+                            <Typography variant='h5' sx={{ paddingBottom: '1rem' }}>
+                                Reviews ({ratingCount})
+                            </Typography>
+                            <RatingsList restaurantId={id} />
+                            <Button variant="contained" color="primary" onClick={handleOpenRatingFormModal} className='flex'>
+                                <IconButton variant="contained">
+                                    <ReviewsIcon />
+                                </IconButton>
+                                <p>Add Rating</p>
+                            </Button>
+                        </div>
                     </div>
                 </div>
                 <div className='space-y-10 lg:w-[80%] lg:pl-10'>
@@ -160,6 +185,19 @@ const RestaurantDetail = () => {
                         <NotFound />
                     )}
                 </div>
+            </section>
+            <Divider className='py-3' /> {/* Thêm Divider để tách phần review */}
+            <section className='pt-[2rem]'>
+                <Modal
+                    open={showRatingFormModal}
+                    onClose={handleCloseRatingFormModal}
+                    aria-labelledby="modal-modal-title"
+                    aria-describedby="modal-modal-description"
+                >
+                    <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'background.paper', boxShadow: 24, p: 4, width: 400 }}>
+                        <RatingForm restaurantId={id} onSuccess={handleCloseRatingFormModal} />
+                    </Box>
+                </Modal>
             </section>
         </div>
     );

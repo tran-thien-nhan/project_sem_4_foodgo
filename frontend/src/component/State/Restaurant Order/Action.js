@@ -1,4 +1,5 @@
 import { api } from '../../Config/api';
+import { getUsersOrders } from '../Order/Action';
 import {
     GET_RESTAURANTS_ORDER_REQUEST,
     GET_RESTAURANTS_ORDER_SUCCESS,
@@ -39,6 +40,7 @@ export const updateOrderStatus = ({ orderId, jwt, newStatus }) => {
                 }
             });
             dispatch({ type: UPDATE_ORDER_STATUS_SUCCESS, payload: response.data });
+            dispatch(getUsersOrders(jwt));
             console.log("UPDATE ORDER STATUS SUCCESS", response.data);
         } catch (error) {
             dispatch({ type: UPDATE_ORDER_STATUS_FAILURE, payload: error });

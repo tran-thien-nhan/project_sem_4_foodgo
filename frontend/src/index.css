@@ -12,6 +12,21 @@ code {
     monospace;
 }
 
+#routing-container {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.leaflet-routing-container {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+  background: white;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

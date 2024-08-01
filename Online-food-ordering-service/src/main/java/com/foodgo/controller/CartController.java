@@ -54,4 +54,11 @@ public class CartController {
         Cart cart = cartService.findCartByUserId(user.getId());
         return new ResponseEntity<>(cart, HttpStatus.OK);
     }
+
+    //removeIngredientFromCart
+    @DeleteMapping("/cart-item/{cartItemId}/ingredient/{ingredientId}/remove")
+    public ResponseEntity<Cart> removeIngredientFromCart(@PathVariable Long cartItemId, @PathVariable Long ingredientId) throws Exception {
+        Cart cart = cartService.removeIngredientFromCart(cartItemId, ingredientId);
+        return new ResponseEntity<>(cart, HttpStatus.OK);
+    }
 }

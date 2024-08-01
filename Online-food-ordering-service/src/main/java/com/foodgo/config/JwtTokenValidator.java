@@ -50,7 +50,7 @@ public class JwtTokenValidator extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication); //set Authentication vào SecurityContextHolder để xác thực người dùng
             }
             catch (Exception e){
-                throw new BadCredentialsException("Invalid token ..."); //nếu token không hợp lệ, ném ra lỗi
+                throw new BadCredentialsException("Please log in or sign up!"); //nếu token không hợp lệ, ném ra lỗi
             }
         }
         filterChain.doFilter(request, response); //chuyển request và response cho filter tiếp theo, nếu không có lỗi

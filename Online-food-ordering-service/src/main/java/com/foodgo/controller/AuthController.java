@@ -1,12 +1,15 @@
 package com.foodgo.controller;
 
 import com.foodgo.config.JwtProvider;
+import com.foodgo.dto.ChangePasswordRequest;
 import com.foodgo.model.*;
 import com.foodgo.repository.CartRepository;
+import com.foodgo.repository.DriverRepository;
 import com.foodgo.repository.UserRepository;
 import com.foodgo.request.GoogleLoginRequest;
 import com.foodgo.request.LoginRequest;
 import com.foodgo.response.AuthResponse;
+import com.foodgo.service.ChangePasswordService;
 import com.foodgo.service.CustomerUserDetailsService;
 import com.foodgo.service.EmailService;
 import com.foodgo.service.UserService;
@@ -21,15 +24,13 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -48,69 +49,91 @@ public class AuthController {
     private UserService userService;
     @Autowired
     private EmailService emailService;
+    @Autowired
+//<<<<<<< HEAD
+    private DriverRepository driverRepository;
+//=======
+    @Autowired
+    private ChangePasswordService changePasswordService;
+//>>>>>>> 2db83274d9ed8ec933d2478e7e72bf4e50ba75e2
 
     @PostMapping("/signup") //đánh dấu phương thức createUserHandler là phương thức xử lý request POST tới /auth/signup
     public ResponseEntity<AuthResponse> createUserHandler(@RequestBody User user) throws Exception {
+        try{
+            // AuthResponse là một class chứa thông tin về token và message
+            if (user.getPassword() == null || user.getPassword().isEmpty()) { //nếu password của user là null hoặc rỗng
+                throw new Exception("Password is required"); //ném ra một ngoại lệ với thông báo "Password is required"
+            }
 
-        // AuthResponse là một class chứa thông tin về token và message
+//            List<User> users = userRepository.findAll();
+//            for (User u : users) {
+//                if (u.getEmail().equals(user.getEmail()) && u.getProvider().equals(PROVIDER.NORMAL)) {
+//                    throw new Exception("Email is already in use");
+//                }
+//            }
 
-        if (user.getPassword() == null || user.getPassword().isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+//        if(!userService.checkPhone(user.getPhone())){
+//            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+//        }
+
+            List<User> existingUsers = userRepository.findByEmailAndProvider(user.getEmail(), user.getProvider());
+            if (!existingUsers.isEmpty()) { //nếu email đã tồn tại
+                // chuyển sang sign in
+                LoginRequest req = new LoginRequest();
+                req.setEmail(user.getEmail());
+                req.setPassword(user.getPassword());
+                req.setProvider(user.getProvider());
+                return signinForSignup(req);
+            }
+
+            // còn nếu chua co email, tạo mới
+            User createdUser = new User(); //tạo một user mới
+            createdUser.setEmail(user.getEmail()); //set email cho user mới
+            createdUser.setFullName(user.getFullName()); //set fullName cho user mới
+            createdUser.setPhone(user.getPhone()); //set phone cho user mới
+            createdUser.setRole(user.getRole()); //set role cho user mới
+
+            if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+                createdUser.setPassword(passwordEncoder.encode(user.getPassword())); //set password cho user mới, mã hóa password trước khi lưu vào database
+            }
+
+            createdUser.setProvider(user.getProvider()); // set provider cho user mới
+
+            User savedUser = userRepository.save(createdUser); //lưu user mới vào database
+
+            Cart cart = new Cart(); //tạo một cart mới
+            cart.setCustomer(savedUser); //set customer cho cart mới
+            cartRepository.save(cart); //lưu cart mới vào database
+
+            Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()); //tạo ra một đối tượng Authentication từ email và password của user
+            SecurityContextHolder.getContext().setAuthentication(authentication); //set Authentication vào SecurityContextHolder để xác thực user
+            String jwt = jwtProvider.generateToken(authentication, user.getProvider()); //tạo ra token từ thông tin user
+            AuthResponse authResponse = new AuthResponse(); //tạo ra một đối tượng AuthResponse
+            authResponse.setJwt(jwt); //set jwt cho AuthResponse
+            authResponse.setMessage("Sign Up successfully"); //set message cho AuthResponse
+            authResponse.setRole(savedUser.getRole()); //set role cho AuthResponse
+
+            if (user.getRole().equals(USER_ROLE.ROLE_RESTAURANT_OWNER)) {
+                emailService.sendMailWelcomeOwner(user.getEmail(), user.getFullName());
+            } else if (user.getRole().equals(USER_ROLE.ROLE_CUSTOMER)) {
+                emailService.sendMailWelcomeCustomer(user.getEmail(), user.getFullName());
+            }
+            else if (user.getRole().equals(USER_ROLE.ROLE_SHIPPER)) {
+                emailService.sendMailWelcomeShipper(user.getEmail(), user.getFullName());
+            }
+
+            return new ResponseEntity<>(authResponse, HttpStatus.CREATED); //trả về AuthResponse và status code 200 (OK)
         }
-
-        //User isEmailExist = userRepository.findByEmail(user.getEmail()); //kiểm tra xem email đã tồn tại trong database chưa
-        //User isEmailExist = userRepository.findByEmailAndProvider(user.getEmail(), user.getProvider()).get(0); // kiểm tra xem email và provider đã tồn tại trong database chưa
-        List<User> existingUsers = userRepository.findByEmailAndProvider(user.getEmail(), user.getProvider());
-        if (!existingUsers.isEmpty()) { //nếu email đã tồn tại
-
-            // chuyển sang sign in
-            LoginRequest req = new LoginRequest();
-            req.setEmail(user.getEmail());
-            req.setPassword(user.getPassword());
-            req.setProvider(user.getProvider());
-            return signinForSignup(req);
+        catch(Exception e){
+            throw new Exception("Error: " + e.getMessage());
         }
-
-        // còn nếu chua co email, tạo mới
-        User createdUser = new User(); //tạo một user mới
-        createdUser.setEmail(user.getEmail()); //set email cho user mới
-        createdUser.setFullName(user.getFullName()); //set fullName cho user mới
-        createdUser.setRole(user.getRole()); //set role cho user mới
-
-        if(user.getPassword() != null && !user.getPassword().isEmpty()){
-            createdUser.setPassword(passwordEncoder.encode(user.getPassword())); //set password cho user mới, mã hóa password trước khi lưu vào database
-        }
-
-        createdUser.setProvider(user.getProvider()); // set provider cho user mới
-
-        User savedUser = userRepository.save(createdUser); //lưu user mới vào database
-
-        Cart cart = new Cart(); //tạo một cart mới
-        cart.setCustomer(savedUser); //set customer cho cart mới
-        cartRepository.save(cart); //lưu cart mới vào database
-
-        Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()); //tạo ra một đối tượng Authentication từ email và password của user
-        SecurityContextHolder.getContext().setAuthentication(authentication); //set Authentication vào SecurityContextHolder để xác thực user
-        String jwt = jwtProvider.generateToken(authentication, user.getProvider()); //tạo ra token từ thông tin user
-        AuthResponse authResponse = new AuthResponse(); //tạo ra một đối tượng AuthResponse
-        authResponse.setJwt(jwt); //set jwt cho AuthResponse
-        authResponse.setMessage("Sign Up successfully"); //set message cho AuthResponse
-        authResponse.setRole(savedUser.getRole()); //set role cho AuthResponse
-
-        if (user.getRole().equals(USER_ROLE.ROLE_RESTAURANT_OWNER)) {
-            emailService.sendMailWelcomeOwner(user.getEmail(), user.getFullName());
-        }
-        else if (user.getRole().equals(USER_ROLE.ROLE_CUSTOMER)) {
-            emailService.sendMailWelcomeCustomer(user.getEmail(), user.getFullName());
-        }
-
-        return new ResponseEntity<>(authResponse, HttpStatus.CREATED); //trả về AuthResponse và status code 200 (OK)
     }
 
     @PostMapping("/signin") //đánh dấu phương thức signin là phương thức xử lý request POST tới /auth/signin
     public ResponseEntity<User> signin(@RequestBody LoginRequest req) {
 
-        if(req.getProvider() == PROVIDER.GOOGLE){
+        if (req.getProvider() == PROVIDER.GOOGLE) {
             GoogleLoginRequest googleLoginRequest = new GoogleLoginRequest();
             googleLoginRequest.setEmail(req.getEmail());
             googleLoginRequest.setProvider(PROVIDER.GOOGLE);
@@ -119,13 +142,14 @@ public class AuthController {
             return googleSignIn(googleLoginRequest);
         }
 
-        String username = req.getEmail(); //lấy email từ request
         String email = req.getEmail(); //lấy email từ request
         String password = req.getPassword(); //lấy password từ request
         PROVIDER provider = req.getProvider(); //lấy provider từ request
 
-        //User user = findUserByEmailAndProvider(email, provider); //tìm user theo email và provider (google hoặc normal
-        User user = userRepository.findByEmailAndProvider(email, provider).get(0);
+        User user = userService.findByEmailAndProvider(email, password, provider);
+//        if (user == null || passwordEncoder.matches(password, user.getPassword())) {
+//            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+//        }
 
         Authentication authentication = authenticateByEmailAndProvider(email, password, provider); //xác thực user
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities(); //lấy danh sách các quyền của user
@@ -136,6 +160,7 @@ public class AuthController {
         authResponse.setJwt(jwt); //set jwt cho AuthResponse
         authResponse.setMessage("Sign In successfully"); //set message cho AuthResponse
         authResponse.setRole(USER_ROLE.valueOf(role)); //set role cho AuthResponse
+        authResponse.setUser(user);
 
         return new ResponseEntity(authResponse, HttpStatus.OK); //trả về AuthResponse và status code 200 (OK), authResponse chứa thông tin user và token
     }
@@ -195,7 +220,7 @@ public class AuthController {
         String password = user.getPassword();
         PROVIDER provider = user.getProvider();
 
-        Authentication authentication = authenticateByEmailAndProvider(email,password,provider);
+        Authentication authentication = authenticateByEmailAndProvider(email, password, provider);
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         String role = authorities.isEmpty() ? null : authorities.iterator().next().getAuthority();
         String jwt = jwtProvider.generateToken(authentication, provider);
@@ -208,10 +233,18 @@ public class AuthController {
         return new ResponseEntity(authResponse, HttpStatus.OK);
     }
 
-    private Authentication authenticateByEmailAndProvider(String email,String password, PROVIDER provider) {
-        UserDetails userDetails = customerUserDetailsService.loadUserByEmailAndProvider(email,password,provider);
+    private Authentication authenticateByEmailAndProvider(String email, String password, PROVIDER provider) {
+//<<<<<<< HEAD
+        UserDetails userDetails = customerUserDetailsService.loadUserByEmailAndProvider(email, provider);
+//=======
+//        UserDetails userDetails = customerUserDetailsService.loadUserByEmailAndProvider(email, password, provider);
+//>>>>>>> 2db83274d9ed8ec933d2478e7e72bf4e50ba75e2
         if (userDetails == null) {
-            throw new BadCredentialsException("Invalid account");
+            throw new BadCredentialsException("Invalid email or provider");
+        }
+
+        if (!passwordEncoder.matches(password, userDetails.getPassword())) {
+            throw new BadCredentialsException("Invalid password");
         }
 
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
@@ -228,7 +261,6 @@ public class AuthController {
         }
     }
 
-
     private ResponseEntity<AuthResponse> signinForSignup(LoginRequest req) {
         //User user = findUserByEmailAndProvider(req.getEmail(), req.getProvider());
         User user = userRepository.findByEmailAndProvider(req.getEmail(), req.getProvider()).get(0);
@@ -239,13 +271,14 @@ public class AuthController {
 
         Authentication authentication = authenticateByEmailAndProvider(user.getEmail(), req.getPassword(), req.getProvider());
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-        String role = authorities.isEmpty() ? null : authorities.iterator().next().getAuthority();
+        String role = authorities.isEmpty() ? null : authorities.iterator().next().getAuthority(); //lấy quyền của user
         String jwt = jwtProvider.generateToken(authentication, req.getProvider());
 
         AuthResponse authResponse = new AuthResponse();
         authResponse.setJwt(jwt);
         authResponse.setMessage("Sign In successfully");
         authResponse.setRole(user.getRole());
+        authResponse.setUser(user);
 
         return new ResponseEntity<>(authResponse, HttpStatus.OK);
     }
@@ -265,6 +298,35 @@ public class AuthController {
         return new ResponseEntity<>("Password has been reset.", HttpStatus.OK);
     }
 
+    @PostMapping("/request-token")
+    public ResponseEntity<String> requestToken(@RequestParam Long userId) {
+        try {
+            changePasswordService.sendChangePasswordToken(userId);
+            return ResponseEntity.ok("Password reset token sent successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to send password reset token");
+        }
+    }
 
+    @PostMapping("/change")
+    public ResponseEntity<ChangePasswordResult> changePassword(@RequestBody ChangePasswordRequest request) {
+        try {
+            ChangePasswordResult result = changePasswordService.ChangingPassword(
+                    request.getUserId(),
+                    request.getCurrentPassword(),
+                    request.getNewPassword(),
+                    request.getConfirmPassword(),
+                    request.getToken()
+            );
+            if(result.isSuccess()){
+                return ResponseEntity.ok(result);
+            } else {
+                return ResponseEntity.badRequest().body(result);
+            }
+        } catch (Exception e) {
+            String errorMessage = "Failed to change password: " + e.getMessage();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ChangePasswordResult(false, errorMessage));
+        }
+    }
 
 }

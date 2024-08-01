@@ -21,11 +21,12 @@ const LoginForm = () => {
     const [email, setEmail] = useState('');
 
     const handleSubmit = (values) => {
+        console.log("values login: ",values);
         dispatch(loginUser({ userData: values, navigate }));
     };
 
     const handleForgotPassword = () => {
-        dispatch(forgotPassword(email));
+        dispatch(forgotPassword({email: email}));
         setShowForgotPassword(false);
     };
 

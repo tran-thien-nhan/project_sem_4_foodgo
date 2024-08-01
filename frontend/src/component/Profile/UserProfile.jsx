@@ -18,7 +18,7 @@ const UserProfile = () => {
     const { user } = useUser();
     const userLoggedIn = localStorage.getItem('clerk_telemetry_throttler');
 
-    console.log(auth);
+    // console.log(auth);
 
     const handleNavigate = (itemName) => {
         if (itemName === "Logout") {

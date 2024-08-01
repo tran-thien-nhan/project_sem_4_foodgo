@@ -12,5 +12,4 @@ public class ContactInformation {
     private String instagram;
     private String facebook;
     private String linkedin;
-
 }
