@@ -5,7 +5,9 @@ package com.foodgo.config;
 // và nó sẽ quét toàn bộ ứng dụng để tìm các file controller, service, repository để quản lý
 // để cấu hình cho ứng dụng Spring Boot, ta sử dụng annotation @Configuration
 
+import com.foodgo.service.TwoFactorAuthService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -25,13 +27,18 @@ import java.util.*;
 @EnableWebSecurity // bật tính năng bảo mật trên ứng dụng, nó sẽ quét toàn bộ ứng dụng để tìm các file cấu hình bảo mật
 public class AppConfig {
 
+    @Autowired
+    private TwoFactorAuthService twoFactorAuthService;
+
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception { // cấu hình bảo mật cho ứng dụng, nó sẽ được Spring Boot gọi khi ứng dụng khởi động
         http
                 .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // tắt session trên ứng dụng, không lưu session trên server, STATELESS là không lưu session
                 .authorizeHttpRequests(authorize -> authorize // cấu hình cho việc xác thực người dùng, phân quyền truy cập, bảo mật trên ứng dụng
-                        .requestMatchers("/api/admin/**").hasAnyRole("RESTAURANT_OWNER", "ADMIN", "SHIPPER") // chỉ cho phép người dùng có role là ADMIN hoặc RESTAURANT_OWNER truy cập vào các API bắt đầu bằng /api/admin
+                        .requestMatchers("/api/sup-admin/**").hasAnyRole("ADMIN") // chỉ cho phép người dùng có role là ADMIN truy cập vào các API bắt đầu bằng /api/sup-admin
+                        .requestMatchers("/api/admin/**").hasAnyRole("RESTAURANT_OWNER", "SHIPPER") // chỉ cho phép người dùng có role là ADMIN hoặc RESTAURANT_OWNER truy cập vào các API bắt đầu bằng /api/admin
                         .requestMatchers("/auth/signup").permitAll() // cho phép mọi người dùng truy cập vào endpoint /auth/signup mà không cần xác thực
+                        .requestMatchers("/auth/verify-2fa").permitAll() // cho phép mọi người dùng truy cập vào endpoint /auth/verify-2fa mà không cần xác thực
                         .requestMatchers("/api/public/**").permitAll() // cho phép mọi người dùng truy cập vào các API bắt đầu bằng /public
                         .requestMatchers("/api/**").authenticated() // chỉ cho phép người dùng đã xác thực truy cập vào các API bắt đầu bằng /api
                         .anyRequest().permitAll() // cho phép tất cả mọi người dùng truy cập vào các API khác

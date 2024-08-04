@@ -6,13 +6,11 @@ import com.foodgo.model.*;
 import com.foodgo.repository.CartRepository;
 import com.foodgo.repository.DriverRepository;
 import com.foodgo.repository.UserRepository;
+import com.foodgo.request.AdminLoginRequest;
 import com.foodgo.request.GoogleLoginRequest;
 import com.foodgo.request.LoginRequest;
 import com.foodgo.response.AuthResponse;
-import com.foodgo.service.ChangePasswordService;
-import com.foodgo.service.CustomerUserDetailsService;
-import com.foodgo.service.EmailService;
-import com.foodgo.service.UserService;
+import com.foodgo.service.*;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,6 +29,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/auth")
@@ -56,6 +55,11 @@ public class AuthController {
     @Autowired
     private ChangePasswordService changePasswordService;
 //>>>>>>> 2db83274d9ed8ec933d2478e7e72bf4e50ba75e2
+
+    @Autowired
+    private TwoFactorAuthService twoFactorAuthService;
+
+    private Map<String, String> twoFaCodes = new ConcurrentHashMap<>();
 
     @PostMapping("/signup") //đánh dấu phương thức createUserHandler là phương thức xử lý request POST tới /auth/signup
     public ResponseEntity<AuthResponse> createUserHandler(@RequestBody User user) throws Exception {
@@ -114,7 +118,13 @@ public class AuthController {
             authResponse.setMessage("Sign Up successfully"); //set message cho AuthResponse
             authResponse.setRole(savedUser.getRole()); //set role cho AuthResponse
 
-            if (user.getRole().equals(USER_ROLE.ROLE_RESTAURANT_OWNER)) {
+            if (user.getRole().equals(USER_ROLE.ROLE_ADMIN)) {
+                // Generate and send 2FA codes to the admin
+                List<String> codes = twoFactorAuthService.generateNewCodes(10);
+                twoFactorAuthService.generateAndSaveNewCodes(user.getEmail(), 10);
+                emailService.send2FaCodes(user.getEmail(), codes);
+            }
+            else if (user.getRole().equals(USER_ROLE.ROLE_RESTAURANT_OWNER)) {
                 emailService.sendMailWelcomeOwner(user.getEmail(), user.getFullName());
             } else if (user.getRole().equals(USER_ROLE.ROLE_CUSTOMER)) {
                 emailService.sendMailWelcomeCustomer(user.getEmail(), user.getFullName());
@@ -131,38 +141,94 @@ public class AuthController {
     }
 
     @PostMapping("/signin") //đánh dấu phương thức signin là phương thức xử lý request POST tới /auth/signin
-    public ResponseEntity<User> signin(@RequestBody LoginRequest req) {
+    public ResponseEntity<User> signin(@RequestBody LoginRequest req) throws Exception {
+        try{
 
-        if (req.getProvider() == PROVIDER.GOOGLE) {
-            GoogleLoginRequest googleLoginRequest = new GoogleLoginRequest();
-            googleLoginRequest.setEmail(req.getEmail());
-            googleLoginRequest.setProvider(PROVIDER.GOOGLE);
-            googleLoginRequest.setFullName(req.getEmail());
-            googleLoginRequest.setRole(USER_ROLE.ROLE_CUSTOMER);
-            return googleSignIn(googleLoginRequest);
+            if (req.getProvider() == PROVIDER.GOOGLE) {
+                GoogleLoginRequest googleLoginRequest = new GoogleLoginRequest();
+                googleLoginRequest.setEmail(req.getEmail());
+                googleLoginRequest.setProvider(PROVIDER.GOOGLE);
+                googleLoginRequest.setFullName(req.getEmail());
+                googleLoginRequest.setRole(USER_ROLE.ROLE_CUSTOMER);
+                return googleSignIn(googleLoginRequest);
+            }
+
+            String email = req.getEmail(); //lấy email từ request
+            String password = req.getPassword(); //lấy password từ request
+            PROVIDER provider = req.getProvider(); //lấy provider từ request
+
+            User user = userService.findByEmailAndProvider(email, password, provider);
+
+            Authentication authentication = authenticateByEmailAndProvider(email, password, provider); //xác thực user
+            Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities(); //lấy danh sách các quyền của user
+            String role = authorities.isEmpty() ? null : authorities.iterator().next().getAuthority(); //lấy quyền của user
+            String jwt = jwtProvider.generateToken(authentication, provider); //tạo ra token từ thông tin user
+
+            System.out.println("user: " + authentication.getAuthorities());
+            if (USER_ROLE.valueOf(role) == USER_ROLE.ROLE_ADMIN) {
+                throw new Exception("Admin cannot sign in here");
+            }
+
+            AuthResponse authResponse = new AuthResponse(); //tạo ra một đối tượng AuthResponse
+            authResponse.setJwt(jwt); //set jwt cho AuthResponse
+            authResponse.setMessage("Sign In successfully"); //set message cho AuthResponse
+            authResponse.setRole(USER_ROLE.valueOf(role)); //set role cho AuthResponse
+            authResponse.setUser(user);
+
+            return new ResponseEntity(authResponse, HttpStatus.OK); //trả về AuthResponse và status code 200 (OK), authResponse chứa thông tin user và token
+        }
+        catch (Exception e){
+            throw new Exception("Error: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/sign-in")
+    public ResponseEntity<?> signinAdmin(@RequestBody AdminLoginRequest req) throws Exception {
+        try{
+            if (req.getCode() == null || req.getCode().isEmpty()) { // Nếu chưa nhập mã 2FA
+                throw new BadCredentialsException("please input 2FA code");
+            } else { // Nếu đã nhập mã 2FA
+                if (twoFactorAuthService.verifyCode(req.getCode(), req.getEmail())) { // Nếu mã 2FA đúng
+                    Authentication authentication = authenticateByEmailAndProvider(req.getEmail(), req.getPassword(), req.getProvider()); // Xác thực user
+                    return completeSigninAdmin(authentication, req.getProvider()); // Hoàn thành đăng nhập
+                } else { // Nếu mã 2FA không đúng
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid 2FA code"); // Trả về mã 2FA không đúng
+                }
+            }
+
+
+        }
+        catch (Exception e){
+            throw new Exception("Error: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/verify-2fa")
+    public ResponseEntity<?> verify2Fa(@RequestBody Map<String, String> request) throws MessagingException, UnsupportedEncodingException {
+        String email = request.get("email");
+        String inputCode = request.get("code");
+//        String actualCode = twoFaCodes.get(email);
+
+        if (twoFactorAuthService.verifyCode(inputCode, email)) {
+            twoFaCodes.remove(email);
+            Authentication authentication = authenticateByEmailAndProvider(email, null, PROVIDER.NORMAL);
+            return completeSigninAdmin(authentication, PROVIDER.NORMAL);
         }
 
-        String email = req.getEmail(); //lấy email từ request
-        String password = req.getPassword(); //lấy password từ request
-        PROVIDER provider = req.getProvider(); //lấy provider từ request
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid 2FA code");
+    }
 
-        User user = userService.findByEmailAndProvider(email, password, provider);
-//        if (user == null || passwordEncoder.matches(password, user.getPassword())) {
-//            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-//        }
+    private ResponseEntity<AuthResponse> completeSigninAdmin(Authentication authentication, PROVIDER provider) {
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        String role = authorities.isEmpty() ? null : authorities.iterator().next().getAuthority();
+        String jwt = jwtProvider.generateToken(authentication, provider);
 
-        Authentication authentication = authenticateByEmailAndProvider(email, password, provider); //xác thực user
-        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities(); //lấy danh sách các quyền của user
-        String role = authorities.isEmpty() ? null : authorities.iterator().next().getAuthority(); //lấy quyền của user
-        String jwt = jwtProvider.generateToken(authentication, provider); //tạo ra token từ thông tin user
+        AuthResponse authResponse = new AuthResponse();
+        authResponse.setJwt(jwt);
+        authResponse.setMessage("Sign In successfully");
+        authResponse.setRole(USER_ROLE.valueOf(role));
 
-        AuthResponse authResponse = new AuthResponse(); //tạo ra một đối tượng AuthResponse
-        authResponse.setJwt(jwt); //set jwt cho AuthResponse
-        authResponse.setMessage("Sign In successfully"); //set message cho AuthResponse
-        authResponse.setRole(USER_ROLE.valueOf(role)); //set role cho AuthResponse
-        authResponse.setUser(user);
-
-        return new ResponseEntity(authResponse, HttpStatus.OK); //trả về AuthResponse và status code 200 (OK), authResponse chứa thông tin user và token
+        return ResponseEntity.ok(authResponse);
     }
 
     @PostMapping("/google-signin")

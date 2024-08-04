@@ -29,4 +29,6 @@ public interface DriverService {
 
     //cancelledRides
     public List<RideDto> cancelledRides(Long driverId) throws Exception;
+
+    public void updateDriverLocation(Long driverId, double latitude, double longitude) throws Exception;
 }

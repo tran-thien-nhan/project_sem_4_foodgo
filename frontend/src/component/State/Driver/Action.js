@@ -33,6 +33,9 @@ import {
     CANCELLED_RIDES_REQUEST,
     CANCELLED_RIDES_SUCCESS,
     CANCELLED_RIDES_FAILURE,
+    UPDATE_DRIVER_LOCATION_REQUEST,
+    UPDATE_DRIVER_LOCATION_SUCCESS,
+    UPDATE_DRIVER_LOCATION_FAILURE,
 } from "./ActionType";
 import { Bounce, toast } from "react-toastify";
 
@@ -175,7 +178,7 @@ export const findDriverById = (driverId, token) => {
 }
 
 // Action creator for getting completed rides
-export const completedRides = ({driverId, token}) => {
+export const completedRides = ({ driverId, token }) => {
     return async (dispatch) => {
         dispatch({ type: COMPLETED_RIDES_REQUEST });
         try {
@@ -185,15 +188,15 @@ export const completedRides = ({driverId, token}) => {
                 },
             });
             dispatch({ type: COMPLETED_RIDES_SUCCESS, payload: data });
-            console.log("COMPLETED_RIDES_SUCCESS: ",data);
+            console.log("COMPLETED_RIDES_SUCCESS: ", data);
         } catch (error) {
             dispatch({ type: COMPLETED_RIDES_FAILURE, payload: error.message });
-            console.log("ERROR: ",error);
+            console.log("ERROR: ", error);
         }
     }
 }
 
-export const cancelledRides = ({driverId, token}) => {
+export const cancelledRides = ({ driverId, token }) => {
     return async (dispatch) => {
         dispatch({ type: CANCELLED_RIDES_REQUEST });
         try {
@@ -203,10 +206,10 @@ export const cancelledRides = ({driverId, token}) => {
                 },
             });
             dispatch({ type: CANCELLED_RIDES_SUCCESS, payload: data });
-            console.log("CANCELLED_RIDES_SUCCESS: ",data);
+            console.log("CANCELLED_RIDES_SUCCESS: ", data);
         } catch (error) {
             dispatch({ type: CANCELLED_RIDES_FAILURE, payload: error.message });
-            console.log("ERROR: ",error);
+            console.log("ERROR: ", error);
         }
     }
 }
@@ -275,6 +278,24 @@ export const deleteDriverImage = (driverId, imageUrl, token) => {
             });
         } catch (error) {
             dispatch({ type: DELETE_DRIVER_IMAGE_FAILURE, payload: error.message });
+            console.error("ERROR:", error);
+        }
+    }
+}
+
+export const updateDriverLocation = ({ driverId, reqData, token }) => {
+    return async (dispatch) => {
+        dispatch({ type: UPDATE_DRIVER_LOCATION_REQUEST });
+        try {
+            const { data } = await api.put(`/api/admin/shipper/update-location/${driverId}`, reqData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            dispatch({ type: UPDATE_DRIVER_LOCATION_SUCCESS });
+            console.log("UPDATE_DRIVER_LOCATION_SUCCESS", data);
+        } catch (error) {
+            dispatch({ type: UPDATE_DRIVER_LOCATION_FAILURE, payload: error.message });
             console.error("ERROR:", error);
         }
     }

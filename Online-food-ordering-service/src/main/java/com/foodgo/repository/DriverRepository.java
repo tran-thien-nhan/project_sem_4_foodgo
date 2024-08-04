@@ -3,6 +3,7 @@ package com.foodgo.repository;
 import com.foodgo.model.Driver;
 import com.foodgo.model.Ride;
 import com.foodgo.model.USER_ROLE;
+import com.foodgo.model.DeclinedDriver;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,8 +22,8 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
     @Query("SELECT r FROM Ride r WHERE r.driver.id = :driverId AND r.status = 'COMPLETED'")
     public List<Ride> completedRides(@Param("driverId") Long driverId);
 
-    @Query("SELECT r FROM Ride r WHERE r.driver.id = :driverId AND r.status = 'CANCELLED'")
-    public List<Ride> cancelledRides(@Param("driverId") Long driverId);
+    @Query("SELECT d FROM DeclinedDriver d WHERE d.driver.id = :driverId")
+    public List<DeclinedDriver> cancelledRides(@Param("driverId") Long driverId);
 
     Driver findByEmailAndRole(String email, USER_ROLE role);
 }

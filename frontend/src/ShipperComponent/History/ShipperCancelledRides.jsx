@@ -88,7 +88,7 @@ const ShipperCancelledRides = ({ rides }) => {
         ride.driverId.toString().includes(searchQuery) ||
         ride.restaurantAddress.toLowerCase().includes(searchQuery.toLowerCase()) ||
         ride.userAddress.toLowerCase().includes(searchQuery.toLowerCase())
-    ).sort((a, b) => new Date(b.endTime) - new Date(a.endTime));
+    ).sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
 
     const paginatedRides = filteredRides.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 

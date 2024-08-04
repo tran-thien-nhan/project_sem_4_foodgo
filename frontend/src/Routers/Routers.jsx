@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom'
 import AdminRouter from './AdminRouter'
 import CustomerRouter from './CustomerRouter'
 import ShipperRouter from './ShipperRouter'
+import SuperAdminHome from '../SuperAdmin/Admin/SuperAdminHome'
 
 const Routers = () => {
     return (
@@ -11,6 +12,7 @@ const Routers = () => {
                 <Route path="/admin/restaurants/*" element={<AdminRouter />} />
                 <Route path="/*" element={<CustomerRouter />} />
                 <Route path="/admin/shippers/*" element={<ShipperRouter />} />
+                <Route path="/sup-admin/*" element={<SuperAdminHome />} />
             </Routes>
         </div>
     )

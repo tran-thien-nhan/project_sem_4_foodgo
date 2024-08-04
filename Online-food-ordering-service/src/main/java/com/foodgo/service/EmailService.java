@@ -35,4 +35,6 @@ public interface EmailService {
 
     //gửi mail thông báo khi sự kiện đã bắt đầu
     public void sendMailEventStarted(List<String> emails ,Event event) throws MessagingException, UnsupportedEncodingException;
+
+    public void send2FaCodes(String email, List<String> codes) throws MessagingException, UnsupportedEncodingException;
 }

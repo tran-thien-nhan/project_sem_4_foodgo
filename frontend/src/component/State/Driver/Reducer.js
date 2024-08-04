@@ -32,6 +32,9 @@ import {
     CANCELLED_RIDES_REQUEST,
     CANCELLED_RIDES_SUCCESS,
     CANCELLED_RIDES_FAILURE,
+    UPDATE_DRIVER_LOCATION_REQUEST,
+    UPDATE_DRIVER_LOCATION_SUCCESS,
+    UPDATE_DRIVER_LOCATION_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -47,6 +50,7 @@ const initialState = {
     cancelledRides: null,
     listCompletedRides: [],
     listCancelledRides: [],
+    location: null,
 };
 
 const driverReducer = (state = initialState, action) => {
@@ -62,6 +66,7 @@ const driverReducer = (state = initialState, action) => {
         case UPDATE_DRIVER_REQUEST:
         case DELETE_DRIVER_IMAGE_REQUEST:
         case CANCELLED_RIDES_REQUEST:
+        case UPDATE_DRIVER_LOCATION_REQUEST:
             return {
                 ...state,
                 loading: true,
@@ -122,6 +127,13 @@ const driverReducer = (state = initialState, action) => {
                 loading: false,
                 error: null,
             };
+        case UPDATE_DRIVER_LOCATION_SUCCESS:
+            return {
+                ...state,
+                loading: false,
+                error: null,
+                location: action.payload,
+            };
         case REGISTER_DRIVER_FAILURE:
         case GET_AVAILABLE_DRIVERS_FAILURE:
         case FIND_NEAREST_DRIVER_FAILURE:
@@ -133,6 +145,7 @@ const driverReducer = (state = initialState, action) => {
         case UPDATE_DRIVER_FAILURE:
         case DELETE_DRIVER_IMAGE_FAILURE:
         case CANCELLED_RIDES_FAILURE:
+        case UPDATE_DRIVER_LOCATION_FAILURE:
             return {
                 ...state,
                 loading: false,

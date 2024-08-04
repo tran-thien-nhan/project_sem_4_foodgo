@@ -347,7 +347,11 @@ public class DriverServiceImp implements DriverService{
     @Override
     public List<RideDto> cancelledRides(Long driverId) throws Exception {
         try{
-            List<Ride> rides = driverRepository.cancelledRides(driverId);
+            List<DeclinedDriver> declinedDrivers = driverRepository.cancelledRides(driverId);
+            List<Ride> rides = new ArrayList<>();
+            for (DeclinedDriver declinedDriver : declinedDrivers) {
+                rides.add(declinedDriver.getRide());
+            }
             List<RideDto> rideDtos = new ArrayList<>();
             for (Ride ride : rides) {
                 RideDto r = DtoMapper.toRideDto(ride);
@@ -357,6 +361,23 @@ public class DriverServiceImp implements DriverService{
         }
         catch (Exception e){
             System.out.println(e.getMessage());
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    @Override
+    public void updateDriverLocation(Long driverId, double latitude, double longitude) throws Exception {
+        try {
+            Optional<Driver> driverOpt = driverRepository.findById(driverId);
+            if (!driverOpt.isPresent()) {
+                throw new Exception("Driver not found");
+            }
+
+            Driver driver = driverOpt.get();
+            driver.setLatitude(latitude);
+            driver.setLongitude(longitude);
+            driverRepository.save(driver);
+        } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
     }

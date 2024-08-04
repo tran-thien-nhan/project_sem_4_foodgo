@@ -1,5 +1,5 @@
 import { isPresentInFavorite } from "../../Config/logic";
-import { ADD_TO_FAVORITE_FAILURE, ADD_TO_FAVORITE_REQUEST, ADD_TO_FAVORITE_SUCCESS, GET_USER_FAILURE, GET_USER_REQUEST, GET_USER_SUCCESS, LOGIN_FAILURE, LOGIN_REQUEST, LOGIN_SUCCESS, LOGOUT, REGISTER_FAILURE, REGISTER_REQUEST, REGISTER_SUCCESS, RESET_PASSWORD_REQUEST, RESET_PASSWORD_SUCCESS, RESET_PASSWORD_FAILURE, CHANGE_PASSWORD_REQUEST, CHANGE_PASSWORD_SUCCESS, CHANGE_PASSWORD_FAILURE } from "./ActionType";
+import { ADD_TO_FAVORITE_FAILURE, ADD_TO_FAVORITE_REQUEST, ADD_TO_FAVORITE_SUCCESS, GET_USER_FAILURE, GET_USER_REQUEST, GET_USER_SUCCESS, LOGIN_FAILURE, LOGIN_REQUEST, LOGIN_SUCCESS, LOGOUT, REGISTER_FAILURE, REGISTER_REQUEST, REGISTER_SUCCESS, RESET_PASSWORD_REQUEST, RESET_PASSWORD_SUCCESS, RESET_PASSWORD_FAILURE, CHANGE_PASSWORD_REQUEST, CHANGE_PASSWORD_SUCCESS, CHANGE_PASSWORD_FAILURE, LOGIN_SUPER_ADMIN_REQUEST, LOGIN_SUPER_ADMIN_SUCCESS, LOGIN_SUPER_ADMIN_FAILURE } from "./ActionType";
 
 const initialState = {
     user: null,
@@ -18,6 +18,7 @@ export const authReducer = (state = initialState, action) => {
         case ADD_TO_FAVORITE_REQUEST:
         case RESET_PASSWORD_REQUEST:
         case CHANGE_PASSWORD_REQUEST:
+        case LOGIN_SUPER_ADMIN_REQUEST:
             return {
                 ...state,
                 isLoading: true,
@@ -26,19 +27,25 @@ export const authReducer = (state = initialState, action) => {
             };
         case RESET_PASSWORD_SUCCESS:
             return {
-               ...state,
+                ...state,
                 isLoading: false,
                 error: null,
                 success: action.payload
             };
-        case RESET_PASSWORD_SUCCESS:
         case REGISTER_SUCCESS:
         case LOGIN_SUCCESS:
             return {
                 ...state,
                 jwt: action.payload,
                 isLoading: false,
-                success: "Register success"
+                success: "login success"
+            };
+        case LOGIN_SUPER_ADMIN_SUCCESS:
+            return {
+                ...state,
+                jwt: action.payload,
+                isLoading: false,
+                success: "Login success"
             };
         case GET_USER_SUCCESS:
             return {
@@ -59,11 +66,12 @@ export const authReducer = (state = initialState, action) => {
             };
         case CHANGE_PASSWORD_SUCCESS:
             return {
-               ...state,
+                ...state,
                 isLoading: false,
                 error: null,
                 success: "Change password success"
             };
+        case LOGIN_SUPER_ADMIN_FAILURE:
         case REGISTER_FAILURE:
         case LOGIN_FAILURE:
         case GET_USER_FAILURE:

@@ -9,7 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 
-const MenuCard = ({ item }) => {
+const MenuCard = ({ item, open }) => {
     const [selectedIngredients, setSelectedIngredients] = useState([]);
     const dispatch = useDispatch();
     const { restaurant, cart, loading, cartId, menu } = useSelector(store => store); // Lấy giá trị cart và cartId từ store
@@ -141,12 +141,12 @@ const MenuCard = ({ item }) => {
                                 <FormGroup>
                                     {
                                         categorizeIngredient(item.ingredients)[category].map((ingredient) => (
-                                            <Tooltip key={ingredient.ID} title={(!restaurant || !restaurant.restaurant || !restaurant.restaurant.open || !item.restaurant.open) ? "this restaurant is closing" : ""} placement="bottom" arrow>
+                                            <Tooltip key={ingredient.ID} title={(!restaurant || !restaurant.restaurant || !restaurant.restaurant.open || !item.restaurant.open || (open === false)) ? "this restaurant is closing" : ""} placement="bottom" arrow>
                                                 <Tooltip title={!ingredient.inStoke ? "this topping is temporarily out of stoke" : ""} placement="bottom" arrow>
                                                     <FormControlLabel
                                                         control={<Checkbox onChange={() => handleCheckBoxChange(ingredient.name)} />}
                                                         label={ingredient.name + ' (+' + ingredient.price.toLocaleString('vi-VN') + 'đ)'}
-                                                        disabled={!ingredient.inStoke || !restaurant || !restaurant.restaurant || !restaurant.restaurant.open}
+                                                        disabled={!ingredient.inStoke || !restaurant || !restaurant.restaurant || !restaurant.restaurant.open || (open === false)}
                                                     />
                                                 </Tooltip>
                                             </Tooltip>
@@ -157,7 +157,7 @@ const MenuCard = ({ item }) => {
                         ))}
                     </div>
                     <div className='pt-5'>
-                        {(restaurant && restaurant.restaurant && restaurant.restaurant.open) ?
+                        {(restaurant && restaurant.restaurant && restaurant.restaurant.open && open) ?
                             (item.available) ?
                                 <Button type='submit' variant='contained' color='primary'>
                                     Add to Cart

@@ -2,7 +2,6 @@ package com.foodgo.service;
 
 import com.foodgo.model.Event;
 import com.foodgo.model.Mail;
-import com.foodgo.model.User;
 import com.foodgo.repository.EventRepository;
 import com.foodgo.repository.MailRepository;
 import com.foodgo.repository.UserRepository;
@@ -18,8 +17,6 @@ import org.springframework.stereotype.Service;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class EmailServiceImp implements EmailService {
@@ -471,5 +468,29 @@ public class EmailServiceImp implements EmailService {
             saveMailToDatabase(email, subject, content);
         }
     }
+
+    @Override
+    public void send2FaCodes(String email, List<String> codes) throws MessagingException, UnsupportedEncodingException {
+        String subject = "Your Two-Factor Authentication Codes";
+        StringBuilder content = new StringBuilder("<html><body><h3>Here are your 2FA codes:</h3><ul>");
+
+        for (String code : codes) {
+            content.append("<li>").append(code).append("</li>");  // Đưa mỗi mã vào trong một phần tử danh sách
+        }
+
+        content.append("</ul></body></html>");
+
+        // Tạo đối tượng MimeMessage
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+        helper.setTo(email);
+        helper.setSubject(subject);
+        helper.setText(content.toString(), true);  // true để gửi dưới dạng HTML
+
+        // Gửi email
+        mailSender.send(message);
+    }
+
 
 }

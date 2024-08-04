@@ -35,7 +35,7 @@ const EventCard = ({ event, onAddEventToFavorites, eventsFavorites, onShow, onEd
 
     return (
         <div>
-            <Card sx={{ width: 345, height: 690 }}>
+            <Card sx={{ width: 345, height: 690 }} className='cursor-pointer'>
                 <CardMedia
                     sx={{ height: 345 }}
                     image={event.images[0]}

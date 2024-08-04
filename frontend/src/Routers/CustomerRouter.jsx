@@ -15,6 +15,7 @@ import GoogleSignUpSuccess from '../component/Auth/GoogleSignUpSuccess';
 import ResetPassword from '../component/Auth/ResetPassword';
 import ChatAssistant from '../component/ChatAssistant';
 import SearchMenu from '../component/Search/SearchMenu';
+import SuperAdminLoginForm from '../component/Auth/SuperAdminLoginForm';
 
 const CustomerRouter = () => {
     return (
@@ -24,6 +25,7 @@ const CustomerRouter = () => {
                 <Route path='/' element={<Home />} />
                 <Route path='/account/:register' element={<Home />} />
                 <Route path='/account/:login' element={<Home />} />
+                <Route path='/account/sup/:login' element={<SuperAdminLoginForm />} />
                 <Route path='/login-google' element={<GoogleSignIn/>} />
                 <Route path='/signup-google' element={<GoogleSignUp/>} />
                 <Route path='/restaurant/:city/:title/:id' element={<RestaurantDetail />} />

@@ -1,4 +1,4 @@
-import { ADD_TO_FAVORITE_FAILURE, ADD_TO_FAVORITE_REQUEST, ADD_TO_FAVORITE_SUCCESS, GET_USER_FAILURE, GET_USER_REQUEST, GET_USER_SUCCESS, LOGIN_FAILURE, LOGIN_REQUEST, LOGIN_SUCCESS, LOGOUT, REGISTER_FAILURE, REGISTER_REQUEST, REGISTER_SUCCESS, RESET_PASSWORD_REQUEST, RESET_PASSWORD_SUCCESS, RESET_PASSWORD_FAILURE, CHANGE_PASSWORD_REQUEST, CHANGE_PASSWORD_SUCCESS, CHANGE_PASSWORD_FAILURE, REQUEST_TOKEN_REQUEST, REQUEST_TOKEN_SUCCESS, REQUEST_TOKEN_FAILURE } from "./ActionType";
+import { ADD_TO_FAVORITE_FAILURE, ADD_TO_FAVORITE_REQUEST, ADD_TO_FAVORITE_SUCCESS, GET_USER_FAILURE, GET_USER_REQUEST, GET_USER_SUCCESS, LOGIN_FAILURE, LOGIN_REQUEST, LOGIN_SUCCESS, LOGOUT, REGISTER_FAILURE, REGISTER_REQUEST, REGISTER_SUCCESS, RESET_PASSWORD_REQUEST, RESET_PASSWORD_SUCCESS, RESET_PASSWORD_FAILURE, CHANGE_PASSWORD_REQUEST, CHANGE_PASSWORD_SUCCESS, CHANGE_PASSWORD_FAILURE, REQUEST_TOKEN_REQUEST, REQUEST_TOKEN_SUCCESS, REQUEST_TOKEN_FAILURE, LOGIN_SUPER_ADMIN_REQUEST, LOGIN_SUPER_ADMIN_SUCCESS, LOGIN_SUPER_ADMIN_FAILURE } from "./ActionType";
 import { API_URL, api } from "../../Config/api";
 import axios from "axios";
 import { Bounce, toast } from "react-toastify";
@@ -308,4 +308,48 @@ export const changePassword = (reqData) => async (dispatch) => {
         });
     }
 };
+
+export const loginSuperAdmin = (reqData) => async (dispatch) => {
+    dispatch({ type: LOGIN_SUPER_ADMIN_REQUEST });
+    try {
+        const { data } = await axios.post(`${API_URL}/auth/sign-in`, reqData.userData); // nghĩa là gửi request POST tới đường dẫn http://localhost:5454/auth/signup với dữ liệu reqData
+        if (data.jwt) { // nếu có jwt thì lưu vào localStorage
+            localStorage.setItem("jwt", data.jwt);
+
+            toast.success('Login successfully!', {
+                position: "top-center",
+                autoClose: 500,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+            });
+
+            reqData.navigate("/sup-admin");
+        }
+        else {
+            reqData.navigate("/");
+        }
+
+        dispatch({ type: LOGIN_SUPER_ADMIN_SUCCESS, payload: data.jwt });
+        console.log("LOGIN SUCCESS: ", data);
+
+    } catch (error) {
+        dispatch({ type: LOGIN_SUPER_ADMIN_FAILURE, payload: error });
+        console.log("ERROR: ", error);
+        toast.error(error.response.data, {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+        });
+    }
+}
 

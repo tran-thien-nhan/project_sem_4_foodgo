@@ -169,7 +169,7 @@ const SearchMenu = () => {
       <Grid container spacing={2}>
         {currentMenus.map(menu => (
           <Grid item xs={12} key={menu.id}>
-            <MenuCard item={menu} />
+            <MenuCard item={menu} open={menu.restaurant.open}/>
           </Grid>
         ))}
       </Grid>

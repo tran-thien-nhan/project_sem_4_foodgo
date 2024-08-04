@@ -268,6 +268,13 @@ public class EventServiceImp implements EventService {
         Optional<Event> eventOptional = eventRepository.findById(eventId);
         if (eventOptional.isPresent()) {
             Event event = eventOptional.get();
+
+            if (event.getEndsAt().isBefore(LocalDateTime.now())) {
+                event.setAvailable(false); // Cập nhật trạng thái trước khi ném Exception
+                eventRepository.save(event); // Lưu trạng thái trước khi ném Exception
+                throw new Exception("Event has expired");
+            }
+
             event.setAvailable(!event.isAvailable());
 
             eventRepository.save(event);

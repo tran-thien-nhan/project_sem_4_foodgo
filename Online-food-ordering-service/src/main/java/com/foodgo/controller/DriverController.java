@@ -7,6 +7,7 @@ import com.foodgo.model.USER_ROLE;
 import com.foodgo.model.User;
 import com.foodgo.request.CreateLicenseVehicleRequest;
 import com.foodgo.request.UpdateDriverInfoRequest;
+import com.foodgo.request.UpdateLocationRequest;
 import com.foodgo.service.DriverService;
 import com.foodgo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -172,6 +173,22 @@ public class DriverController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
             driverService.deleteImage(driverId, imageUrl);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
+    @PutMapping("/update-location/{driverId}")
+    public ResponseEntity<Void> updateDriverLocation(@PathVariable Long driverId,
+                                                     @RequestBody UpdateLocationRequest req,
+                                                     @RequestHeader("Authorization") String jwt) {
+        try {
+            User user = userService.findUserByJwtToken(jwt);
+            if (user == null || !user.getRole().equals(USER_ROLE.ROLE_SHIPPER)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            driverService.updateDriverLocation(driverId, req.getLatitude(), req.getLongitude());
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);

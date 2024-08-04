@@ -67,4 +67,8 @@ public class User {
 
     @ElementCollection //tạo bảng mới chứa thông tin previousPasswords, không cần tạo class mới
     private List<String> previousPasswords = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+//    @ToString.Exclude
+    private List<TwoFactorCode> twoFaCodes = new ArrayList<>();
 }
